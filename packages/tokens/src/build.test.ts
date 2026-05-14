@@ -38,6 +38,8 @@ describe("token compiler helpers", () => {
 
     const generatedDir = join(import.meta.dirname, "../dist/generated");
     const reactNative = await readFile(join(generatedDir, "react-native.ts"), "utf8");
+    const tokenJs = await readFile(join(generatedDir, "tokens.js"), "utf8");
+    const tokenTypes = await readFile(join(generatedDir, "tokens.d.ts"), "utf8");
     const reactNativeJs = await readFile(join(generatedDir, "react-native.js"), "utf8");
     const reactNativeTypes = await readFile(join(generatedDir, "react-native.d.ts"), "utf8");
     const swift = await readFile(join(generatedDir, "AurelglyphTokens.swift"), "utf8");
@@ -55,5 +57,8 @@ describe("token compiler helpers", () => {
     expect(reactNativeJs).toContain("export const aurelglyphTheme = {");
     expect(reactNativeJs).not.toContain("as const");
     expect(reactNativeTypes).toContain("export declare const aurelglyphTheme:");
+    expect(tokenJs).toContain("export const tokens = {");
+    expect(tokenJs).not.toContain("as const");
+    expect(tokenTypes).toContain("export declare const tokens:");
   });
 });

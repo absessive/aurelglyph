@@ -3,8 +3,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FlatToken, TokenTree } from "./types";
 
-const tokenSourcePath = fileURLToPath(new URL("./tokens.json", import.meta.url));
-const generatedDir = fileURLToPath(new URL("../dist/generated/", import.meta.url));
+const packageRoot = fileURLToPath(new URL("../", import.meta.url)).replace(/\/dist\/?$/, "");
+const tokenSourcePath = join(packageRoot, "src", "tokens.json");
+const generatedDir = join(packageRoot, "dist", "generated");
 
 export function flattenTokens(tree: TokenTree, path: string[] = []): FlatToken[] {
   return Object.entries(tree).flatMap(([key, value]) => {
@@ -57,6 +58,20 @@ function renderTypeScript(flat: FlatToken[], tree: TokenTree): string {
   return `export const tokens = {\n${body}\n} as const;\n\nexport type AurelglyphTokenName = keyof typeof tokens;\n`;
 }
 
+function renderJavaScriptTokens(flat: FlatToken[], tree: TokenTree): string {
+  const body = flat
+    .map((token) => `  ${JSON.stringify(token.name)}: ${JSON.stringify(resolveTokenValue(token.value, tree))}`)
+    .join(",\n");
+  return `export const tokens = {\n${body}\n};\n`;
+}
+
+function renderTokenTypes(flat: FlatToken[], tree: TokenTree): string {
+  const body = flat
+    .map((token) => `  readonly ${JSON.stringify(token.name)}: ${JSON.stringify(resolveTokenValue(token.value, tree))};`)
+    .join("\n");
+  return `export declare const tokens: {\n${body}\n};\n\nexport type AurelglyphTokenName = keyof typeof tokens;\n`;
+}
+
 function renderReactNative(flat: FlatToken[], tree: TokenTree): string {
   const body = flat
     .map((token) => `  ${JSON.stringify(token.name)}: ${JSON.stringify(resolveTokenValue(token.value, tree))}`)
@@ -107,6 +122,8 @@ export async function buildTokens(): Promise<void> {
 
   await writeGeneratedFile(join(generatedDir, "aurelglyph.css"), renderCss(flat, tokenTree));
   await writeGeneratedFile(join(generatedDir, "tokens.ts"), renderTypeScript(flat, tokenTree));
+  await writeGeneratedFile(join(generatedDir, "tokens.js"), renderJavaScriptTokens(flat, tokenTree));
+  await writeGeneratedFile(join(generatedDir, "tokens.d.ts"), renderTokenTypes(flat, tokenTree));
   await writeGeneratedFile(join(generatedDir, "react-native.ts"), renderReactNative(flat, tokenTree));
   await writeGeneratedFile(join(generatedDir, "react-native.js"), renderReactNativeJavaScript(flat, tokenTree));
   await writeGeneratedFile(join(generatedDir, "react-native.d.ts"), renderReactNativeTypes(flat, tokenTree));

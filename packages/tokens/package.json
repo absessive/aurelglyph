@@ -11,6 +11,10 @@
       "default": "./dist/index.js"
     },
     "./generated.css": "./dist/generated/aurelglyph.css",
+    "./tokens": {
+      "types": "./dist/generated/tokens.d.ts",
+      "default": "./dist/generated/tokens.js"
+    },
     "./react-native": {
       "types": "./dist/generated/react-native.d.ts",
       "default": "./dist/generated/react-native.js"
