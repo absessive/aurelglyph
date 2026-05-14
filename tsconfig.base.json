@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@aurelglyph/tokens": ["packages/tokens/src/index.ts"],
+      "@aurelglyph/react": ["packages/react/src/index.ts"],
+      "@aurelglyph/react-native": ["packages/react-native/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "examples/**/*.ts",
+    "examples/**/*.tsx",
+    "vitest.config.ts"
+  ]
+}
