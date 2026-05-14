@@ -1,18 +1,18 @@
 # Aurelglyph
 
-Aurelglyph is a token-first UX design language and component system for SwiftUI, React, React Native, and Rails.
+Aurelglyph is a token-first UX design language and component system for SwiftUI,
+React, React Native, and Ruby on Rails apps.
 
 ## Phase 1
 
-- Workspace tooling
 - Canonical design tokens
-- Platform token adapters
-- Starter component packages
-- Example applications
+- Generated CSS, TypeScript, React Native, Swift, and Rails-friendly outputs
+- Starter React components
+- A Vite React example app that consumes the packages
 
 ## Commands
 
-```sh
+```bash
 npm install
 npm run build
 npm test
