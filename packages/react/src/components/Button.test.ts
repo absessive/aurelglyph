@@ -40,4 +40,11 @@ describe("Icon", () => {
     expect(element.props["aria-label"]).toBe("Upload");
     expect(element.props["data-icon"]).toBe("upload");
   });
+
+  it("uses title to override the accessible label", () => {
+    const element = Icon({ name: "upload", title: "Attach file" }) as ReactElement<Record<string, unknown>>;
+
+    expect(element.props["aria-label"]).toBe("Attach file");
+    expect(element.props.title).toBe("Attach file");
+  });
 });

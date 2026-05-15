@@ -28,7 +28,6 @@ export type AurelglyphIconName =
 
 export type IconProps = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
   name: AurelglyphIconName;
-  label?: string;
 };
 
 const defaultLabels: Record<AurelglyphIconName, string> = {
@@ -60,12 +59,12 @@ const defaultLabels: Record<AurelglyphIconName, string> = {
 
 export function Icon({
   className,
-  label,
   name,
+  title,
   ...props
 }: IconProps): ReactElement {
   const classNames = ["ag-icon", className].filter(Boolean).join(" ");
-  const accessibleLabel = label ?? defaultLabels[name];
+  const accessibleLabel = title ?? defaultLabels[name];
 
   return (
     <span
@@ -73,6 +72,7 @@ export function Icon({
       className={classNames}
       data-icon={name}
       role="img"
+      title={title}
       {...props}
     />
   );

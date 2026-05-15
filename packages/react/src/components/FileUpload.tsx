@@ -14,7 +14,7 @@ export function FileUpload({
   "aria-invalid": ariaInvalid,
   className,
   error,
-  helpText,
+  helpText = "Choose a file or drop one here.",
   id,
   label,
   ...props
@@ -40,11 +40,9 @@ export function FileUpload({
         id={inputId}
         type="file"
       />
-      {helpText ? (
-        <p className="ag-field__help" id={helpId}>
-          {helpText}
-        </p>
-      ) : null}
+      <p className="ag-field__help" id={helpId}>
+        {helpText}
+      </p>
       {error ? (
         <p className="ag-field__error" id={errorId}>
           {error}

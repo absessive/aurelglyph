@@ -26,7 +26,7 @@ export function Button({
 
   return (
     <button className={classNames} type={type} {...props}>
-      {icon ? <Icon className="ag-button__icon" label={iconLabel} name={icon} /> : null}
+      {icon ? <Icon className="ag-button__icon" name={icon} title={iconLabel} /> : null}
       {children ? <span className="ag-button__content">{children}</span> : null}
     </button>
   );
