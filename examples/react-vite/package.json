@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build -w @aurelglyph/tokens && npm run build -w @aurelglyph/react && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

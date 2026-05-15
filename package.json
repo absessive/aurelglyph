@@ -10,7 +10,7 @@
     "build:tokens": "npm run build -w @aurelglyph/tokens",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "typecheck": "npm run build:tokens && tsc -p tsconfig.base.json --noEmit",
     "verify": "npm run build && npm test && npm run typecheck"
   },
   "devDependencies": {
