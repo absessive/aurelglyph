@@ -17,12 +17,12 @@ describe("token compiler helpers", () => {
     expect(flat.find((token) => token.name === "color.semantic.background")).toEqual({
       path: ["color", "semantic", "background"],
       name: "color.semantic.background",
-      value: "{color.primitive.ink-50}"
+      value: "{color.mode.dark.background}"
     });
   });
 
   it("resolves token references", () => {
-    expect(resolveTokenValue("{color.primitive.ink-50}", tokens)).toBe("#f7f8f8");
+    expect(resolveTokenValue("{color.accent.royal-purple.300}", tokens)).toBe("#9358e8");
   });
 
   it("creates CSS custom property names", () => {
@@ -45,14 +45,17 @@ describe("token compiler helpers", () => {
     const swift = await readFile(join(generatedDir, "AurelglyphTokens.swift"), "utf8");
     const ruby = await readFile(join(generatedDir, "aurelglyph_tokens.rb"), "utf8");
 
+    expect(reactNative).toContain('"color.accent.royal-purple.300": "#9358e8"');
     expect(reactNative).toContain(
-      '"font.family.body": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      '"font.family.body": "\\"IBM Plex Sans\\", system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
+    expect(swift).toContain('public static let colorAccentRoyalPurple300 = "#9358e8"');
     expect(swift).toContain(
-      'public static let fontFamilyBody = "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      'public static let fontFamilyBody = "\\"IBM Plex Sans\\", system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
+    expect(ruby).toContain('"color.accent.royal-purple.300" => "#9358e8"');
     expect(ruby).toContain(
-      '"font.family.body" => "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      '"font.family.body" => "\\"IBM Plex Sans\\", system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
     expect(reactNativeJs).toContain("export const aurelglyphTheme = {");
     expect(reactNativeJs).not.toContain("as const");

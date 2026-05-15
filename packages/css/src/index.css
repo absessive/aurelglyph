@@ -12,7 +12,14 @@ html {
   font-family: var(--ag-font-family-body);
 }
 
+body {
+  background:
+    radial-gradient(circle at top left, rgba(var(--ag-accent-rgb), 0.12), transparent 32rem),
+    linear-gradient(180deg, var(--ag-color-semantic-background), var(--ag-color-semantic-background-elevated));
+}
+
 .ag-focus-ring:focus-visible {
-  outline: 2px solid var(--ag-color-semantic-focus);
+  outline: 1px solid rgba(var(--ag-accent-rgb), 0.75);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--ag-accent-rgb), 0.12);
 }
