@@ -19,3 +19,22 @@ npm test
 npm run typecheck
 npm run verify
 ```
+
+No lint script exists yet. Add one before introducing lintable source rules.
+
+## Packages
+
+- `@aurelglyph/tokens`: canonical tokens and generator
+- `@aurelglyph/css`: CSS variables and base styles
+- `@aurelglyph/react`: starter React components
+- `@aurelglyph/react-native`: React Native theme export
+- `AurelglyphUI`: SwiftUI package skeleton
+- `aurelglyph-rails`: Rails-facing styles and token helper skeleton
+
+## Example
+
+Run the React example:
+
+```bash
+npm run dev -w @aurelglyph/example-react-vite
+```
