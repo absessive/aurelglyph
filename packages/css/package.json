@@ -8,5 +8,8 @@
   },
   "scripts": {
     "build": "npm run build -w @aurelglyph/tokens"
+  },
+  "dependencies": {
+    "@aurelglyph/tokens": "0.1.0"
   }
 }

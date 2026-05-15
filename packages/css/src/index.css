@@ -1,4 +1,4 @@
-@import "../../tokens/dist/generated/aurelglyph.css";
+@import "@aurelglyph/tokens/generated.css";
 
 *,
 *::before,

@@ -23,9 +23,12 @@ describe("platform adapter skeletons", () => {
       },
       scripts: {
         build: "npm run build -w @aurelglyph/tokens"
+      },
+      dependencies: {
+        "@aurelglyph/tokens": "0.1.0"
       }
     });
-    expect(css).toContain('@import "../../tokens/dist/generated/aurelglyph.css";');
+    expect(css).toContain('@import "@aurelglyph/tokens/generated.css";');
     expect(css).toContain("box-sizing: border-box;");
     expect(css).toContain("background: var(--ag-color-semantic-background);");
     expect(css).toContain("color: var(--ag-color-semantic-foreground);");
@@ -51,14 +54,26 @@ describe("platform adapter skeletons", () => {
         "@aurelglyph/tokens": "0.1.0"
       }
     });
-    expect(source.trim()).toBe('export { aurelglyphTheme } from "../../tokens/dist/generated/react-native";');
+    expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
   });
 
   it("defines the Swift package and copies generated Swift tokens", async () => {
+    const packageJson = JSON.parse(await read("packages/swift/package.json")) as Record<string, unknown>;
     const packageSwift = await read("packages/swift/Package.swift");
     const generated = await read("packages/tokens/dist/generated/AurelglyphTokens.swift");
     const copied = await read("packages/swift/Sources/AurelglyphUI/AurelglyphTokens.swift");
 
+    expect(packageJson).toMatchObject({
+      name: "@aurelglyph/swift",
+      version: "0.1.0",
+      private: true,
+      scripts: {
+        build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
+      },
+      dependencies: {
+        "@aurelglyph/tokens": "0.1.0"
+      }
+    });
     expect(packageSwift).toContain('name: "AurelglyphUI"');
     expect(packageSwift).toContain(".iOS(.v17)");
     expect(packageSwift).toContain(".macOS(.v14)");
@@ -79,7 +94,10 @@ describe("platform adapter skeletons", () => {
       version: "0.1.0",
       private: true,
       scripts: {
-        build: "npm run build -w @aurelglyph/tokens"
+        build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
+      },
+      dependencies: {
+        "@aurelglyph/tokens": "0.1.0"
       }
     });
     expect(copiedCss).toBe(generatedCss);

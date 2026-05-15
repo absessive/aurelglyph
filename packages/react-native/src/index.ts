@@ -1,1 +1,1 @@
-export { aurelglyphTheme } from "../../tokens/dist/generated/react-native";
+export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";
