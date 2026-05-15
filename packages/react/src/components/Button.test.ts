@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ReactElement } from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { Button } from "./Button";
 import { Icon } from "./Icon";
@@ -29,6 +31,32 @@ describe("Button", () => {
     expect(props.className).toContain("ag-button");
     expect(props.className).toContain("ag-button--secondary");
   });
+
+  it("hides paired icons from assistive technology by default", () => {
+    const element = Button({
+      children: "Save",
+      icon: "save"
+    }) as ReactElement<Record<string, unknown>>;
+    const children = element.props.children as ReactElement<Record<string, unknown>>[];
+    const icon = children[0];
+
+    expect(icon.props.name).toBe("save");
+    expect(icon.props.decorative).toBe(true);
+    expect(icon.props.title).toBeUndefined();
+  });
+
+  it("keeps explicit icon labels when provided", () => {
+    const element = Button({
+      children: "Save",
+      icon: "save",
+      iconLabel: "Save action"
+    }) as ReactElement<Record<string, unknown>>;
+    const children = element.props.children as ReactElement<Record<string, unknown>>[];
+    const icon = children[0];
+
+    expect(icon.props.decorative).toBe(false);
+    expect(icon.props.title).toBe("Save action");
+  });
 });
 
 describe("Icon", () => {
@@ -57,13 +85,47 @@ describe("Icon", () => {
   });
 
   it("renders distinct SVG paths for each icon name", () => {
-    const upload = Icon({ name: "upload" }) as ReactElement<Record<string, unknown>>;
-    const deletion = Icon({ name: "delete" }) as ReactElement<Record<string, unknown>>;
-    const uploadSvg = upload.props.children as ReactElement<Record<string, unknown>>;
-    const deleteSvg = deletion.props.children as ReactElement<Record<string, unknown>>;
-    const uploadPath = uploadSvg.props.children as ReactElement<Record<string, unknown>>;
-    const deletePath = deleteSvg.props.children as ReactElement<Record<string, unknown>>;
+    const names = [
+      "upload",
+      "attachment",
+      "microphone",
+      "camera",
+      "video",
+      "image",
+      "play",
+      "pause",
+      "record",
+      "stop",
+      "send",
+      "save",
+      "search",
+      "filter",
+      "settings",
+      "edit",
+      "delete",
+      "close",
+      "back",
+      "forward",
+      "check",
+      "warning",
+      "info",
+      "success"
+    ] as const;
+    const paths = names.map((name) => {
+      const icon = Icon({ name }) as ReactElement<Record<string, unknown>>;
+      const svg = icon.props.children as ReactElement<Record<string, unknown>>;
+      const path = svg.props.children as ReactElement<Record<string, unknown>>;
+      return path.props.d;
+    });
 
-    expect(uploadPath.props.d).not.toBe(deletePath.props.d);
+    expect(new Set(paths)).toHaveLength(names.length);
+  });
+});
+
+describe("FileUpload", () => {
+  it("marks its paired upload icon as decorative", () => {
+    const source = readFileSync(join(import.meta.dirname, "FileUpload.tsx"), "utf8");
+
+    expect(source).toContain('<Icon className="ag-upload__icon" decorative name="upload" />');
   });
 });
