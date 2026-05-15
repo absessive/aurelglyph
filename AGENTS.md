@@ -6,19 +6,21 @@ These instructions apply to the Aurelglyph design-system workspace.
 
 ## Project Goal
 
-Aurelglyph is the packageable implementation of **Absessive UI**: a standalone,
-versioned UX design language and component system for SwiftUI, React, React
-Native, and Ruby on Rails apps. It uses a token-first architecture with
-platform-specific adapters and examples.
+Aurelglyph is the library and design-system brand: a standalone, versioned UX
+design language and component system for SwiftUI, React, React Native, and Ruby
+on Rails apps. It uses a token-first architecture with platform-specific
+adapters and examples.
 
-## Absessive UI: Ajit Interface Language
+## Aurelglyph: Ajit Interface Language
 
 Use this section as the source of truth when generating UI, styling, tokens,
 components, icons, layout, copy, or brand assets for Ajit Chakrapani /
-`absessive` apps. The goal is not to imitate Bootstrap, Material, Apple Human
-Interface Guidelines, Linear, Vercel, or generic SaaS design. The UI should
-feel like a crafted operating surface: precise, warm, technical, editorial, and
-quietly premium.
+`absessive` apps that use Aurelglyph. "Absessive UI" is not a public trademark,
+package name, or design-system name; treat it as prompt context only. The public
+library name is Aurelglyph. The goal is not to imitate Bootstrap, Material,
+Apple Human Interface Guidelines, Linear, Vercel, or generic SaaS design. The UI
+should feel like a crafted operating surface: precise, warm, technical,
+editorial, and quietly premium.
 
 Core brand phrase:
 
@@ -64,12 +66,15 @@ Product/design alias: `absessive`
 
 Preferred brand lockups:
 
+- `Aurelglyph`
 - `absessive.`
 - `ab.`
 - `absessive systems atelier`
 
-The dot is intentional. It acts as a signal light and should inherit the active
-theme accent. Avoid uppercase wordmarks unless required by context.
+Use `Aurelglyph` for the library and design-system brand. Use `absessive.` or
+`ab.` only for Ajit/personal app identity. The dot is intentional in personal
+identity lockups. It acts as a signal light and should inherit the active theme
+accent. Avoid uppercase wordmarks unless required by context.
 
 ### Visual Motifs
 
@@ -421,7 +426,7 @@ pure black for every surface. Layer multiple near-black tones.
 
 - **React / Next.js / Vercel:** use CSS variables for all tokens. Tailwind is
   allowed only if mapped to these tokens. Do not use default shadcn styling
-  without adapting it to Absessive UI. Components should be reusable and
+  without adapting it to Aurelglyph. Components should be reusable and
   theme-aware.
 - **Rails:** use CSS variables and server-rendered components. Prefer
   ViewComponent, Phlex, partials, or helpers that preserve the same token
@@ -553,8 +558,9 @@ app/dashboard-facing, make it more instrument-like.
 
 ### Quality Bar
 
-A finished screen should feel like it belongs to the same family as every other
-`absessive` product. Ask before shipping:
+A finished screen should feel like it belongs to the same Aurelglyph family.
+For Ajit/personal apps, it should also feel compatible with the `absessive`
+identity. Ask before shipping:
 
 - Does it feel warm but technical?
 - Does it avoid generic SaaS defaults?
@@ -562,7 +568,7 @@ A finished screen should feel like it belongs to the same family as every other
 - Does it support dark and light mode?
 - Could this be reused in React, Rails, iOS, macOS, and watchOS?
 - Are details precise without being noisy?
-- Does it feel like `absessive.`?
+- Does it feel like Aurelglyph?
 
 If not, revise toward the brand phrase: "Warm precision. Quiet systems.
 Obsessive details."

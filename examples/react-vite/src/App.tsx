@@ -19,8 +19,8 @@ export function App() {
   return (
     <main className="example-shell">
       <aside className="example-rail" aria-label="Primary">
-        <a className="example-wordmark" href="/" aria-label="absessive home">
-          ab<span>.</span>
+        <a className="example-wordmark" href="/" aria-label="Aurelglyph home">
+          Aurelglyph<span>.</span>
         </a>
         <nav className="example-nav">
           {navItems.map((item, index) => (
@@ -39,7 +39,7 @@ export function App() {
       <section className="example-workbench" aria-labelledby="hero-title">
         <header className="example-hero">
           <div className="example-hero__copy">
-            <p className="example-kicker">Aurelglyph React · v0.1.0 · Absessive UI</p>
+            <p className="example-kicker">Aurelglyph React · v0.1.0</p>
             <h1 id="hero-title">Compose a quiet prompt system.</h1>
             <p className="example-hero__summary">
               A cross-platform control language for forms, media capture, file intake,
