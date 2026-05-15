@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { Button, FileUpload, Icon, TextArea, TextField } from "@aurelglyph/react";
 
 const mediaTools = [
-  { name: "microphone", label: "Microphone", detail: "Clean narration channel." },
-  { name: "camera", label: "Camera", detail: "Reference still capture." },
-  { name: "video", label: "Video", detail: "Short motion brief." },
-  { name: "image", label: "Image", detail: "Visual context layer." }
+  { name: "settings", label: "Design tokens", detail: "Color, type, spacing, radius, motion." },
+  { name: "edit", label: "React controls", detail: "Button, field, textarea, upload, icon." },
+  { name: "filter", label: "Platform outputs", detail: "CSS, TypeScript, Swift, Ruby, native." },
+  { name: "check", label: "Release checks", detail: "Version sync, build, tests, typecheck." }
 ] as const;
 
 const navItems = ["Workbench", "Notes", "Systems", "Lab", "Archive", "Settings"] as const;
@@ -40,64 +40,65 @@ export function App() {
         <header className="example-hero">
           <div className="example-hero__copy">
             <p className="example-kicker">Aurelglyph React · v0.1.0</p>
-            <h1 id="hero-title">Compose a quiet prompt system.</h1>
+            <h1 id="hero-title">A shared design language for every app surface.</h1>
             <p className="example-hero__summary">
-              A cross-platform control language for forms, media capture, file intake,
-              and instrument-grade application surfaces.
+              Aurelglyph gives web, mobile, desktop, and Rails apps one token
+              contract, one component vocabulary, and generated platform outputs
+              that stay on the same version.
             </p>
           </div>
 
-          <div className="example-hero__actions" aria-label="Prompt actions">
-            <Button icon="upload">Upload source</Button>
-            <Button icon="microphone" variant="secondary">
-              Record audio
+          <div className="example-hero__actions" aria-label="Package actions">
+            <Button icon="upload">npm install</Button>
+            <Button icon="settings" variant="secondary">
+              data-theme
             </Button>
-            <Button icon="camera" variant="ghost">
-              Capture image
+            <Button icon="search" variant="ghost">
+              Component API
             </Button>
           </div>
         </header>
 
-        <section className="example-grid" aria-label="Prompt builder">
+        <section className="example-grid" aria-label="Design system setup">
           <div className="example-panel example-panel--form">
             <div className="example-panel__header">
-              <p className="example-kicker">LOCAL DRAFT</p>
-              <h2>Prompt details</h2>
+              <p className="example-kicker">APP SETUP</p>
+              <h2>Consumer configuration</h2>
             </div>
 
             <div className="example-fields">
               <TextField
-                helpText="A compact name for routing and review."
-                label="Project title"
-                name="project-title"
-                placeholder="Launch storyboard"
+                helpText="Use the CSS package plus the adapter for your app framework."
+                label="Install"
+                name="install"
+                placeholder="npm install @aurelglyph/css @aurelglyph/react"
               />
               <TextField
-                helpText="Useful when work moves across systems."
-                label="Owner"
-                name="owner"
-                placeholder="systems atelier"
+                helpText="Set these attributes once on the root element."
+                label="Theme attributes"
+                name="theme"
+                placeholder="data-mode=&quot;dark&quot; data-theme=&quot;royal-purple&quot;"
               />
               <TextArea
-                helpText="Describe the intended result, constraints, and source context."
-                label="Prompt"
-                name="prompt"
-                placeholder="Create a concise shot list for a product walkthrough..."
+                helpText="Use semantic variables and package components instead of one-off styles."
+                label="Usage"
+                name="integration-notes"
+                placeholder="Import @aurelglyph/css once, import @aurelglyph/react/styles.css for controls, then compose Button, TextField, TextArea, FileUpload, and Icon."
               />
             </div>
           </div>
 
-          <aside className="example-panel example-panel--media" aria-label="Media inputs">
+          <aside className="example-panel example-panel--media" aria-label="Package coverage">
             <div className="example-panel__header">
-              <p className="example-kicker">SYNCED INPUT</p>
-              <h2>Reference assets</h2>
+              <p className="example-kicker">PACKAGE SURFACE</p>
+              <h2>What ships</h2>
             </div>
 
             <FileUpload
-              accept="image/*,video/*,audio/*,.pdf"
-              helpText="Images, short videos, audio notes, and PDF briefs."
-              label="Drop files for the prompt"
-              name="reference-assets"
+              accept=".json,.css,.ts,.tsx,.swift,.rb"
+              helpText="The token compiler emits CSS variables, TypeScript constants, React Native values, Swift constants, and Ruby helpers."
+              label="Generated outputs"
+              name="generated-assets"
             />
 
             <div className="example-media-list" aria-label="Supported media">
@@ -115,9 +116,9 @@ export function App() {
             </div>
 
             <div className="example-panel__footer">
-              <Button icon="send">Generate draft</Button>
+              <Button icon="send">Open README</Button>
               <Button icon="save" variant="secondary">
-                Save brief
+                Run verify
               </Button>
             </div>
           </aside>

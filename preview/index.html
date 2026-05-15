@@ -503,61 +503,62 @@
         <header class="hero">
           <div>
             <p class="kicker">Aurelglyph Static Preview · v0.1.0</p>
-            <h1>Compose a quiet prompt system.</h1>
+            <h1>A shared design language for every app surface.</h1>
             <p class="summary">
-              A cross-platform control language for forms, media capture, file intake,
-              and instrument-grade application surfaces.
+              Aurelglyph gives web, mobile, desktop, and Rails apps one token
+              contract, one component vocabulary, and generated platform outputs
+              that stay on the same version.
             </p>
           </div>
           <div class="actions">
-            <button class="primary">Upload source</button>
-            <button>Record audio</button>
-            <button class="ghost">Capture image</button>
+            <button class="primary">npm install</button>
+            <button>data-theme</button>
+            <button class="ghost">Component API</button>
           </div>
         </header>
 
-        <section class="grid" aria-label="Prompt builder">
+        <section class="grid" aria-label="Design system setup">
           <div class="panel">
             <div>
-              <p class="kicker">LOCAL DRAFT</p>
-              <h2>Prompt details</h2>
+              <p class="kicker">APP SETUP</p>
+              <h2>Consumer configuration</h2>
             </div>
             <label>
-              Project title
-              <input placeholder="Launch storyboard" />
-              <span class="help">A compact name for routing and review.</span>
+              Install
+              <input placeholder="npm install @aurelglyph/css @aurelglyph/react" />
+              <span class="help">Use the CSS package plus the adapter for your app framework.</span>
             </label>
             <label>
-              Owner
-              <input placeholder="systems atelier" />
-              <span class="help">Useful when work moves across systems.</span>
+              Theme attributes
+              <input placeholder='data-mode="dark" data-theme="royal-purple"' />
+              <span class="help">Set these attributes once on the root element.</span>
             </label>
             <label>
-              Prompt
-              <textarea placeholder="Create a concise shot list for a product walkthrough..."></textarea>
-              <span class="help">Describe the intended result, constraints, and source context.</span>
+              Usage
+              <textarea placeholder="Import @aurelglyph/css once, import @aurelglyph/react/styles.css for controls, then compose Button, TextField, TextArea, FileUpload, and Icon."></textarea>
+              <span class="help">Use semantic variables and package components instead of one-off styles.</span>
             </label>
           </div>
 
-          <aside class="panel media" aria-label="Media inputs">
+          <aside class="panel media" aria-label="Package coverage">
             <div>
-              <p class="kicker">SYNCED INPUT</p>
-              <h2>Reference assets</h2>
+              <p class="kicker">PACKAGE SURFACE</p>
+              <h2>What ships</h2>
             </div>
             <div class="drop">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 15v4h14v-4" /></svg>
-              <strong>Drop files for the prompt</strong>
-              <small>Images, short videos, audio notes, and PDF briefs.</small>
+              <strong>Generated outputs</strong>
+              <small>The token compiler emits CSS variables, TypeScript constants, React Native values, Swift constants, and Ruby helpers.</small>
             </div>
             <div class="media-list">
-              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm-6-3a6 6 0 0 0 12 0M12 17v4" /></svg></span><span><strong>Microphone</strong><small>Clean narration channel.</small></span></div>
-              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 8h4l1.5-2h5L16 8h4v10H4V8Zm8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span><span><strong>Camera</strong><small>Reference still capture.</small></span></div>
-              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h11v10H4V7Zm11 3 5-3v10l-5-3" /></svg></span><span><strong>Video</strong><small>Short motion brief.</small></span></div>
-              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4V6Zm3 9 3-3 2 2 3-4 3 5M8 9h.01" /></svg></span><span><strong>Image</strong><small>Visual context layer.</small></span></div>
+              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-12v3m0 11v3m8.5-8.5h-3m-11 0h-3m14.4-5.9-2.1 2.1M8.2 15.8l-2.1 2.1m0-11.8 2.1 2.1m7.6 7.6 2.1 2.1" /></svg></span><span><strong>Design tokens</strong><small>Color, type, spacing, radius, motion.</small></span></div>
+              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 17.5V20h2.5L18.8 8.7l-2.5-2.5L5 17.5Zm10-10 2.5 2.5" /></svg></span><span><strong>React controls</strong><small>Button, field, textarea, upload, icon.</small></span></div>
+              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z" /></svg></span><span><strong>Platform outputs</strong><small>CSS, TypeScript, Swift, Ruby, native.</small></span></div>
+              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg></span><span><strong>Release checks</strong><small>Version sync, build, tests, typecheck.</small></span></div>
             </div>
             <div class="footer">
-              <button class="primary">Generate draft</button>
-              <button>Save brief</button>
+              <button class="primary">Open README</button>
+              <button>Run verify</button>
             </div>
           </aside>
         </section>

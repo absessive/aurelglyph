@@ -47,27 +47,27 @@ Use the components in app code:
 ```tsx
 import { Button, FileUpload, TextArea, TextField } from "@aurelglyph/react";
 
-export function PromptForm() {
+export function DesignSystemSetup() {
   return (
     <form>
       <TextField
-        label="Project title"
-        name="title"
-        placeholder="Launch storyboard"
-        helpText="A compact name for routing and review."
+        label="Install"
+        name="install"
+        placeholder="npm install @aurelglyph/css @aurelglyph/react"
+        helpText="Use the CSS package plus the adapter for your app framework."
       />
       <TextArea
-        label="Prompt"
-        name="prompt"
-        placeholder="Create a concise walkthrough brief..."
+        label="Usage"
+        name="usage"
+        placeholder="Import @aurelglyph/css, set data-mode and data-theme, then compose React controls."
       />
       <FileUpload
-        accept="image/*,video/*,audio/*,.pdf"
-        label="Drop files for the prompt"
-        name="assets"
+        accept=".json,.css,.ts,.tsx,.swift,.rb"
+        label="Generated outputs"
+        name="outputs"
       />
       <Button icon="send" type="submit">
-        Generate draft
+        Use in app
       </Button>
     </form>
   );
