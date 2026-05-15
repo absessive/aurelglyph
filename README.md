@@ -17,6 +17,8 @@ npm install
 npm run build
 npm test
 npm run typecheck
+npm run version:check
+npm run version:sync -- "Describe the changelog item"
 npm run verify
 ```
 
@@ -38,3 +40,12 @@ Run the React example:
 ```bash
 npm run dev -w @aurelglyph/example-react-vite
 ```
+
+## Versioning
+
+Aurelglyph uses one shared version across every platform package. The root
+`package.json` version is canonical. Run `npm run version:sync -- "Change
+summary"` after changing the root version to update all package versions,
+workspace package dependency pins, `package-lock.json`, and `CHANGELOG.md`.
+
+Run `npm run version:check` before publishing or consuming packages from apps.

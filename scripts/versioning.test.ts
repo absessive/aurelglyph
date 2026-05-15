@@ -1,0 +1,83 @@
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+
+import {
+  checkWorkspaceVersions,
+  syncWorkspaceVersions,
+  workspacePackagePaths
+} from "./versioning";
+
+let tempRoots: string[] = [];
+
+async function createWorkspace(): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), "aurelglyph-versioning-"));
+  tempRoots.push(root);
+  await writeFile(
+    join(root, "package.json"),
+    JSON.stringify({ name: "aurelglyph", version: "1.2.3", private: true }, null, 2)
+  );
+  await writeFile(join(root, "CHANGELOG.md"), "# Changelog\n\n## 1.2.3\n\n- Existing entry\n");
+  await writeFile(join(root, "package-lock.json"), JSON.stringify({ lockfileVersion: 3, packages: {} }, null, 2));
+
+  for (const path of workspacePackagePaths) {
+    const directory = join(root, path);
+    await import("node:fs/promises").then(({ mkdir }) => mkdir(directory, { recursive: true }));
+    await writeFile(
+      join(directory, "package.json"),
+      JSON.stringify({ name: path.replace("/", "-"), version: "0.0.1", private: true }, null, 2)
+    );
+  }
+
+  return root;
+}
+
+afterEach(async () => {
+  await Promise.all(tempRoots.map((root) => rm(root, { recursive: true, force: true })));
+  tempRoots = [];
+});
+
+describe("workspace versioning", () => {
+  it("reports packages that do not match the root version", async () => {
+    const root = await createWorkspace();
+
+    const result = await checkWorkspaceVersions(root);
+
+    expect(result.version).toBe("1.2.3");
+    expect(result.ok).toBe(false);
+    expect(result.mismatches).toHaveLength(workspacePackagePaths.length);
+    expect(result.mismatches[0]).toMatchObject({ actual: "0.0.1", expected: "1.2.3" });
+  });
+
+  it("syncs every platform package to the root version", async () => {
+    const root = await createWorkspace();
+
+    await syncWorkspaceVersions(root);
+    const result = await checkWorkspaceVersions(root);
+
+    expect(result.ok).toBe(true);
+    expect(result.mismatches).toEqual([]);
+  });
+
+  it("requires a changelog section for the shared version", async () => {
+    const root = await createWorkspace();
+    await writeFile(join(root, "CHANGELOG.md"), "# Changelog\n");
+
+    const result = await checkWorkspaceVersions(root);
+
+    expect(result.ok).toBe(false);
+    expect(result.hasChangelogEntry).toBe(false);
+  });
+
+  it("can prepend a changelog entry for the shared version", async () => {
+    const root = await createWorkspace();
+    await writeFile(join(root, "CHANGELOG.md"), "# Changelog\n");
+
+    await syncWorkspaceVersions(root, ["Add cross-platform versioning support."]);
+    const changelog = await readFile(join(root, "CHANGELOG.md"), "utf8");
+
+    expect(changelog).toContain("## 1.2.3");
+    expect(changelog).toContain("- Add cross-platform versioning support.");
+  });
+});
