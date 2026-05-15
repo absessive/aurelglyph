@@ -31,6 +31,33 @@ export type IconProps = Omit<HTMLAttributes<HTMLSpanElement>, "children"> & {
   label?: string;
 };
 
+const defaultLabels: Record<AurelglyphIconName, string> = {
+  upload: "Upload",
+  attachment: "Attachment",
+  microphone: "Microphone",
+  camera: "Camera",
+  video: "Video",
+  image: "Image",
+  play: "Play",
+  pause: "Pause",
+  record: "Record",
+  stop: "Stop",
+  send: "Send",
+  save: "Save",
+  search: "Search",
+  filter: "Filter",
+  settings: "Settings",
+  edit: "Edit",
+  delete: "Delete",
+  close: "Close",
+  back: "Back",
+  forward: "Forward",
+  check: "Check",
+  warning: "Warning",
+  info: "Info",
+  success: "Success"
+};
+
 export function Icon({
   className,
   label,
@@ -38,14 +65,14 @@ export function Icon({
   ...props
 }: IconProps): ReactElement {
   const classNames = ["ag-icon", className].filter(Boolean).join(" ");
+  const accessibleLabel = label ?? defaultLabels[name];
 
   return (
     <span
-      aria-hidden={label ? undefined : true}
-      aria-label={label}
+      aria-label={accessibleLabel}
       className={classNames}
       data-icon={name}
-      role={label ? "img" : undefined}
+      role="img"
       {...props}
     />
   );

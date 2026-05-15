@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ReactElement } from "react";
 
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 describe("Button", () => {
   it("exports a function component", () => {
@@ -27,5 +28,16 @@ describe("Button", () => {
     expect(props.type).toBe("submit");
     expect(props.className).toContain("ag-button");
     expect(props.className).toContain("ag-button--secondary");
+  });
+});
+
+describe("Icon", () => {
+  it("provides a default accessible label for named icons", () => {
+    const element = Icon({ name: "upload" }) as ReactElement<Record<string, unknown>>;
+
+    expect(element.type).toBe("span");
+    expect(element.props.role).toBe("img");
+    expect(element.props["aria-label"]).toBe("Upload");
+    expect(element.props["data-icon"]).toBe("upload");
   });
 });
