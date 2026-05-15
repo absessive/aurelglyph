@@ -22,10 +22,13 @@ architecture with platform-specific adapters and examples.
 
 ## Delivery Steps
 
+- Treat linting and unit tests as first-class development requirements.
 - Identify the relevant test command before code changes when a test framework
   exists.
+- Identify the relevant lint command before code changes when one exists.
 - Add or update tests for behavior changes.
 - Run the narrowest relevant checks after implementation.
+- Run lint checks after implementation when practical.
 - Ask a QA agent to review changes that affect user-visible behavior, shared
   logic, data handling, generated artifacts, package contracts, or regression-
   prone code.
@@ -44,7 +47,8 @@ architecture with platform-specific adapters and examples.
 
 ## Verification
 
-- Start with targeted unit tests for token generation or package behavior.
+- Start with targeted linting and unit tests for token generation or package
+  behavior.
 - Run package-level builds when changing public exports.
 - Run visual or accessibility checks when changing components or styles.
 - If checks cannot be run, explain why in the final response.
