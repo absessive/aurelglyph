@@ -12,7 +12,7 @@ export function App() {
     <main className="example-shell">
       <section className="example-hero" aria-labelledby="hero-title">
         <div className="example-hero__copy">
-          <p className="example-eyebrow">Aurelglyph React</p>
+          <p className="example-eyebrow">Aurelglyph React · v0.1.0</p>
           <h1 id="hero-title">Compose multimodal prompts with token-first controls.</h1>
           <p className="example-hero__summary">
             This Vite example pairs Aurelglyph form fields, upload affordances, buttons,
