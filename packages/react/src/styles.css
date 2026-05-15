@@ -1,20 +1,30 @@
 @import "@aurelglyph/tokens/generated.css";
 
 .ag-icon {
-  display: inline-block;
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
   width: 1em;
   height: 1em;
   color: currentColor;
 }
 
-.ag-icon::before {
-  display: block;
+.ag-icon svg {
   width: 1em;
   height: 1em;
-  content: "";
-  background-color: currentColor;
-  mask: radial-gradient(circle at center, currentColor 55%, transparent 56%);
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.ag-icon[data-icon="play"] svg,
+.ag-icon[data-icon="record"] svg,
+.ag-icon[data-icon="stop"] svg,
+.ag-icon[data-icon="filter"] svg {
+  fill: currentColor;
 }
 
 .ag-button {
@@ -51,7 +61,6 @@
 .ag-button:focus-visible,
 .ag-input:focus-visible,
 .ag-textarea:focus-visible,
-.ag-upload__input:focus-visible + .ag-upload__target,
 .ag-upload:focus-within .ag-upload__target {
   outline: 2px solid var(--ag-color-semantic-focus);
   outline-offset: 2px;

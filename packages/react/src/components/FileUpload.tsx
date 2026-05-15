@@ -29,7 +29,7 @@ export function FileUpload({
   return (
     <div className="ag-field ag-upload" data-invalid={error ? true : undefined}>
       <label className="ag-upload__target" htmlFor={inputId}>
-        <Icon className="ag-upload__icon" name="upload" />
+        <Icon className="ag-upload__icon" decorative name="upload" />
         <span className="ag-field__label">{label}</span>
       </label>
       <input

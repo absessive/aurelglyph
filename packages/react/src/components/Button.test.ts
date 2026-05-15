@@ -47,4 +47,23 @@ describe("Icon", () => {
     expect(element.props["aria-label"]).toBe("Attach file");
     expect(element.props.title).toBe("Attach file");
   });
+
+  it("can render decorative icons", () => {
+    const element = Icon({ decorative: true, name: "upload" }) as ReactElement<Record<string, unknown>>;
+
+    expect(element.props["aria-hidden"]).toBe(true);
+    expect(element.props["aria-label"]).toBeUndefined();
+    expect(element.props.role).toBeUndefined();
+  });
+
+  it("renders distinct SVG paths for each icon name", () => {
+    const upload = Icon({ name: "upload" }) as ReactElement<Record<string, unknown>>;
+    const deletion = Icon({ name: "delete" }) as ReactElement<Record<string, unknown>>;
+    const uploadSvg = upload.props.children as ReactElement<Record<string, unknown>>;
+    const deleteSvg = deletion.props.children as ReactElement<Record<string, unknown>>;
+    const uploadPath = uploadSvg.props.children as ReactElement<Record<string, unknown>>;
+    const deletePath = deleteSvg.props.children as ReactElement<Record<string, unknown>>;
+
+    expect(uploadPath.props.d).not.toBe(deletePath.props.d);
+  });
 });
