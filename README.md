@@ -42,6 +42,10 @@ import "@aurelglyph/css";
 import "@aurelglyph/react/styles.css";
 ```
 
+`@aurelglyph/css` loads the Aurelglyph web fonts through package dependencies:
+Cormorant Garamond, IBM Plex Sans, and IBM Plex Mono. No Google Fonts runtime
+request is required.
+
 Use the components in app code:
 
 ```tsx

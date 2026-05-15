@@ -25,9 +25,15 @@ describe("platform adapter skeletons", () => {
         build: "npm run build -w @aurelglyph/tokens"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.0"
+        "@aurelglyph/tokens": "0.1.0",
+        "@fontsource/cormorant-garamond": "^5.2.11",
+        "@fontsource/ibm-plex-mono": "^5.2.7",
+        "@fontsource/ibm-plex-sans": "^5.2.8"
       }
     });
+    expect(css).toContain('@import "@fontsource/cormorant-garamond/latin-400.css";');
+    expect(css).toContain('@import "@fontsource/ibm-plex-mono/latin-400.css";');
+    expect(css).toContain('@import "@fontsource/ibm-plex-sans/latin-400.css";');
     expect(css).toContain('@import "@aurelglyph/tokens/generated.css";');
     expect(css).toContain("box-sizing: border-box;");
     expect(css).toContain("background: var(--ag-color-semantic-background);");
