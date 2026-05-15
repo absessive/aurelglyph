@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>Aurelglyph Static Preview</title>
+    <style>
+      :root {
+        --bg: #f7f8f8;
+        --fg: #11181d;
+        --surface: #ffffff;
+        --muted-surface: #e7eaec;
+        --border: #d7dde1;
+        --muted: #4f5d66;
+        --accent: #b88a18;
+        --info: #286fb8;
+        --danger: #b52d3b;
+        --radius: 12px;
+        --space: 16px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--fg);
+        background: var(--bg);
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }
+
+      .hero,
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 32px;
+        align-items: end;
+        padding: 48px;
+        background:
+          linear-gradient(135deg, rgba(184, 138, 24, 0.16), rgba(40, 111, 184, 0.1)),
+          var(--surface);
+        box-shadow: 0 20px 48px rgba(17, 24, 29, 0.08);
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 14ch;
+        font-size: clamp(40px, 7vw, 72px);
+        line-height: 0.95;
+      }
+
+      .summary {
+        max-width: 640px;
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .actions,
+      .footer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .button {
+        min-height: 42px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 0 18px;
+        font: inherit;
+        font-weight: 700;
+        cursor: default;
+      }
+
+      .primary {
+        color: #11181d;
+        background: var(--accent);
+      }
+
+      .secondary {
+        color: var(--fg);
+        background: var(--surface);
+        border-color: #aeb7bd;
+      }
+
+      .ghost {
+        color: var(--fg);
+        background: transparent;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 24px;
+        margin-top: 24px;
+      }
+
+      .panel {
+        display: grid;
+        gap: 20px;
+        padding: 28px;
+      }
+
+      .panel.media {
+        background: var(--muted-surface);
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-weight: 700;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid #aeb7bd;
+        border-radius: 8px;
+        padding: 12px;
+        color: var(--fg);
+        background: var(--surface);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 120px;
+      }
+
+      .help {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+
+      .drop {
+        border: 1px dashed #aeb7bd;
+        border-radius: 8px;
+        padding: 28px;
+        background: var(--surface);
+        text-align: center;
+      }
+
+      .media-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .media-item {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--surface);
+      }
+
+      .icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        color: var(--info);
+        background: rgba(40, 111, 184, 0.12);
+        font-weight: 900;
+      }
+
+      small {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      @media (max-width: 840px) {
+        .hero,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding: 28px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        main {
+          padding: 20px 0;
+        }
+
+        .media-list {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Aurelglyph Static Preview</p>
+          <h1>Compose multimodal prompts with token-first controls.</h1>
+          <p class="summary">
+            This no-JavaScript preview shows the first-pass Aurelglyph visual language:
+            forms, rich file input, media affordances, and cross-platform control styling.
+          </p>
+        </div>
+        <div class="actions">
+          <button class="button primary">Upload source</button>
+          <button class="button secondary">Record audio</button>
+          <button class="button ghost">Capture image</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <div>
+            <p class="eyebrow">Core Fields</p>
+            <h2>Prompt details</h2>
+          </div>
+          <label>
+            Project title
+            <input placeholder="Launch storyboard" />
+            <span class="help">Give collaborators a scannable working title.</span>
+          </label>
+          <label>
+            Owner
+            <input placeholder="Design systems" />
+            <span class="help">Useful when prompts are routed across a team.</span>
+          </label>
+          <label>
+            Prompt
+            <textarea placeholder="Create a concise shot list for a product walkthrough..."></textarea>
+            <span class="help">Describe the intended result, constraints, and source context.</span>
+          </label>
+        </div>
+
+        <aside class="panel media">
+          <div>
+            <p class="eyebrow">Rich Input</p>
+            <h2>Reference assets</h2>
+          </div>
+          <div class="drop">
+            <strong>Drop files for the prompt</strong>
+            <small>Supports images, short videos, audio notes, and PDF briefs.</small>
+          </div>
+          <div class="media-list">
+            <div class="media-item"><span class="icon">M</span><span><strong>Microphone</strong><small>Capture clean narration.</small></span></div>
+            <div class="media-item"><span class="icon">C</span><span><strong>Camera</strong><small>Take a reference still.</small></span></div>
+            <div class="media-item"><span class="icon">V</span><span><strong>Video</strong><small>Record a short clip.</small></span></div>
+            <div class="media-item"><span class="icon">I</span><span><strong>Image</strong><small>Attach visual context.</small></span></div>
+          </div>
+          <div class="footer">
+            <button class="button primary">Generate draft</button>
+            <button class="button secondary">Save brief</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>
