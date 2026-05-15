@@ -601,6 +601,10 @@ Obsessive details."
 ## Design-System Rules
 
 - The token source is canonical; platform outputs should be generated from it.
+- UX changes must be applied across every affected platform surface in the same
+  change set: CSS, React, React Native, SwiftUI, Rails, generated token outputs,
+  examples, and static previews. Do not leave one platform visually or
+  semantically behind when a shared pattern changes.
 - Platform packages should feel native while preserving shared naming,
   semantics, variants, states, and accessibility expectations.
 - Core controls should use stable icon names and vector/system icons, not emoji.

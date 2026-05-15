@@ -122,6 +122,8 @@ export function App() {
             </div>
           </aside>
         </section>
+
+        <p className="example-copyright">Copyright 2026 absessive.</p>
       </section>
     </main>
   );
