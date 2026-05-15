@@ -1,0 +1,170 @@
+@import "@aurelglyph/tokens/generated.css";
+
+.ag-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1em;
+  height: 1em;
+  color: currentColor;
+}
+
+.ag-icon::before {
+  display: block;
+  width: 1em;
+  height: 1em;
+  content: "";
+  background-color: currentColor;
+  mask: radial-gradient(circle at center, currentColor 55%, transparent 56%);
+}
+
+.ag-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  gap: var(--ag-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--ag-radius-md);
+  padding: var(--ag-space-2) var(--ag-space-4);
+  font-family: var(--ag-font-family-body);
+  font-size: var(--ag-font-size-md);
+  font-weight: var(--ag-font-weight-semibold);
+  line-height: var(--ag-font-lineHeight-tight);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--ag-motion-duration-fast) var(--ag-motion-easing-standard),
+    border-color var(--ag-motion-duration-fast) var(--ag-motion-easing-standard),
+    color var(--ag-motion-duration-fast) var(--ag-motion-easing-standard),
+    box-shadow var(--ag-motion-duration-fast) var(--ag-motion-easing-standard);
+}
+
+.ag-button:disabled,
+.ag-button[aria-disabled="true"] {
+  color: var(--ag-color-semantic-muted);
+  background: var(--ag-color-semantic-surface-muted);
+  border-color: var(--ag-color-semantic-border);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.ag-button:focus-visible,
+.ag-input:focus-visible,
+.ag-textarea:focus-visible,
+.ag-upload__input:focus-visible + .ag-upload__target,
+.ag-upload:focus-within .ag-upload__target {
+  outline: 2px solid var(--ag-color-semantic-focus);
+  outline-offset: 2px;
+}
+
+.ag-button--primary {
+  color: var(--ag-color-semantic-accent-foreground);
+  background: var(--ag-color-semantic-accent);
+  border-color: var(--ag-color-semantic-accent);
+}
+
+.ag-button--secondary {
+  color: var(--ag-color-semantic-foreground);
+  background: var(--ag-color-semantic-surface);
+  border-color: var(--ag-color-semantic-border-strong);
+}
+
+.ag-button--danger {
+  color: var(--ag-color-semantic-surface);
+  background: var(--ag-color-semantic-danger);
+  border-color: var(--ag-color-semantic-danger);
+}
+
+.ag-button--ghost {
+  color: var(--ag-color-semantic-foreground);
+  background: transparent;
+  border-color: transparent;
+}
+
+.ag-button__content {
+  overflow-wrap: anywhere;
+}
+
+.ag-field {
+  display: grid;
+  gap: var(--ag-space-2);
+  color: var(--ag-color-semantic-foreground);
+  font-family: var(--ag-font-family-body);
+}
+
+.ag-field__label {
+  font-size: var(--ag-font-size-sm);
+  font-weight: var(--ag-font-weight-medium);
+  line-height: var(--ag-font-lineHeight-normal);
+}
+
+.ag-field__help,
+.ag-field__error {
+  margin: 0;
+  font-size: var(--ag-font-size-sm);
+  line-height: var(--ag-font-lineHeight-normal);
+}
+
+.ag-field__help {
+  color: var(--ag-color-semantic-muted);
+}
+
+.ag-field__error {
+  color: var(--ag-color-semantic-danger);
+}
+
+.ag-input,
+.ag-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ag-color-semantic-border-strong);
+  border-radius: var(--ag-radius-md);
+  padding: var(--ag-space-2) var(--ag-space-3);
+  color: var(--ag-color-semantic-foreground);
+  background: var(--ag-color-semantic-surface);
+  font: inherit;
+  line-height: var(--ag-font-lineHeight-normal);
+}
+
+.ag-textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.ag-field[data-invalid="true"] .ag-input,
+.ag-field[data-invalid="true"] .ag-textarea,
+.ag-field[data-invalid="true"] .ag-upload__target {
+  border-color: var(--ag-color-semantic-danger);
+}
+
+.ag-upload {
+  gap: var(--ag-space-2);
+}
+
+.ag-upload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.ag-upload__target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 7rem;
+  gap: var(--ag-space-3);
+  border: 1px dashed var(--ag-color-semantic-border-strong);
+  border-radius: var(--ag-radius-md);
+  padding: var(--ag-space-4);
+  color: var(--ag-color-semantic-foreground);
+  background: var(--ag-color-semantic-surface);
+  cursor: pointer;
+}
+
+.ag-upload__icon {
+  font-size: var(--ag-font-size-xl);
+}
