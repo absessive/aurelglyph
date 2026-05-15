@@ -1,0 +1,12 @@
+{
+  "name": "@aurelglyph/css",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.css"
+  },
+  "scripts": {
+    "build": "npm run build -w @aurelglyph/tokens"
+  }
+}

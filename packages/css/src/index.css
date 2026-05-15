@@ -1,0 +1,18 @@
+@import "../../tokens/dist/generated/aurelglyph.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ag-color-semantic-background);
+  color: var(--ag-color-semantic-foreground);
+  font-family: var(--ag-font-family-body);
+}
+
+.ag-focus-ring:focus-visible {
+  outline: 2px solid var(--ag-color-semantic-focus);
+  outline-offset: 2px;
+}

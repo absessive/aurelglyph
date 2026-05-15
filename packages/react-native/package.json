@@ -1,0 +1,14 @@
+{
+  "name": "@aurelglyph/react-native",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "npm run build -w @aurelglyph/tokens"
+  },
+  "dependencies": {
+    "@aurelglyph/tokens": "0.1.0"
+  }
+}
