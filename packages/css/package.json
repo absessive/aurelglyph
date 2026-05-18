@@ -1,18 +1,28 @@
 {
   "name": "@aurelglyph/css",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
   "type": "module",
+  "style": "dist/index.css",
+  "sideEffects": [
+    "*.css",
+    "dist/*.css",
+    "src/*.css"
+  ],
+  "files": [
+    "dist",
+    "src/index.css",
+    "README.md",
+    "LICENSE.md"
+  ],
   "exports": {
-    ".": "./src/index.css"
+    ".": "./dist/index.css"
   },
   "scripts": {
-    "build": "npm run build -w @aurelglyph/tokens"
+    "build": "npm run build -w @aurelglyph/tokens && node scripts/build.mjs",
+    "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.1.0",
-    "@fontsource/cormorant-garamond": "^5.2.11",
-    "@fontsource/ibm-plex-mono": "^5.2.7",
-    "@fontsource/ibm-plex-sans": "^5.2.8"
+    "@aurelglyph/tokens": "0.1.0"
   }
 }

@@ -85,6 +85,8 @@
   --ag-color-semantic-border-strong: #34312b;
   --ag-color-semantic-accent: #9358e8;
   --ag-color-semantic-accent-foreground: #e7dfd1;
+  --ag-color-semantic-accent-control: #562a93;
+  --ag-color-semantic-accent-control-strong: #2d174f;
   --ag-color-semantic-accent-muted: rgba(147, 88, 232, 0.14);
   --ag-color-semantic-focus: #9358e8;
   --ag-color-semantic-danger: #9f4e3d;
@@ -122,10 +124,10 @@
   --ag-radius-xl: 24px;
   --ag-radius-panel: 28px;
   --ag-radius-pill: 999px;
-  --ag-font-family-display: "Cormorant Garamond", Georgia, serif;
-  --ag-font-family-ui: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --ag-font-family-body: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --ag-font-family-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --ag-font-family-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
+  --ag-font-family-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ag-font-family-body: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ag-font-family-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
   --ag-font-size-xs: 0.72rem;
   --ag-font-size-sm: 0.875rem;
   --ag-font-size-base: 1rem;
@@ -270,7 +272,9 @@
 
 :root {
   --ag-color-semantic-accent: var(--ag-accent-300);
-  --ag-color-semantic-accent-foreground: var(--ag-color-semantic-foreground);
+  --ag-color-semantic-accent-foreground: var(--ag-color-mode-dark-text);
+  --ag-color-semantic-accent-control: var(--ag-accent-500);
+  --ag-color-semantic-accent-control-strong: var(--ag-accent-600);
   --ag-color-semantic-accent-muted: rgba(var(--ag-accent-rgb), 0.14);
   --ag-color-semantic-focus: var(--ag-accent-300);
 }

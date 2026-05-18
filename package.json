@@ -7,6 +7,7 @@
   "workspaces": ["packages/*", "examples/*"],
   "scripts": {
     "build": "npm run build -ws --if-present",
+    "build:pages": "node --experimental-strip-types scripts/pages.ts",
     "build:tokens": "npm run build -w @aurelglyph/tokens",
     "test": "vitest run",
     "test:watch": "vitest",

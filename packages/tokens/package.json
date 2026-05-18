@@ -2,9 +2,14 @@
   "name": "@aurelglyph/tokens",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src/tokens.json",
+    "README.md"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -22,6 +27,7 @@
   },
   "scripts": {
     "build": "tsx src/build.ts && tsc -p tsconfig.json",
+    "prepare": "npm run build",
     "test": "vitest run --root ../.. packages/tokens/src/build.test.ts"
   },
   "devDependencies": {

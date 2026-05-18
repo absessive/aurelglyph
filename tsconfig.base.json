@@ -23,6 +23,7 @@
     }
   },
   "include": [
+    "scripts/**/*.ts",
     "packages/**/*.ts",
     "packages/**/*.tsx",
     "examples/**/*.ts",

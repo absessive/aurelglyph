@@ -1,9 +1,10 @@
 {
   "name": "@aurelglyph/swift",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
   "scripts": {
-    "build": "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
+    "build": "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@aurelglyph/tokens": "0.1.0"

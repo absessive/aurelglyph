@@ -164,7 +164,9 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
 
 :root {
   --ag-color-semantic-accent: var(--ag-accent-300);
-  --ag-color-semantic-accent-foreground: var(--ag-color-semantic-foreground);
+  --ag-color-semantic-accent-foreground: var(--ag-color-mode-dark-text);
+  --ag-color-semantic-accent-control: var(--ag-accent-500);
+  --ag-color-semantic-accent-control-strong: var(--ag-accent-600);
   --ag-color-semantic-accent-muted: rgba(var(--ag-accent-rgb), 0.14);
   --ag-color-semantic-focus: var(--ag-accent-300);
 }

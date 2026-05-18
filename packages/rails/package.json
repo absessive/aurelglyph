@@ -1,9 +1,17 @@
 {
   "name": "aurelglyph-rails",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
+  "files": [
+    "app",
+    "lib",
+    "*.gemspec",
+    "README.md"
+  ],
   "scripts": {
-    "build": "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
+    "build": "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs",
+    "test": "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@aurelglyph/tokens": "0.1.0"

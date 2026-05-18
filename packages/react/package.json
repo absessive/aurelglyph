@@ -1,19 +1,31 @@
 {
   "name": "@aurelglyph/react",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "style": "dist/styles.css",
+  "sideEffects": [
+    "*.css",
+    "dist/*.css",
+    "src/*.css"
+  ],
+  "files": [
+    "dist",
+    "src/styles.css",
+    "README.md"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./dist/styles.css"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/build.mjs",
+    "prepare": "npm run build",
     "test": "vitest run src/**/*.test.ts"
   },
   "peerDependencies": {

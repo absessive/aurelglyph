@@ -46,16 +46,20 @@ describe("token compiler helpers", () => {
     const ruby = await readFile(join(generatedDir, "aurelglyph_tokens.rb"), "utf8");
 
     expect(reactNative).toContain('"color.accent.royal-purple.300": "#9358e8"');
+    expect(reactNative).toContain('"color.semantic.accent-control": "#562a93"');
+    expect(reactNative).toContain('"color.semantic.accent-control-strong": "#2d174f"');
     expect(reactNative).toContain(
-      '"font.family.body": "\\"IBM Plex Sans\\", system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      '"font.family.body": "\\"IBM Plex Sans\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
     expect(swift).toContain('public static let colorAccentRoyalPurple300 = "#9358e8"');
+    expect(swift).toContain('public static let colorSemanticAccentControl = "#562a93"');
     expect(swift).toContain(
-      'public static let fontFamilyBody = "\\"IBM Plex Sans\\", system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      'public static let fontFamilyBody = "\\"IBM Plex Sans\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
     expect(ruby).toContain('"color.accent.royal-purple.300" => "#9358e8"');
+    expect(ruby).toContain('"color.semantic.accent-control" => "#562a93"');
     expect(ruby).toContain(
-      '"font.family.body" => "\\"IBM Plex Sans\\", system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      '"font.family.body" => "\\"IBM Plex Sans\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
     expect(reactNativeJs).toContain("export const aurelglyphTheme = {");
     expect(reactNativeJs).not.toContain("as const");

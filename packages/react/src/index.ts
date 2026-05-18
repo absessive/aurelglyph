@@ -1,5 +1,7 @@
 export { Button } from "./components/Button.js";
 export type { ButtonProps, ButtonVariant } from "./components/Button.js";
+export { ExpandableSection } from "./components/ExpandableSection.js";
+export type { ExpandableSectionProps } from "./components/ExpandableSection.js";
 export { FileUpload } from "./components/FileUpload.js";
 export type { FileUploadProps } from "./components/FileUpload.js";
 export { Icon } from "./components/Icon.js";

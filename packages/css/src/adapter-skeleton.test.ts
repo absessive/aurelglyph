@@ -16,30 +16,40 @@ describe("platform adapter skeletons", () => {
     expect(packageJson).toEqual({
       name: "@aurelglyph/css",
       version: "0.1.0",
-      private: true,
+      license: "MIT",
       type: "module",
+      style: "dist/index.css",
+      sideEffects: ["*.css", "dist/*.css", "src/*.css"],
+      files: ["dist", "src/index.css", "README.md", "LICENSE.md"],
       exports: {
-        ".": "./src/index.css"
+        ".": "./dist/index.css"
       },
       scripts: {
-        build: "npm run build -w @aurelglyph/tokens"
+        build: "npm run build -w @aurelglyph/tokens && node scripts/build.mjs",
+        prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.0",
-        "@fontsource/cormorant-garamond": "^5.2.11",
-        "@fontsource/ibm-plex-mono": "^5.2.7",
-        "@fontsource/ibm-plex-sans": "^5.2.8"
+        "@aurelglyph/tokens": "0.1.0"
       }
     });
-    expect(css).toContain('@import "@fontsource/cormorant-garamond/latin-400.css";');
-    expect(css).toContain('@import "@fontsource/ibm-plex-mono/latin-400.css";');
-    expect(css).toContain('@import "@fontsource/ibm-plex-sans/latin-400.css";');
+    expect(css).toContain('font-family: "Newsreader";');
+    expect(css).toContain('url("./fonts/ofl/ibm-plex-sans-400.woff2")');
+    expect(css).toContain('url("./fonts/ofl/jetbrains-mono-400.woff2")');
     expect(css).toContain('@import "@aurelglyph/tokens/generated.css";');
     expect(css).toContain("box-sizing: border-box;");
     expect(css).toContain("background: var(--ag-color-semantic-background);");
     expect(css).toContain("color: var(--ag-color-semantic-foreground);");
     expect(css).toContain("font-family: var(--ag-font-family-body);");
     expect(css).toContain(".ag-focus-ring:focus-visible");
+  });
+
+  it("publishes built CSS that matches the source stylesheet", async () => {
+    const source = await read("packages/css/src/index.css");
+    const built = await read("packages/css/dist/index.css");
+    const font = await read("packages/css/dist/fonts/ofl/jetbrains-mono-400.woff2");
+
+    expect(built).toBe(source);
+    expect(font.length).toBeGreaterThan(0);
   });
 
   it("defines the React Native package contract and generated theme export", async () => {
@@ -49,12 +59,14 @@ describe("platform adapter skeletons", () => {
     expect(packageJson).toEqual({
       name: "@aurelglyph/react-native",
       version: "0.1.0",
-      private: true,
+      license: "MIT",
       type: "module",
       main: "src/index.ts",
       types: "src/index.ts",
+      files: ["src", "README.md"],
       scripts: {
-        build: "npm run build -w @aurelglyph/tokens"
+        build: "npm run build -w @aurelglyph/tokens",
+        prepare: "npm run build"
       },
       dependencies: {
         "@aurelglyph/tokens": "0.1.0"
@@ -72,7 +84,6 @@ describe("platform adapter skeletons", () => {
     expect(packageJson).toMatchObject({
       name: "@aurelglyph/swift",
       version: "0.1.0",
-      private: true,
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
       },
@@ -98,9 +109,12 @@ describe("platform adapter skeletons", () => {
     expect(packageJson).toEqual({
       name: "aurelglyph-rails",
       version: "0.1.0",
-      private: true,
+      license: "MIT",
+      files: ["app", "lib", "*.gemspec", "README.md"],
       scripts: {
-        build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
+        build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs",
+        prepare: "npm run build",
+        test: "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb"
       },
       dependencies: {
         "@aurelglyph/tokens": "0.1.0"

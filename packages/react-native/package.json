@@ -1,12 +1,17 @@
 {
   "name": "@aurelglyph/react-native",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "files": [
+    "src",
+    "README.md"
+  ],
   "scripts": {
-    "build": "npm run build -w @aurelglyph/tokens"
+    "build": "npm run build -w @aurelglyph/tokens",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@aurelglyph/tokens": "0.1.0"

@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-theme="royal-purple">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aurelglyph Components</title>
+  <meta name="color-scheme" content="dark light">
+  <style>
+    @font-face {
+      font-family: "Newsreader";
+      src: url("./assets/fonts/ofl/newsreader-400.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Newsreader";
+      src: url("./assets/fonts/ofl/newsreader-500.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Newsreader";
+      src: url("./assets/fonts/ofl/newsreader-700.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "IBM Plex Serif";
+      src: url("./assets/fonts/ofl/ibm-plex-serif-400.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "IBM Plex Serif";
+      src: url("./assets/fonts/ofl/ibm-plex-serif-500.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "IBM Plex Serif";
+      src: url("./assets/fonts/ofl/ibm-plex-serif-700.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "IBM Plex Sans";
+      src: url("./assets/fonts/ofl/ibm-plex-sans-400.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "IBM Plex Sans";
+      src: url("./assets/fonts/ofl/ibm-plex-sans-500.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "IBM Plex Sans";
+      src: url("./assets/fonts/ofl/ibm-plex-sans-700.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("./assets/fonts/ofl/jetbrains-mono-400.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("./assets/fonts/ofl/jetbrains-mono-500.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("./assets/fonts/ofl/jetbrains-mono-700.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      color-scheme: dark light;
+      --font-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
+      --font-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      --radius-sm: 8px;
+      --radius-lg: 18px;
+      --radius-panel: 28px;
+      --shadow-panel: 0 18px 60px var(--color-shadow);
+      --shadow-inset: inset 0 1px 0 var(--color-highlight);
+    }
+
+    :root[data-mode="dark"] {
+      --color-bg: #0d0d0b;
+      --color-bg-elevated: #12120f;
+      --color-surface: #171714;
+      --color-surface-2: #1f1e1a;
+      --color-border: #34312b;
+      --color-border-soft: rgba(231, 223, 209, 0.10);
+      --color-text: #e7dfd1;
+      --color-text-muted: #a59b8b;
+      --color-text-subtle: #6e685e;
+      --color-shadow: rgba(0, 0, 0, 0.55);
+      --color-highlight: rgba(255, 255, 255, 0.06);
+    }
+
+    :root[data-theme="royal-purple"] {
+      --accent-100: #d8c0ff;
+      --accent-200: #b88cff;
+      --accent-300: #9358e8;
+      --accent-500: #562a93;
+      --accent-rgb: 147, 88, 232;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(231, 223, 209, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231, 223, 209, 0.025) 1px, transparent 1px),
+        var(--color-bg);
+      background-size: 44px 44px;
+      color: var(--color-text);
+      font-family: var(--font-ui);
+    }
+
+    a {
+      color: var(--accent-100);
+      text-decoration-color: rgba(var(--accent-rgb), 0.45);
+      text-underline-offset: 0.22em;
+    }
+
+    a:focus-visible {
+      outline: 1px solid rgba(var(--accent-rgb), 0.85);
+      outline-offset: 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    .page {
+      width: min(1040px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .rail {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 0 28px;
+      color: var(--color-text-muted);
+      font-size: 0.8rem;
+    }
+
+    .brand {
+      color: var(--color-text);
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 0.45rem;
+      height: 0.45rem;
+      margin-left: 0.12rem;
+      border-radius: 999px;
+      background: var(--accent-300);
+      box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.42);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    nav a[aria-current="page"] {
+      color: var(--color-text);
+      text-decoration-color: var(--accent-300);
+    }
+
+    .hero,
+    .panel {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-panel);
+      box-shadow: var(--shadow-panel), var(--shadow-inset);
+    }
+
+    .hero {
+      padding: clamp(32px, 7vw, 76px);
+    }
+
+    .panel {
+      margin-top: 22px;
+      padding: clamp(24px, 5vw, 48px);
+    }
+
+    .hero::before,
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 1px solid rgba(231, 223, 209, 0.06);
+      border-radius: calc(var(--radius-panel) - 10px);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      color: var(--accent-200);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      color: var(--color-text);
+      font-family: var(--font-display);
+      font-weight: 500;
+      line-height: 0.98;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin-top: 18px;
+      font-size: clamp(3rem, 8vw, 6rem);
+    }
+
+    h2 {
+      margin-top: 28px;
+      padding-top: 26px;
+      border-top: 1px solid var(--color-border-soft);
+      font-size: clamp(2rem, 5vw, 3.25rem);
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 1.45rem;
+    }
+
+    p,
+    li {
+      max-width: 760px;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .lead {
+      margin: 24px 0 0;
+      font-size: 1.12rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid rgba(var(--accent-rgb), 0.42);
+      border-radius: var(--radius-sm);
+      background: rgba(var(--accent-rgb), 0.16);
+      box-shadow: var(--shadow-inset);
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .metric {
+      padding: 16px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      color: var(--color-text);
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .catalog-card {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .catalog-card h3 {
+      margin-top: 0;
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .catalog-card ul {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .catalog-card li {
+      max-width: none;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .markdown h1:first-child {
+      margin-top: 0;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+    }
+
+    .markdown ul {
+      margin: 18px 0 0;
+      padding-left: 1.15rem;
+    }
+
+    code {
+      padding: 0.1rem 0.28rem;
+      border: 1px solid var(--color-border-soft);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.18);
+      color: var(--accent-100);
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .preview-stack {
+      display: grid;
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .preview-card {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .preview-card h3 {
+      margin: 0 0 14px;
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .preview-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ag-demo-button,
+    .ag-demo-tab {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
+      color: var(--color-text);
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .ag-demo-button.primary {
+      border-color: var(--accent-200);
+      background: linear-gradient(180deg, var(--accent-300), var(--accent-500));
+    }
+
+    .ag-demo-input,
+    .ag-demo-textarea {
+      width: min(100%, 360px);
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: var(--color-text);
+      background: var(--color-bg-elevated);
+      font: inherit;
+    }
+
+    .ag-demo-textarea {
+      min-height: 80px;
+    }
+
+    .ag-demo-upload,
+    .ag-demo-alert,
+    .ag-demo-content-card {
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      background: rgba(var(--accent-rgb), 0.1);
+      color: var(--color-text-muted);
+    }
+
+    .ag-demo-disclosure {
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-disclosure summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .ag-demo-disclosure summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .ag-demo-disclosure summary::after {
+      color: var(--accent-200);
+      content: "+";
+      transition: transform var(--duration-base) var(--ease-standard);
+    }
+
+    .ag-demo-disclosure[open] summary::after {
+      content: "-";
+      transform: rotate(180deg);
+    }
+
+    .ag-demo-disclosure p {
+      margin: 0;
+      border-top: 1px solid var(--color-border-soft);
+      padding: 0 1rem 1rem;
+      color: var(--color-text-muted);
+      animation: ag-demo-disclosure-reveal var(--duration-base) var(--ease-standard);
+    }
+
+    @keyframes ag-demo-disclosure-reveal {
+      from { opacity: 0; transform: translateY(-0.25rem); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ag-demo-badge {
+      border: 1px solid rgba(var(--accent-rgb), 0.34);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.16);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .ag-demo-progress {
+      overflow: hidden;
+      width: min(100%, 360px);
+      height: 10px;
+      border-radius: 999px;
+      background: var(--color-border-soft);
+    }
+
+    .ag-demo-progress span {
+      display: block;
+      width: 64%;
+      height: 100%;
+      background: var(--accent-300);
+    }
+
+    .ag-demo-skeleton {
+      display: grid;
+      gap: 8px;
+      width: min(100%, 360px);
+    }
+
+    .ag-demo-skeleton span {
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--color-surface-2), var(--color-border-soft), var(--color-surface-2));
+    }
+
+    .ag-demo-icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+      gap: 10px;
+    }
+
+    .ag-demo-icon {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      color: var(--color-text-muted);
+      background: rgba(var(--accent-rgb), 0.08);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      overflow-wrap: anywhere;
+    }
+
+    .ag-demo-icon-symbol {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      border-radius: var(--radius-sm);
+      background: rgba(var(--accent-rgb), 0.1);
+    }
+
+    .ag-demo-icon-symbol svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: var(--accent-100);
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+      stroke-width: 1.75;
+    }
+
+    @media (max-width: 640px) {
+      .rail {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="rail">
+      <a class="brand" href="index.html">Aurelglyph<span class="dot"></span></a>
+      <nav aria-label="Pages">
+        <a href="index.html">Overview</a>
+        <a href="usage.html">Usage</a>
+        <a href="components.html" aria-current="page">Components</a>
+        <a href="changelog.html">Changelog</a>
+      </nav>
+    </header>
+    <article class="panel markdown">
+      <h1>Components</h1>
+      <p>This page shows the starter visual contract for Aurelglyph components across CSS/Web, React, React Native, SwiftUI, and Rails. React has the first live implementation, but naming, variants, states, and accessibility expectations should carry across every platform package.</p>
+      <h2>Platform targets</h2>
+      <div class="catalog">
+        <section class="catalog-card">
+          <h3>Supported surfaces</h3>
+          <ul>
+            <li>CSS/Web</li>
+            <li>React</li>
+            <li>React Native</li>
+            <li>SwiftUI</li>
+            <li>Rails</li>
+          </ul>
+        </section>
+      </div>
+      <h2>Preview</h2>
+      <div class="preview-stack">
+        <section class="preview-card">
+          <h3>Buttons</h3>
+          <div class="preview-row">
+            <button class="ag-demo-button primary">Primary action</button>
+            <button class="ag-demo-button">Secondary</button>
+            <button class="ag-demo-button">Ghost</button>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Forms</h3>
+          <div class="preview-row">
+            <input class="ag-demo-input" placeholder="Project name" />
+            <textarea class="ag-demo-textarea" placeholder="Notes"></textarea>
+            <div class="ag-demo-upload">Generated outputs · .json .css .swift .rb</div>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Navigation</h3>
+          <div class="preview-row">
+            <a class="ag-demo-tab" href="index.html">Overview</a>
+            <a class="ag-demo-tab" href="usage.html">Usage</a>
+            <a class="ag-demo-tab" href="components.html">Components</a>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Expandable sections</h3>
+          <details class="ag-demo-disclosure" open>
+            <summary>Release readiness</summary>
+            <p>Animated content reveal for React and SwiftUI, with a server-rendered Rails disclosure helper.</p>
+          </details>
+        </section>
+        <section class="preview-card">
+          <h3>Icon catalog</h3>
+          <div class="ag-demo-icon-grid" aria-label="Supported icon names">
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="home"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20h-5v-5H9v5H4v-8.5Z" /></svg></span>home</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="dashboard"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm3 10h3V8H7v7Zm5 0h5v-4h-5v4Zm0-6h5V8h-5v1Z" /></svg></span>dashboard</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="user"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" /></svg></span>user</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="users"><svg focusable="false" viewBox="0 0 24 24"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-6 9a6 6 0 0 1 12 0m1-9a3 3 0 1 0 0-6m0 9a5 5 0 0 1 5 5" /></svg></span>users</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="bell"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 17h12l-1.5-2v-4a4.5 4.5 0 0 0-9 0v4L6 17Zm4 0a2 2 0 0 0 4 0" /></svg></span>bell</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="mail"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 6h16v12H4V6Zm0 2 8 5 8-5" /></svg></span>mail</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="calendar"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 6h14v14H5V6Zm0 4h14M8 4v4m8-4v4" /></svg></span>calendar</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="clock"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-12v5l3 2" /></svg></span>clock</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="plus"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></span>plus</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="minus"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 12h14" /></svg></span>minus</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="upload"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 15v4h14v-4" /></svg></span>upload</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="download"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" /></svg></span>download</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="attachment"><svg focusable="false" viewBox="0 0 24 24"><path d="M8 12.5 13.8 6.7a3 3 0 1 1 4.2 4.2l-7.4 7.4a5 5 0 0 1-7.1-7.1l7.1-7.1" /></svg></span>attachment</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="share"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 4v10m0-10 4 4m-4-4-4 4M5 11v8h14v-8" /></svg></span>share</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="send"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 12 20 4l-5 16-3-7-8-1Zm8 1 8-9" /></svg></span>send</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="copy"><svg focusable="false" viewBox="0 0 24 24"><path d="M8 8h10v12H8V8Zm-2 8H4V4h10v2" /></svg></span>copy</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="save"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 5h12l2 2v12H5V5Zm3 0v6h8V5M8 19v-5h8v5" /></svg></span>save</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="lock"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 11h12v9H6v-9Zm3 0V8a3 3 0 0 1 6 0v3" /></svg></span>lock</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="unlock"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 11h12v9H6v-9Zm3 0V8a3 3 0 0 1 5.5-1.7" /></svg></span>unlock</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="shield"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3Z" /></svg></span>shield</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="eye"><svg focusable="false" viewBox="0 0 24 24"><path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6Zm9 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span>eye</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="eye-off"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 4l16 16M9.2 6.6A9.6 9.6 0 0 1 12 6c5.8 0 9 6 9 6a16 16 0 0 1-2.2 3M6.4 8.4A16 16 0 0 0 3 12s3.2 6 9 6c1 0 1.9-.2 2.8-.5" /></svg></span>eye-off</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="search"><svg focusable="false" viewBox="0 0 24 24"><path d="M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Zm5-2 4 4" /></svg></span>search</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="filter"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z" /></svg></span>filter</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="sort"><svg focusable="false" viewBox="0 0 24 24"><path d="M8 5v14m0 0-3-3m3 3 3-3m5 3V5m0 0-3 3m3-3 3 3" /></svg></span>sort</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="menu"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg></span>menu</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="more-horizontal"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 12h.01M12 12h.01M18 12h.01" /></svg></span>more-horizontal</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="more-vertical"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 6h.01M12 12h.01M12 18h.01" /></svg></span>more-vertical</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="settings"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-12v3m0 11v3m8.5-8.5h-3m-11 0h-3m14.4-5.9-2.1 2.1M8.2 15.8l-2.1 2.1m0-11.8 2.1 2.1m7.6 7.6 2.1 2.1" /></svg></span>settings</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="edit"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 17.5V20h2.5L18.8 8.7l-2.5-2.5L5 17.5Zm10-10 2.5 2.5" /></svg></span>edit</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="delete"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 7h12M9 7V5h6v2m-7 0 1 13h6l1-13" /></svg></span>delete</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="close"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></span>close</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="back"><svg focusable="false" viewBox="0 0 24 24"><path d="M15 6 9 12l6 6" /></svg></span>back</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="forward"><svg focusable="false" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg></span>forward</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="chevron-down"><svg focusable="false" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>chevron-down</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="chevron-up"><svg focusable="false" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6" /></svg></span>chevron-up</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="external-link"><svg focusable="false" viewBox="0 0 24 24"><path d="M10 6H5v13h13v-5M14 5h5v5m0-5-9 9" /></svg></span>external-link</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="refresh"><svg focusable="false" viewBox="0 0 24 24"><path d="M19 8a7 7 0 0 0-12-2l-2 2m0 0h5M5 8V3m0 13a7 7 0 0 0 12 2l2-2m0 0h-5m5 0v5" /></svg></span>refresh</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="sync"><svg focusable="false" viewBox="0 0 24 24"><path d="M17 4h4v4m0-4-5 5a6 6 0 0 0-10 3m1 8H3v-4m0 4 5-5a6 6 0 0 0 10-3" /></svg></span>sync</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="check"><svg focusable="false" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg></span>check</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="warning"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 4 21 20H3L12 4Zm0 5v5m0 3h.01" /></svg></span>warning</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="info"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-9v5m0-8h.01" /></svg></span>info</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="success"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-4-8 3 3 5-6" /></svg></span>success</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="cloud"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 2A3 3 0 0 0 7 18Z" /></svg></span>cloud</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="database"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 7c0-2 14-2 14 0v10c0 2-14 2-14 0V7Zm0 0c0 2 14 2 14 0M5 12c0 2 14 2 14 0" /></svg></span>database</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="server"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v6H4V5Zm0 8h16v6H4v-6Zm3-5h.01M7 16h.01" /></svg></span>server</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="terminal"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm4 5 3 2-3 2m5 1h4" /></svg></span>terminal</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="code"><svg focusable="false" viewBox="0 0 24 24"><path d="m9 8-4 4 4 4m6-8 4 4-4 4m-2-10-2 12" /></svg></span>code</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="archive"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 6h16v4H4V6Zm2 4v10h12V10m-8 4h4" /></svg></span>archive</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="star"><svg focusable="false" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4Z" /></svg></span>star</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="heart"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20s-8-4.8-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.2-8 10-8 10Z" /></svg></span>heart</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="bookmark"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-3-6 3V4Z" /></svg></span>bookmark</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="tag"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 6v6l8 8 8-8-8-8H6a2 2 0 0 0-2 2Zm5 2h.01" /></svg></span>tag</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="map-pin"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 21s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12Zm0-9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span>map-pin</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="location"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.4-6.4-2.1 2.1M7.7 16.3l-2.1 2.1m0-12.8 2.1 2.1m8.6 8.6 2.1 2.1M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span>location</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="phone"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 4h10v16H7V4Zm3 2h4M11 18h2" /></svg></span>phone</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="message"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5Z" /></svg></span>message</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="chat"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 6h14v9H9l-4 4V6Zm4 3h6m-6 3h4" /></svg></span>chat</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="grid"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" /></svg></span>grid</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="list"><svg focusable="false" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /></svg></span>list</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="columns"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm8 0v14" /></svg></span>columns</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="table"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm0 5h16M9 5v14m6-14v14" /></svg></span>table</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="layout"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm0 5h16m-6 0v9" /></svg></span>layout</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="panel"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm4 0v14m0-9h12" /></svg></span>panel</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="sidebar"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm5 0v14" /></svg></span>sidebar</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="command"><svg focusable="false" viewBox="0 0 24 24"><path d="M8 8H6a2 2 0 1 1 2-2v12a2 2 0 1 1-2-2h12a2 2 0 1 1-2 2V6a2 2 0 1 1 2 2H8Z" /></svg></span>command</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="package"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 8 12 4l8 4v9l-8 4-8-4V8Zm0 0 8 4 8-4M12 12v9" /></svg></span>package</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="cube"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3 20 8v8l-8 5-8-5V8l8-5Zm0 0v8m0 0 8-3m-8 3-8-3" /></svg></span>cube</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="layers"><svg focusable="false" viewBox="0 0 24 24"><path d="m12 4 9 5-9 5-9-5 9-5Zm-7 9 7 4 7-4M5 17l7 4 7-4" /></svg></span>layers</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="workflow"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 7h5v5H5V7Zm9 5h5v5h-5v-5Zm-4-2h2a2 2 0 0 1 2 2m-9 0v2a2 2 0 0 0 2 2h5" /></svg></span>workflow</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="branch"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 5v8a4 4 0 0 0 4 4h6M17 13l4 4-4 4M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span>branch</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="git-branch"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 4v10a4 4 0 0 0 4 4h3M17 4v3a5 5 0 0 1-5 5H7M7 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 14a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span>git-branch</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="link"><svg focusable="false" viewBox="0 0 24 24"><path d="M10 8h4m-5 8H7a4 4 0 0 1 0-8h3m5 8h2a4 4 0 0 0 0-8h-3" /></svg></span>link</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="unlink"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 4l16 16M10 8h4m-5 8H7a4 4 0 0 1-.8-7.9M15 16h2a4 4 0 0 0 2.6-7" /></svg></span>unlink</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="log-in"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 4h8v16H4M12 12h8m0 0-3-3m3 3-3 3" /></svg></span>log-in</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="log-out"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 4h8v16h-8M4 12h10m0 0-3-3m3 3-3 3" /></svg></span>log-out</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="power"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3v8m5.7-5.7a8 8 0 1 1-11.4 0" /></svg></span>power</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="play"><svg focusable="false" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5Z" /></svg></span>play</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="pause"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 5h4v14H7V5Zm6 0h4v14h-4V5Z" /></svg></span>pause</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="stop"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 7h10v10H7V7Z" /></svg></span>stop</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="record"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z" /></svg></span>record</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="microphone"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm-6-3a6 6 0 0 0 12 0M12 17v4" /></svg></span>microphone</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="camera"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 8h4l1.5-2h5L16 8h4v10H4V8Zm8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg></span>camera</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="video"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 7h11v10H4V7Zm11 3 5-3v10l-5-3" /></svg></span>video</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="image"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 6h16v12H4V6Zm3 9 3-3 2 2 3-4 3 5M8 9h.01" /></svg></span>image</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="music"><svg focusable="false" viewBox="0 0 24 24"><path d="M9 18a3 3 0 1 1-2-2.8V6l11-2v10.5a3 3 0 1 1-2-2.8V8L9 9.4V18Z" /></svg></span>music</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="volume"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4Zm12-1a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12" /></svg></span>volume</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="mute"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4Zm12 0 5 5m0-5-5 5" /></svg></span>mute</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="wallet"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 7h15v12H4V7Zm0 0 3-3h10v3m-1 6h3" /></svg></span>wallet</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="credit-card"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 6h16v12H4V6Zm0 4h16M7 15h4" /></svg></span>credit-card</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="cart"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 5h2l2 10h9l3-7H7m2 11h.01M17 19h.01" /></svg></span>cart</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="receipt"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 4h12v16l-3-2-3 2-3-2-3 2V4Zm3 5h6m-6 4h6" /></svg></span>receipt</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="chart-line"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 18h16M6 15l4-4 3 3 5-7" /></svg></span>chart-line</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="chart-bar"><svg focusable="false" viewBox="0 0 24 24"><path d="M5 19V9h4v10m3 0V5h4v14m3 0v-7h2" /></svg></span>chart-bar</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="activity"><svg focusable="false" viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6" /></svg></span>activity</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="spark"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Zm6 12 .8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8L18 15Z" /></svg></span>spark</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="bolt"><svg focusable="false" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z" /></svg></span>bolt</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="target"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-4h.01" /></svg></span>target</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="compass"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3-11-2 5-5 2 2-5 5-2Z" /></svg></span>compass</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="thumbs-up"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 10v10H4V10h3Zm3 10h6.5a2 2 0 0 0 2-1.7l1-6A2 2 0 0 0 17.5 10H14l1-4a2 2 0 0 0-3.5-1.7L8 10v8a2 2 0 0 0 2 2Z" /></svg></span>thumbs-up</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="thumbs-down"><svg focusable="false" viewBox="0 0 24 24"><path d="M7 14V4H4v10h3Zm3-10h6.5a2 2 0 0 1 2 1.7l1 6a2 2 0 0 1-2 2.3H14l1 4a2 2 0 0 1-3.5 1.7L8 14V6a2 2 0 0 1 2-2Z" /></svg></span>thumbs-down</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="help"><svg focusable="false" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-2-10a2 2 0 1 1 3.3 1.5c-.9.8-1.3 1.1-1.3 2.5m0 3h.01" /></svg></span>help</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="notification"><svg focusable="false" viewBox="0 0 24 24"><path d="M6 17h12l-1.5-2v-4a4.5 4.5 0 0 0-9 0v4L6 17Zm4 0a2 2 0 0 0 4 0M18 5h.01" /></svg></span>notification</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="expand"><svg focusable="false" viewBox="0 0 24 24"><path d="M4 9V4h5M4 4l6 6m10-1V4h-5m5 0-6 6M4 15v5h5m-5 0 6-6m10 1v5h-5m5 0-6-6" /></svg></span>expand</span>
+            <span class="ag-demo-icon"><span class="ag-demo-icon-symbol" aria-hidden="true" data-icon-name="contract"><svg focusable="false" viewBox="0 0 24 24"><path d="M10 4v6H4m6 0L4 4m10 0v6h6m-6 0 6-6M10 20v-6H4m6 0-6 6m10 0v-6h6m-6 0 6 6" /></svg></span>contract</span>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Feedback and content</h3>
+          <div class="preview-row">
+            <span class="ag-demo-badge">Active</span>
+            <div class="ag-demo-alert">Alert: generated package outputs are in sync.</div>
+            <div class="ag-demo-progress"><span></span></div>
+            <div class="ag-demo-skeleton" aria-label="Skeleton loading preview">
+              <span></span>
+              <span style="width: 78%"></span>
+              <span style="width: 52%"></span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

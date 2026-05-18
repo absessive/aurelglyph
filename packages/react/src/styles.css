@@ -20,6 +20,8 @@
   fill: none;
 }
 
+.ag-icon[data-icon="home"] svg,
+.ag-icon[data-icon="dashboard"] svg,
 .ag-icon[data-icon="play"] svg,
 .ag-icon[data-icon="record"] svg,
 .ag-icon[data-icon="stop"] svg,
@@ -88,8 +90,8 @@
   color: var(--ag-color-semantic-accent-foreground);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent),
-    linear-gradient(180deg, var(--ag-accent-300), var(--ag-accent-500));
-  border-color: var(--ag-accent-200);
+    linear-gradient(180deg, var(--ag-color-semantic-accent-control), var(--ag-color-semantic-accent-control-strong));
+  border-color: var(--ag-color-semantic-accent-control);
   box-shadow:
     var(--ag-shadow-inset),
     0 14px 34px rgba(var(--ag-accent-rgb), 0.22);
@@ -117,6 +119,127 @@
 
 .ag-button__content {
   overflow-wrap: anywhere;
+}
+
+.ag-disclosure {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ag-color-semantic-border);
+  border-radius: var(--ag-radius-lg);
+  color: var(--ag-color-semantic-foreground);
+  background:
+    linear-gradient(180deg, var(--ag-color-semantic-surface), var(--ag-color-semantic-background-elevated));
+  box-shadow: var(--ag-shadow-inset);
+}
+
+.ag-disclosure::before,
+.ag-disclosure::after {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-color: rgba(var(--ag-accent-rgb), 0.34);
+  pointer-events: none;
+  content: "";
+}
+
+.ag-disclosure::before {
+  top: var(--ag-space-3);
+  left: var(--ag-space-3);
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.ag-disclosure::after {
+  right: var(--ag-space-3);
+  bottom: var(--ag-space-3);
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+}
+
+.ag-disclosure__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--ag-space-4);
+  border: 0;
+  padding: var(--ag-space-4) var(--ag-space-5);
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ag-disclosure__trigger:focus-visible {
+  outline: 1px solid rgba(var(--ag-accent-rgb), 0.75);
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 4px rgba(var(--ag-accent-rgb), 0.12);
+}
+
+.ag-disclosure__heading {
+  display: grid;
+  min-width: 0;
+  gap: var(--ag-space-1);
+}
+
+.ag-disclosure__eyebrow {
+  color: var(--ag-color-semantic-muted);
+  font-family: var(--ag-font-family-mono);
+  font-size: var(--ag-font-size-xs);
+  font-weight: var(--ag-font-weight-medium);
+  letter-spacing: var(--ag-font-tracking-label);
+  line-height: var(--ag-font-lineHeight-normal);
+  text-transform: uppercase;
+}
+
+.ag-disclosure__title {
+  font-family: var(--ag-font-family-ui);
+  font-size: var(--ag-font-size-base);
+  font-weight: var(--ag-font-weight-semibold);
+  line-height: var(--ag-font-lineHeight-tight);
+}
+
+.ag-disclosure__icon {
+  color: var(--ag-accent-200);
+  transition:
+    color var(--ag-motion-duration-fast) var(--ag-motion-easing-standard),
+    transform var(--ag-motion-duration-base) var(--ag-motion-easing-standard);
+}
+
+.ag-disclosure[data-open="true"] .ag-disclosure__icon {
+  color: var(--ag-accent-100);
+  transform: rotate(180deg);
+}
+
+.ag-disclosure__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--ag-motion-duration-base) var(--ag-motion-easing-standard),
+    opacity var(--ag-motion-duration-base) var(--ag-motion-easing-standard);
+}
+
+.ag-disclosure[data-open="true"] .ag-disclosure__panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.ag-disclosure__panel-inner {
+  min-height: 0;
+  overflow: hidden;
+  border-top: 1px solid transparent;
+  color: var(--ag-color-semantic-muted);
+  font-family: var(--ag-font-family-ui);
+  font-size: var(--ag-font-size-sm);
+  line-height: var(--ag-font-lineHeight-normal);
+  transition: border-color var(--ag-motion-duration-base) var(--ag-motion-easing-standard);
+}
+
+.ag-disclosure[data-open="true"] .ag-disclosure__panel-inner {
+  border-color: var(--ag-color-semantic-border);
+  padding: 0 var(--ag-space-5) var(--ag-space-5);
 }
 
 .ag-field {

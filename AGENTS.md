@@ -95,20 +95,20 @@ accent. Avoid uppercase wordmarks unless required by context.
 
 ### Typography
 
-Use open-source fonts by default.
+Use open/free fonts with redistribution terms that support the target package.
 
 ```css
---font-display: "Cormorant Garamond", Georgia, serif;
---font-ui: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
---font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+--font-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
+--font-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+--font-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 ```
 
-- Use Cormorant Garamond for brand, hero headings, editorial moments, and large
-  display text.
+- Use Newsreader for brand, hero headings, editorial moments, and large display
+  text, with IBM Plex Serif as the editorial fallback.
 - Use IBM Plex Sans for UI labels, navigation, body text, forms, buttons, and
-  dashboards.
-- Use IBM Plex Mono for code, metrics, small labels, token names, timestamps,
-  and system annotations.
+  dashboards, with Inter and system UI as fallbacks.
+- Use JetBrains Mono for code, technical labels, token names, and metadata,
+  with IBM Plex Mono as a fallback for code-like text.
 - Headings should feel editorial, not corporate.
 - Body copy should remain practical and readable.
 - Labels should be small, spaced, and precise.
@@ -466,9 +466,9 @@ Use this as a starter if a consuming project lacks design tokens:
 :root {
   color-scheme: dark light;
 
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-ui: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
+  --font-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -548,8 +548,8 @@ excessive emojis, and salesy marketing copy.
 ### Default Direction for New Screens
 
 When asked to create a new UI screen, default to dark mode, royal purple accent,
-left rail or compact top nav, graphite surfaces, Cormorant Garamond display
-heading, IBM Plex Sans UI text, IBM Plex Mono labels and metadata, subtle
+left rail or compact top nav, graphite surfaces, Newsreader display heading,
+IBM Plex Sans UI text, JetBrains Mono labels and metadata, subtle
 calibration marks, precise cards and panels, accessible focus states, and
 responsive layout.
 
@@ -582,6 +582,9 @@ Obsessive details."
 - Use `rg` for searching when available.
 - Use `apply_patch` for manual file edits.
 - Keep generated artifacts reproducible from the canonical token source.
+- Every user-visible, package-contract, design-token, component, adapter, or
+  behavior change must update `README.md` and `CHANGELOG.md` in the same change
+  set.
 
 ## Delivery Steps
 

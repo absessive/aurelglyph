@@ -11,9 +11,12 @@ Current version: `0.1.0`
 
 ## Status
 
-This repository is a first-pass workspace. The packages are marked `private`
-until they are published, but the examples below show the intended consumer API
-once Aurelglyph is available from npm or a similar package registry.
+This repository is a first-pass workspace. The package-manager examples below
+show the intended consumer API for npm, RubyGems, Swift Package Manager, Git,
+and local workspace paths.
+
+For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
+and Swift, see [docs/consuming.md](docs/consuming.md).
 
 ## What Is Included
 
@@ -42,14 +45,17 @@ import "@aurelglyph/css";
 import "@aurelglyph/react/styles.css";
 ```
 
-`@aurelglyph/css` loads the Aurelglyph web fonts through package dependencies:
-Cormorant Garamond, IBM Plex Sans, and IBM Plex Mono. No Google Fonts runtime
+`@aurelglyph/css` packages the Aurelglyph web fonts locally. Newsreader is used
+for display text, IBM Plex Sans for UI/body copy, IBM Plex Serif as the
+editorial serif fallback, and JetBrains Mono for code, token names, technical
+labels, and metadata. The bundled font files are distributed under the SIL Open
+Font License 1.1, while Aurelglyph code remains MIT. No Google Fonts runtime
 request is required.
 
 Use the components in app code:
 
 ```tsx
-import { Button, FileUpload, TextArea, TextField } from "@aurelglyph/react";
+import { Button, ExpandableSection, FileUpload, Icon, TextArea, TextField } from "@aurelglyph/react";
 
 export function DesignSystemSetup() {
   return (
@@ -73,8 +79,125 @@ export function DesignSystemSetup() {
       <Button icon="send" type="submit">
         Use in app
       </Button>
+      <ExpandableSection eyebrow="System" title="Advanced settings">
+        <p>Animated content with accessible disclosure semantics.</p>
+      </ExpandableSection>
+      <Icon name="credit-card" title="Billing" />
     </form>
   );
+}
+```
+
+### Component Usage
+
+#### Icon
+
+Aurelglyph ships a curated icon catalog for common web and iOS app
+surfaces. Use `title` for standalone meaningful icons and `decorative` when
+adjacent text already describes the action.
+
+```tsx
+import { Button, Icon } from "@aurelglyph/react";
+
+<Icon name="dashboard" title="Dashboard" />
+<Icon name="credit-card" title="Billing" />
+<Icon name="thumbs-up" title="Approve" />
+<Icon decorative name="sync" />
+<Button icon="external-link">Open</Button>
+```
+
+#### Button
+
+Use `Button` for primary actions, secondary controls, destructive actions, and
+quiet toolbar commands. The `icon` prop accepts any Aurelglyph icon name.
+
+```tsx
+<Button icon="save" type="submit">Save</Button>
+<Button icon="settings" variant="secondary">Settings</Button>
+<Button icon="delete" variant="danger">Delete</Button>
+<Button icon="search" variant="ghost">Search</Button>
+```
+
+#### ExpandableSection
+
+Use `ExpandableSection` for animated disclosure panels. It supports uncontrolled
+usage with `defaultOpen` and controlled usage with `open` plus `onOpenChange`.
+
+```tsx
+import { ExpandableSection } from "@aurelglyph/react";
+
+<ExpandableSection defaultOpen eyebrow="System" title="Advanced settings">
+  <p>Animated content with accessible disclosure semantics.</p>
+</ExpandableSection>
+```
+
+#### TextField
+
+Use `TextField` for one-line values. Labels are required, while helper and error
+text are optional and wired into accessible descriptions.
+
+```tsx
+<TextField
+  label="Project name"
+  name="projectName"
+  placeholder="Smart home dashboard"
+  helpText="Use a short, scannable name."
+/>
+<TextField label="Version" name="version" error="Use a supported package version." />
+```
+
+#### TextArea
+
+Use `TextArea` for longer notes and descriptions. It follows the same label,
+helper, and error contract as `TextField`.
+
+```tsx
+<TextArea
+  label="Notes"
+  name="notes"
+  placeholder="Describe the app surface."
+  helpText="Keep implementation notes concrete."
+/>
+```
+
+#### FileUpload
+
+Use `FileUpload` for file inputs. Pass native input props such as `accept`,
+`multiple`, and `required` directly.
+
+```tsx
+<FileUpload
+  accept=".json,.css,.ts,.tsx,.swift,.rb"
+  label="Generated outputs"
+  name="outputs"
+  helpText="Choose generated package artifacts."
+/>
+```
+
+Rails apps can use the helper exposed by the engine:
+
+```erb
+<%= aurelglyph_icon("dashboard", title: "Dashboard") %>
+<%= aurelglyph_icon("sync", decorative: true, class: "toolbar-icon") %>
+<%= aurelglyph_expandable_section("Advanced settings", eyebrow: "System", open: true) do %>
+  <p>Server-rendered disclosure content.</p>
+<% end %>
+```
+
+Swift apps can use the typed icon contract when mapping to SwiftUI rendering or
+platform image assets:
+
+```swift
+import AurelglyphUI
+
+let icon = AurelglyphIcon.creditCard
+let assetName = icon.rawValue
+let label = icon.accessibilityLabel
+
+@State private var expanded = true
+
+AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
+  Text("Animated SwiftUI content")
 }
 ```
 
@@ -167,11 +290,11 @@ export const screen = {
 
 ### SwiftUI
 
-The Swift package is intended to expose generated token constants through the
-`AurelglyphUI` package.
+The workspace root exposes a Swift Package named `AurelglyphUI`. Its target
+source lives in `packages/swift/Sources/AurelglyphUI`.
 
-If consuming from a GitHub release, add the repository as a Swift Package
-dependency and import the module:
+Add the repository as a Swift Package dependency, or use a local package path
+to the workspace root during development. Then import the module:
 
 ```swift
 import AurelglyphUI
@@ -180,21 +303,46 @@ let background = AurelglyphTokens.colorModeDarkBackground
 let accent = AurelglyphTokens.colorAccentRoyalPurple300
 ```
 
+The package currently supports iOS 17 and macOS 14.
+
 ### Rails
 
-Rails apps can consume the Rails-facing package assets once published, or copy
-the generated CSS and Ruby token helper from the release.
+Rails apps can consume the `aurelglyph-rails` gem from a local path, from this
+Git repository, or from RubyGems once published. The package ships a Rails
+engine, generated CSS, generated token helpers, and an `aurelglyph_token` view
+helper.
 
-Use the generated stylesheet in the asset pipeline:
+After `npm run build -w aurelglyph-rails`, the generated Rails-facing files are:
+
+- `packages/rails/app/assets/stylesheets/aurelglyph.css`
+- `packages/rails/lib/aurelglyph/tokens.rb`
+
+For gem consumption, point Bundler at the package gemspec:
+
+```ruby
+gem "aurelglyph-rails",
+  git: "https://github.com/absessive/aurelglyph",
+  glob: "packages/rails/aurelglyph-rails.gemspec"
+```
+
+Use the stylesheet through the asset pipeline:
 
 ```css
-@import "aurelglyph";
+/*
+ *= require aurelglyph
+ */
 ```
 
 Use Ruby token values where server-rendered components need shared constants:
 
 ```ruby
 Aurelglyph::TOKENS["color.mode.dark.background"]
+```
+
+Rails views can also use the helper installed by the engine:
+
+```erb
+<%= aurelglyph_token("color.accent.royal-purple.300") %>
 ```
 
 ## Theme Contract
@@ -216,8 +364,8 @@ Components should use semantic variables like
 - `@aurelglyph/css`: CSS variables and base styles
 - `@aurelglyph/react`: React components and component styles
 - `@aurelglyph/react-native`: React Native theme export
-- `AurelglyphUI`: SwiftUI package skeleton and generated token constants
-- `aurelglyph-rails`: Rails-facing stylesheet and token helper skeleton
+- `AurelglyphUI`: Swift Package exposing generated token constants
+- `aurelglyph-rails`: Rails engine, stylesheet, token helper, and view helper
 
 ## Examples
 
@@ -239,6 +387,55 @@ Then visit:
 http://127.0.0.1:8099/
 ```
 
+### GitHub Pages
+
+Build the raw GitHub Pages files:
+
+```bash
+npm run build:pages
+```
+
+This writes `docs/index.html`, `docs/usage.html`, `docs/components.html`,
+`docs/changelog.html`, and `docs/assets/fonts/ofl/`. The generated pages
+can be published with GitHub Pages configured to deploy from the `docs/`
+directory on the selected branch.
+
+For this repository, configure GitHub Pages in GitHub with:
+
+- Source: `Deploy from a branch`
+- Branch: `main`
+- Folder: `/docs`
+
+After GitHub publishes the site, the static page is available at:
+
+```text
+https://absessive.github.io/aurelglyph/
+```
+
+The HTML changelog is available at:
+
+```text
+https://absessive.github.io/aurelglyph/changelog.html
+```
+
+Usage and component catalog pages are available at:
+
+```text
+https://absessive.github.io/aurelglyph/usage.html
+https://absessive.github.io/aurelglyph/components.html
+```
+
+Other publishable artifacts are:
+
+- `preview/` for the static preview.
+- `examples/react-vite/dist/` for the Vite React example after
+  `npm run build -w @aurelglyph/example-react-vite`.
+
+The Vite example build uses root-relative asset URLs by default. That works for
+a root-domain Pages site or custom domain. For a project Pages URL like
+`https://OWNER.github.io/aurelglyph/`, build the example with a matching Vite
+base path before uploading `examples/react-vite/dist/`.
+
 ## Development
 
 ### Commands
@@ -246,6 +443,7 @@ http://127.0.0.1:8099/
 ```bash
 npm install
 npm run build
+npm run build:pages
 npm test
 npm run typecheck
 npm run version:check
