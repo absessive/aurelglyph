@@ -59,12 +59,19 @@ describe("GitHub Pages generator", () => {
 
     const result = await buildGithubPages(root);
 
-    expect(result.files).toEqual(["docs/index.html", "docs/usage.html", "docs/components.html", "docs/changelog.html"]);
+    expect(result.files).toEqual([
+      "docs/index.html",
+      "docs/usage.html",
+      "docs/components.html",
+      "docs/changelog.html",
+      "docs/CNAME"
+    ]);
 
     const index = await readFile(join(root, "docs", "index.html"), "utf8");
     const usage = await readFile(join(root, "docs", "usage.html"), "utf8");
     const components = await readFile(join(root, "docs", "components.html"), "utf8");
     const changelog = await readFile(join(root, "docs", "changelog.html"), "utf8");
+    const cname = await readFile(join(root, "docs", "CNAME"), "utf8");
 
     expect(index).toContain("<title>Aurelglyph</title>");
     expect(index).toContain('href="usage.html"');
@@ -124,5 +131,7 @@ describe("GitHub Pages generator", () => {
     expect(changelog).toContain("<h2>1.2.3</h2>");
     expect(changelog).toContain("Add &lt;raw&gt; GitHub Pages output.");
     expect(changelog).toContain("<code>CHANGELOG.md</code>");
+
+    expect(cname).toBe("aurelglyph.absessive.com\n");
   });
 });

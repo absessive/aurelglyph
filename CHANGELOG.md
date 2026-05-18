@@ -4,6 +4,7 @@
 
 - Establish the first Aurelglyph cross-platform design-system workspace.
 - Add GitHub Pages usage, components, and changelog pages.
+- Add the GitHub Pages custom-domain CNAME for `aurelglyph.absessive.com`.
 - Add React component previews with theme and accent switching.
 - Expand the Aurelglyph icon catalog for common web and iOS app surfaces.
 - Add Rails and Swift icon-name helpers for cross-platform adoption.

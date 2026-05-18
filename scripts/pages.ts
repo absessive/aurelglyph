@@ -14,6 +14,7 @@ export type PagesBuildResult = {
 type IconGlyphs = Record<string, string>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
+const githubPagesCustomDomain = "aurelglyph.absessive.com";
 const componentGroups = [
   {
     title: "Implemented starter controls",
@@ -1070,8 +1071,9 @@ export async function buildGithubPages(root = repoRoot): Promise<PagesBuildResul
   await writeFile(join(docsRoot, "usage.html"), renderUsage());
   await writeFile(join(docsRoot, "components.html"), renderComponents(iconGlyphs));
   await writeFile(join(docsRoot, "changelog.html"), renderChangelog(changelog));
+  await writeFile(join(docsRoot, "CNAME"), `${githubPagesCustomDomain}\n`);
 
-  return { files: ["docs/index.html", "docs/usage.html", "docs/components.html", "docs/changelog.html"] };
+  return { files: ["docs/index.html", "docs/usage.html", "docs/components.html", "docs/changelog.html", "docs/CNAME"] };
 }
 
 async function main(): Promise<void> {

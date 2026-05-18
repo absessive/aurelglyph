@@ -396,20 +396,31 @@ npm run build:pages
 ```
 
 This writes `docs/index.html`, `docs/usage.html`, `docs/components.html`,
-`docs/changelog.html`, and `docs/assets/fonts/ofl/`. The generated pages
-can be published with GitHub Pages configured to deploy from the `docs/`
-directory on the selected branch.
+`docs/changelog.html`, `docs/CNAME`, and `docs/assets/fonts/ofl/`. The
+generated pages can be published with GitHub Pages configured to deploy from
+the `docs/` directory on the selected branch.
 
 For this repository, configure GitHub Pages in GitHub with:
 
 - Source: `Deploy from a branch`
 - Branch: `main`
 - Folder: `/docs`
+- Custom domain: `aurelglyph.absessive.com`
+
+In Cloudflare DNS, point the subdomain at GitHub Pages:
+
+```text
+Type: CNAME
+Name: aurelglyph
+Target: absessive.github.io
+Proxy status: DNS only
+TTL: Auto
+```
 
 After GitHub publishes the site, the static page is available at:
 
 ```text
-https://absessive.github.io/aurelglyph/
+https://aurelglyph.absessive.com/
 ```
 
 The HTML changelog is available at:
