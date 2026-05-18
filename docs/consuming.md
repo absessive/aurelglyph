@@ -19,6 +19,7 @@ The command writes:
 - `docs/usage.html`
 - `docs/components.html`
 - `docs/changelog.html`
+- `docs/CNAME`
 
 Minimum branch-based GitHub Pages setup:
 
@@ -298,6 +299,24 @@ import AurelglyphUI
 let background = AurelglyphTokens.colorModeDarkBackground
 let accent = AurelglyphTokens.colorAccentRoyalPurple300
 ```
+
+Use the native SwiftUI typography adapter for Aurelglyph roles:
+
+```swift
+Text("Aurelglyph")
+  .font(AurelglyphTypography.displayLarge)
+
+Text("System status")
+  .font(AurelglyphTypography.body)
+
+Text("color.accent.royal-purple.300")
+  .font(AurelglyphTypography.monoLabel)
+```
+
+The Swift package does not bundle the web `.woff2` files from `@aurelglyph/css`.
+`AurelglyphTypography` maps display to a native serif font, UI/body to native
+sans, and mono to a native monospaced font. If a Swift app needs exact custom
+font names later, add iOS-compatible `.ttf` or `.otf` assets in the app target.
 
 Use the typed icon contract when mapping Aurelglyph names to SwiftUI rendering,
 asset catalogs, or platform symbols:

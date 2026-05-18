@@ -29,20 +29,20 @@ public struct AurelglyphExpandableSection<Content: View>: View {
           VStack(alignment: .leading, spacing: 3) {
             if let eyebrow {
               Text(eyebrow)
-                .font(.caption2.monospaced())
+                .font(AurelglyphTypography.monoCaption)
                 .textCase(.uppercase)
                 .foregroundStyle(.secondary)
             }
 
             Text(title)
-              .font(.headline)
+              .font(AurelglyphTypography.headline)
               .foregroundStyle(.primary)
           }
 
           Spacer(minLength: 12)
 
           Image(systemName: "chevron.right")
-            .font(.caption.weight(.semibold))
+            .font(AurelglyphTypography.label)
             .rotationEffect(.degrees(isExpanded ? 90 : 0))
             .foregroundStyle(.tint)
             .accessibilityHidden(true)

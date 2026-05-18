@@ -27,3 +27,20 @@ import SwiftUI
 
   #expect(String(describing: type(of: section)).contains("AurelglyphExpandableSection"))
 }
+
+@Test func exposesNativeTypographyAdapterWithoutBundledWebFonts() {
+  let display = AurelglyphTypography.display(size: 34)
+  let ui = AurelglyphTypography.ui(size: 17)
+  let body = AurelglyphTypography.font(.body, size: 17)
+  let mono = AurelglyphTypography.mono(size: 12)
+
+  #expect(Mirror(reflecting: display).subjectType == Font.self)
+  #expect(Mirror(reflecting: ui).subjectType == Font.self)
+  #expect(Mirror(reflecting: body).subjectType == Font.self)
+  #expect(Mirror(reflecting: mono).subjectType == Font.self)
+  #expect(AurelglyphTypography.bundlesWebFontAssets == false)
+  #expect(AurelglyphTypography.displayFamilyToken == AurelglyphTokens.fontFamilyDisplay)
+  #expect(AurelglyphTypography.uiFamilyToken == AurelglyphTokens.fontFamilyUi)
+  #expect(AurelglyphTypography.bodyFamilyToken == AurelglyphTokens.fontFamilyBody)
+  #expect(AurelglyphTypography.monoFamilyToken == AurelglyphTokens.fontFamilyMono)
+}

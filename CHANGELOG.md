@@ -8,6 +8,7 @@
 - Add React component previews with theme and accent switching.
 - Expand the Aurelglyph icon catalog for common web and iOS app surfaces.
 - Add Rails and Swift icon-name helpers for cross-platform adoption.
+- Add a native SwiftUI typography adapter for Aurelglyph display, UI/body, and mono roles without bundling web WOFF2 font files into Swift packages.
 - Correct the `git-branch` icon shape, add `thumbs-up`, `thumbs-down`,
   `help`, `notification`, `expand`, and `contract` icons, and temporarily remove
   `key` pending a better glyph.

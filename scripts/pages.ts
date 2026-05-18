@@ -958,6 +958,16 @@ import "@aurelglyph/react/styles.css";</code></pre>
       <pre><code>let icon = AurelglyphIcon.creditCard
 let assetName = icon.rawValue
 let label = icon.accessibilityLabel</code></pre>
+      <h2>SwiftUI typography</h2>
+      <pre><code>Text("Aurelglyph")
+  .font(AurelglyphTypography.displayLarge)
+
+Text("System status")
+  .font(AurelglyphTypography.body)
+
+Text("color.accent.royal-purple.300")
+  .font(AurelglyphTypography.monoLabel)</code></pre>
+      <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. <code>AurelglyphTypography</code> maps display to native serif, UI/body to native sans, and mono to native monospaced SwiftUI fonts.</p>
       <h2>SwiftUI expandable section</h2>
       <pre><code>@State private var expanded = true
 

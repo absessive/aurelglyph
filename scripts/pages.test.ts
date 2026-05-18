@@ -89,6 +89,8 @@ describe("GitHub Pages generator", () => {
     expect(usage).toContain("SwiftUI");
     expect(usage).toContain("aurelglyph_icon");
     expect(usage).toContain("AurelglyphIcon.creditCard");
+    expect(usage).toContain("AurelglyphTypography.displayLarge");
+    expect(usage).toContain("does not bundle the web WOFF2 files");
     expect(usage).toContain("Newsreader");
     expect(usage).toContain("IBM Plex Sans");
     expect(usage).toContain("JetBrains Mono");

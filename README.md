@@ -45,12 +45,14 @@ import "@aurelglyph/css";
 import "@aurelglyph/react/styles.css";
 ```
 
-`@aurelglyph/css` packages the Aurelglyph web fonts locally. Newsreader is used
-for display text, IBM Plex Sans for UI/body copy, IBM Plex Serif as the
-editorial serif fallback, and JetBrains Mono for code, token names, technical
-labels, and metadata. The bundled font files are distributed under the SIL Open
-Font License 1.1, while Aurelglyph code remains MIT. No Google Fonts runtime
-request is required.
+`@aurelglyph/css` packages the Aurelglyph web fonts locally as WOFF2 files.
+Newsreader is used for display text, IBM Plex Sans for UI/body copy, IBM Plex
+Serif as the editorial serif fallback, and JetBrains Mono for code, token
+names, technical labels, and metadata. The bundled font files are distributed
+under the SIL Open Font License 1.1, while Aurelglyph code remains MIT. No
+Google Fonts runtime request is required. SwiftUI consumers should use
+`AurelglyphTypography`, which maps Aurelglyph roles to native SwiftUI serif,
+sans, and monospaced system fonts instead of bundling web font files.
 
 Use the components in app code:
 
@@ -302,6 +304,25 @@ import AurelglyphUI
 let background = AurelglyphTokens.colorModeDarkBackground
 let accent = AurelglyphTokens.colorAccentRoyalPurple300
 ```
+
+Use the native typography adapter for SwiftUI font roles:
+
+```swift
+Text("Aurelglyph")
+  .font(AurelglyphTypography.displayLarge)
+
+Text("System status")
+  .font(AurelglyphTypography.body)
+
+Text("color.accent.royal-purple.300")
+  .font(AurelglyphTypography.monoLabel)
+```
+
+The Swift package does not bundle the web `.woff2` font assets. It keeps the
+font-family token strings available for reference, and maps display to a native
+serif font, UI/body to native sans, and mono to a native monospaced font. Add
+iOS-compatible `.ttf` or `.otf` assets in an app target later if exact custom
+font names are required.
 
 The package currently supports iOS 17 and macOS 14.
 
