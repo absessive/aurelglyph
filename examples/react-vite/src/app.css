@@ -447,6 +447,27 @@ textarea {
   text-transform: uppercase;
 }
 
+.example-mobile-shell {
+  min-height: 620px;
+  margin-top: var(--ag-space-3);
+  overflow: hidden;
+  border: 1px solid var(--ag-color-semantic-border);
+  border-radius: var(--ag-radius-lg);
+}
+
+.example-mobile-shell .ag-app-shell__body {
+  min-height: auto;
+}
+
+.example-mobile-shell .ag-app-shell__content {
+  padding: var(--ag-space-4);
+}
+
+.example-mobile-stack {
+  display: grid;
+  gap: var(--ag-space-4);
+}
+
 .example-disclosure-stack {
   display: grid;
   gap: var(--ag-space-3);

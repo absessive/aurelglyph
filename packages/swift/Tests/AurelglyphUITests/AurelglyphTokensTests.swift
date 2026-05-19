@@ -54,3 +54,49 @@ import SwiftUI
   #expect(AurelglyphTypography.bodyFamilyToken == AurelglyphTokens.fontFamilyBody)
   #expect(AurelglyphTypography.monoFamilyToken == AurelglyphTokens.fontFamilyMono)
 }
+
+@Test func exposesPhaseOneMobileFoundationComponents() {
+  let selected = Binding.constant("systems")
+  let searchText = Binding.constant("")
+  let switchValue = Binding.constant(true)
+
+  let topBar = AurelglyphTopBar("Workbench", subtitle: "Systems") {
+    EmptyView()
+  } actions: {
+    Text("Edit")
+  }
+  let tabBar = AurelglyphTabBar(
+    items: [
+      AurelglyphTabItem(id: "workbench", title: "Workbench", systemImage: "rectangle.grid.2x2"),
+      AurelglyphTabItem(id: "systems", title: "Systems", systemImage: "gearshape")
+    ],
+    selection: selected
+  )
+  let card = AurelglyphCard(title: "Status", eyebrow: "Live") {
+    Text("Systems operational")
+  }
+  let section = AurelglyphListSection("Settings") {
+    AurelglyphListRow("Quiet mode", subtitle: "Enabled", systemImage: "bell", isSelected: true) {
+      Text("On")
+    }
+  }
+  let search = AurelglyphSearchField(text: searchText)
+  let toggle = AurelglyphSwitch("Quiet mode", subtitle: "Reduce notifications", isOn: switchValue)
+  let shell = AurelglyphAppShell {
+    topBar
+  } content: {
+    card
+    section
+    search
+    toggle
+  } tabBar: {
+    tabBar
+  }
+
+  #expect(String(describing: type(of: shell)).contains("AurelglyphAppShell"))
+  #expect(String(describing: type(of: tabBar)).contains("AurelglyphTabBar"))
+  #expect(String(describing: type(of: card)).contains("AurelglyphCard"))
+  #expect(String(describing: type(of: section)).contains("AurelglyphListSection"))
+  #expect(String(describing: type(of: search)).contains("AurelglyphSearchField"))
+  #expect(String(describing: type(of: toggle)).contains("AurelglyphSwitch"))
+}

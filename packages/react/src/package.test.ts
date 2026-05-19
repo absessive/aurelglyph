@@ -14,7 +14,7 @@ describe("React package contract", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react",
-      version: "0.1.1",
+      version: "0.2.0",
       license: "MIT",
       type: "module",
       main: "dist/index.js",
@@ -38,7 +38,7 @@ describe("React package contract", () => {
         react: "^19.1.0"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.1"
+        "@aurelglyph/tokens": "0.2.0"
       }
     });
   });

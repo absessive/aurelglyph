@@ -414,6 +414,92 @@
       font-weight: 600;
     }
 
+    .ag-demo-mobile {
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-panel);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-topbar,
+    .ag-demo-tabbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-topbar strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 500;
+    }
+
+    .ag-demo-topbar small,
+    .ag-demo-row small {
+      color: var(--color-text-muted);
+    }
+
+    .ag-demo-mobile-body {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .ag-demo-search {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      color: var(--color-text-muted);
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-demo-card,
+    .ag-demo-list {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-card {
+      padding: 16px;
+    }
+
+    .ag-demo-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 14px;
+      border-top: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-row:first-child {
+      border-top: 0;
+    }
+
+    .ag-demo-switch {
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      background: var(--accent-300);
+    }
+
+    .ag-demo-tabbar {
+      border-top: 1px solid var(--color-border-soft);
+      border-bottom: 0;
+      justify-content: space-around;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .preview-row {
       display: flex;
       flex-wrap: wrap;
@@ -632,6 +718,24 @@
       </div>
       <h2>Preview</h2>
       <div class="preview-stack">
+        <section class="preview-card">
+          <h3>Phase 1 mobile foundation</h3>
+          <div class="ag-demo-mobile">
+            <div class="ag-demo-topbar">
+              <span><strong>Workbench</strong><small>Systems online</small></span>
+              <button class="ag-demo-button">Edit</button>
+            </div>
+            <div class="ag-demo-mobile-body">
+              <div class="ag-demo-search">Search systems</div>
+              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Systems operational across mobile app surfaces.</p></div>
+              <div class="ag-demo-list">
+                <div class="ag-demo-row"><span><strong>Quiet mode</strong><br><small>Reduce notification noise</small></span><span class="ag-demo-switch"></span></div>
+                <div class="ag-demo-row"><span><strong>Sync</strong><br><small>All generated packages aligned</small></span><small>Now</small></div>
+              </div>
+            </div>
+            <div class="ag-demo-tabbar"><span>Workbench</span><span>Systems</span><span>Settings</span></div>
+          </div>
+        </section>
         <section class="preview-card">
           <h3>Buttons</h3>
           <div class="preview-row">

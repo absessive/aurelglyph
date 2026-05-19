@@ -73,4 +73,32 @@ class AurelglyphRailsTest < Minitest::Test
     assert_includes html, "Advanced settings"
     assert_includes html, "<p>Animated content</p>"
   end
+
+  def test_helper_renders_phase_one_mobile_components
+    helper = Object.new.extend(Aurelglyph::Rails::Helper)
+
+    card = helper.aurelglyph_card(title: "Status", eyebrow: "Live") { "<p>Systems operational</p>" }
+    list = helper.aurelglyph_list_section(title: "Settings") do
+      helper.aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On")
+    end
+    tabs = helper.aurelglyph_tab_bar(
+      [
+        { id: "workbench", label: "Workbench", href: "#workbench", icon: "dashboard" },
+        { id: "systems", label: "Systems", href: "#systems", icon: "settings" }
+      ],
+      active: "systems"
+    )
+    search = helper.aurelglyph_search_field(name: "query", label: "Search systems")
+    toggle = helper.aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true, description: "Reduce notifications")
+
+    assert_includes card, 'class="ag-card"'
+    assert_includes card, "Systems operational"
+    assert_includes list, 'class="ag-list-section"'
+    assert_includes list, 'class="ag-list-row is-selected"'
+    assert_includes tabs, 'class="ag-tab-bar"'
+    assert_includes tabs, 'aria-current="page"'
+    assert_includes search, 'type="search"'
+    assert_includes toggle, 'role="switch"'
+    assert_includes toggle, 'checked="checked"'
+  end
 end

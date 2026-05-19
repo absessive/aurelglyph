@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.1.1`
+Current version: `0.2.0`
 
 ## Status
 
@@ -23,8 +23,8 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
 - Canonical design tokens
 - Generated CSS, TypeScript, React Native, Swift, and Rails-friendly outputs
 - Theme support for dark mode, light mode, and multiple accent themes
-- Starter React components for buttons, fields, text areas, file upload, and
-  icons
+- Phase 1 mobile foundations: app shell, top bar, tab bar, list rows, cards,
+  search, switches, buttons, fields, file upload, icons, and expandable sections
 - A static preview and a Vite React example app that consume the packages
 
 ## Install
@@ -37,13 +37,16 @@ Install only the packages your app needs.
 npm install @aurelglyph/css @aurelglyph/react
 ```
 
-Import the base CSS once near your app entry point, then import React component
-styles:
+Import the CSS package once near your app entry point. It includes generated
+tokens, packaged fonts, base styles, and the shared component class layer used
+by React and Rails:
 
 ```tsx
 import "@aurelglyph/css";
-import "@aurelglyph/react/styles.css";
 ```
+
+`@aurelglyph/react/styles.css` is also available for React-only adopters that
+want just the component class layer.
 
 `@aurelglyph/css` packages the Aurelglyph web fonts locally as WOFF2 files.
 Newsreader is used for display text, IBM Plex Sans for UI/body copy, IBM Plex
@@ -57,11 +60,35 @@ assets in the Swift package and should use `AurelglyphFontRegistry` plus
 Use the components in app code:
 
 ```tsx
-import { Button, ExpandableSection, FileUpload, Icon, TextArea, TextField } from "@aurelglyph/react";
+import {
+  AppShell,
+  Button,
+  Card,
+  ExpandableSection,
+  FileUpload,
+  Icon,
+  ListRow,
+  ListSection,
+  SearchField,
+  Switch,
+  TabBar,
+  TextArea,
+  TextField,
+  TopBar
+} from "@aurelglyph/react";
 
 export function DesignSystemSetup() {
   return (
-    <form>
+    <AppShell
+      topBar={<TopBar title="Workbench" subtitle="Systems" />}
+      footer={<TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} />}
+    >
+      <SearchField label="Search systems" name="query" />
+      <Card eyebrow="Live" title="Status">Systems operational</Card>
+      <ListSection title="Settings">
+        <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
+      </ListSection>
+      <Switch label="Quiet mode" name="quiet" />
       <TextField
         label="Install"
         name="install"
@@ -85,7 +112,7 @@ export function DesignSystemSetup() {
         <p>Animated content with accessible disclosure semantics.</p>
       </ExpandableSection>
       <Icon name="credit-card" title="Billing" />
-    </form>
+    </AppShell>
   );
 }
 ```
@@ -131,6 +158,25 @@ import { ExpandableSection } from "@aurelglyph/react";
 <ExpandableSection defaultOpen eyebrow="System" title="Advanced settings">
   <p>Animated content with accessible disclosure semantics.</p>
 </ExpandableSection>
+```
+
+#### Phase 1 Mobile Foundations
+
+Use the mobile foundation components for app chrome, navigable sections,
+settings lists, status cards, search, and binary controls.
+
+```tsx
+<AppShell
+  topBar={<TopBar title="Workbench" subtitle="Systems" />}
+  footer={<TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} />}
+>
+  <SearchField label="Search systems" name="query" />
+  <Card eyebrow="Live" title="Status">Systems operational</Card>
+  <ListSection title="Settings">
+    <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
+  </ListSection>
+  <Switch label="Quiet mode" name="quiet" />
+</AppShell>
 ```
 
 #### TextField
@@ -184,6 +230,12 @@ Rails apps can use the helper exposed by the engine:
 <%= aurelglyph_expandable_section("Advanced settings", eyebrow: "System", open: true) do %>
   <p>Server-rendered disclosure content.</p>
 <% end %>
+<%= aurelglyph_search_field(name: "query", label: "Search systems") %>
+<%= aurelglyph_card(title: "Status", eyebrow: "Live") { "Systems operational" } %>
+<%= aurelglyph_list_section(title: "Settings") do %>
+  <%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %>
+<% end %>
+<%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %>
 ```
 
 Swift apps can use the typed icon contract when mapping to SwiftUI rendering or
@@ -200,6 +252,19 @@ let label = icon.accessibilityLabel
 
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
   Text("Animated SwiftUI content")
+}
+
+AurelglyphAppShell {
+  AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }
+} content: {
+  AurelglyphSearchField(text: $query)
+  AurelglyphCard(title: "Status", eyebrow: "Live") { Text("Systems operational") }
+  AurelglyphListSection("Settings") {
+    AurelglyphListRow("Quiet mode", subtitle: "Enabled", systemImage: "bell", isSelected: true) { Text("On") }
+  }
+  AurelglyphSwitch("Quiet mode", isOn: $quiet)
+} tabBar: {
+  AurelglyphTabBar(items: tabs, selection: $selectedTab)
 }
 ```
 
@@ -235,7 +300,8 @@ Available themes:
 - `cyan`
 - `steel`
 
-Use CSS variables in app styles:
+Use CSS variables in app styles, or compose with the shared `ag-*` component
+classes shipped in the package:
 
 ```css
 .panel {
@@ -250,6 +316,12 @@ Use CSS variables in app styles:
   outline: 1px solid rgba(var(--ag-accent-rgb), 0.75);
   box-shadow: 0 0 0 4px rgba(var(--ag-accent-rgb), 0.12);
 }
+```
+
+```html
+<section class="ag-card">
+  <div class="ag-card__body">Systems operational</div>
+</section>
 ```
 
 ### Design Tokens
@@ -332,8 +404,9 @@ The package currently supports iOS 17 and macOS 14.
 
 Rails apps can consume the `aurelglyph-rails` gem from a local path, from this
 Git repository, or from RubyGems once published. The package ships a Rails
-engine, generated CSS, generated token helpers, and an `aurelglyph_token` view
-helper.
+engine, generated CSS with tokens plus shared component classes, generated token
+helpers, and view helpers for tokens, icons, disclosure, cards, lists, tabs,
+search, and switches.
 
 After `npm run build -w aurelglyph-rails`, the generated Rails-facing files are:
 
@@ -384,7 +457,7 @@ Components should use semantic variables like
 ## Package Map
 
 - `@aurelglyph/tokens`: canonical tokens and generator
-- `@aurelglyph/css`: CSS variables and base styles
+- `@aurelglyph/css`: CSS variables, packaged fonts, base styles, and shared component classes
 - `@aurelglyph/react`: React components and component styles
 - `@aurelglyph/react-native`: React Native theme export
 - `AurelglyphUI`: Swift Package exposing generated token constants

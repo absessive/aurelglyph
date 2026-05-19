@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Add Phase 1 mobile foundation components across React, SwiftUI, Rails, and docs.
+- Publish the shared component CSS through `@aurelglyph/css` and the generated Rails stylesheet so raw CSS, React, and Rails consumers render the same starter controls.
+- Add SwiftUI app shell, top bar, tab bar, cards, lists, search, and switch controls with cross-platform iOS/macOS-safe styling.
+
 ## 0.1.1
 
 - Add iOS-compatible Swift font assets, runtime font registration, and custom-font typography roles.

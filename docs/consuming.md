@@ -109,9 +109,9 @@ Replace `/aurelglyph/` with the repository name used in the Pages URL.
 
 ## React And CSS
 
-Install the CSS package for tokens, locally packaged OFL fonts,
-reset/base styles, and semantic CSS variables. Add the React package only when
-you need the starter controls.
+Install the CSS package for tokens, locally packaged OFL fonts, reset/base
+styles, semantic CSS variables, and the shared component class layer. Add the
+React package when you need typed React components.
 
 ```bash
 npm install @aurelglyph/css @aurelglyph/react
@@ -121,8 +121,10 @@ Import the CSS once at the application entry point:
 
 ```tsx
 import "@aurelglyph/css";
-import "@aurelglyph/react/styles.css";
 ```
+
+`@aurelglyph/react/styles.css` is also exported for React-only adopters that
+want just the component class layer.
 
 Set the theme contract on the root element before rendering or during early app
 startup:
@@ -131,18 +133,27 @@ startup:
 <html data-mode="dark" data-theme="royal-purple">
 ```
 
-Use React controls and icons from `@aurelglyph/react`:
+Use React mobile foundations, controls, and icons from `@aurelglyph/react`:
 
 ```tsx
-import { Button, ExpandableSection, Icon, TextField } from "@aurelglyph/react";
+import { AppShell, Button, Card, Icon, ListRow, ListSection, SearchField, Switch, TabBar, TextField, TopBar } from "@aurelglyph/react";
 
 export function SettingsForm() {
   return (
-    <form>
+    <AppShell
+      topBar={<TopBar title="Workbench" subtitle="Systems" />}
+      footer={<TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} />}
+    >
+      <SearchField label="Search systems" name="query" />
+      <Card eyebrow="Live" title="Status">Systems operational</Card>
+      <ListSection title="Settings">
+        <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
+      </ListSection>
+      <Switch label="Quiet mode" name="quiet" />
       <TextField label="System name" name="systemName" />
       <Button icon="save" type="submit">Save</Button>
       <Icon name="dashboard" title="Dashboard" />
-    </form>
+    </AppShell>
   );
 }
 ```
@@ -185,8 +196,25 @@ For expandable sections, use the animated disclosure component. It wires
 </ExpandableSection>
 ```
 
+Use Phase 1 mobile foundations for app chrome, search, grouped settings, and
+binary controls:
+
+```tsx
+<AppShell
+  topBar={<TopBar title="Workbench" subtitle="Systems" />}
+  footer={<TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} />}
+>
+  <SearchField label="Search systems" name="query" />
+  <Card eyebrow="Live" title="Status">Systems operational</Card>
+  <ListSection title="Settings">
+    <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
+  </ListSection>
+  <Switch label="Quiet mode" name="quiet" />
+</AppShell>
+```
+
 For CSS-only apps, install only `@aurelglyph/css`, import it once, and build
-with semantic variables:
+with semantic variables or the shared `ag-*` component classes:
 
 ```css
 @import "@aurelglyph/css";
@@ -197,6 +225,17 @@ with semantic variables:
   border-radius: var(--ag-radius-lg);
   color: var(--ag-color-semantic-foreground);
 }
+
+.settings-grid {
+  display: grid;
+  gap: var(--ag-space-4);
+}
+```
+
+```html
+<section class="ag-card">
+  <div class="ag-card__body">Systems operational</div>
+</section>
 ```
 
 Supported `data-mode` values are `dark` and `light`. Supported `data-theme`
@@ -205,8 +244,9 @@ values are `royal-purple`, `amber`, `forest`, `deep-blue`, `cyan`, and `steel`.
 ## Rails
 
 The current Rails-facing package is a gem skeleton named `aurelglyph-rails`.
-It ships the generated stylesheet, token helper, a Rails engine, and an
-`aurelglyph_token` view helper.
+It ships the generated stylesheet with tokens plus shared component classes,
+the token helper, a Rails engine, and view helpers for tokens, icons, disclosure,
+cards, lists, tabs, search, and switches.
 
 From this workspace, generate the Rails-facing files:
 
@@ -271,6 +311,12 @@ Use the Rails view helpers installed by the engine:
 <%= aurelglyph_expandable_section("Advanced settings", eyebrow: "System", open: true) do %>
   <p>Server-rendered disclosure content.</p>
 <% end %>
+<%= aurelglyph_search_field(name: "query", label: "Search systems") %>
+<%= aurelglyph_card(title: "Status", eyebrow: "Live") { "Systems operational" } %>
+<%= aurelglyph_list_section(title: "Settings") do %>
+  <%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %>
+<% end %>
+<%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %>
 ```
 
 ## Swift
@@ -337,11 +383,24 @@ Use `AurelglyphExpandableSection` for animated SwiftUI disclosure panels:
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
   Text("Animated SwiftUI content")
 }
+
+AurelglyphAppShell {
+  AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }
+} content: {
+  AurelglyphSearchField(text: $query)
+  AurelglyphCard(title: "Status", eyebrow: "Live") { Text("Systems operational") }
+  AurelglyphListSection("Settings") {
+    AurelglyphListRow("Quiet mode", subtitle: "Enabled", systemImage: "bell", isSelected: true) { Text("On") }
+  }
+  AurelglyphSwitch("Quiet mode", isOn: $quiet)
+} tabBar: {
+  AurelglyphTabBar(items: tabs, selection: $selectedTab)
+}
 ```
 
 Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.1.1")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.2.0")
 ```

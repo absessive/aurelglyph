@@ -1,5 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, ExpandableSection, FileUpload, Icon, TextArea, TextField } from "@aurelglyph/react";
+import {
+  AppShell,
+  Button,
+  Card,
+  ExpandableSection,
+  FileUpload,
+  Icon,
+  ListRow,
+  ListSection,
+  SearchField,
+  Switch,
+  TabBar,
+  TextArea,
+  TextField,
+  TopBar
+} from "@aurelglyph/react";
 import type { AurelglyphIconName } from "@aurelglyph/react";
 
 const mediaTools = [
@@ -19,7 +34,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.1.1";
+const packageVersion = "0.2.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -379,6 +394,8 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
 }
 
 function ComponentsPage() {
+  const [quietMode, setQuietMode] = useState(true);
+
   return (
     <section className="example-panel" aria-labelledby="components-title">
       <div className="example-panel__header">
@@ -396,6 +413,41 @@ function ComponentsPage() {
         ))}
       </div>
       <div className="example-component-previews">
+        <section className="example-preview-card">
+          <h3>Phase 1 mobile foundations</h3>
+          <AppShell
+            className="example-mobile-shell"
+            footer={
+              <TabBar
+                activeId="systems"
+                items={[
+                  { href: "#workbench", icon: "dashboard", id: "workbench", label: "Workbench" },
+                  { href: "#systems", icon: "settings", id: "systems", label: "Systems" },
+                  { href: "#settings", icon: "user", id: "settings", label: "Settings" }
+                ]}
+              />
+            }
+            topBar={<TopBar actions={<Button icon="edit" variant="ghost">Edit</Button>} subtitle="Systems online" title="Workbench" />}
+          >
+            <div className="example-mobile-stack">
+              <SearchField label="Search systems" name="systems-query" />
+              <Card eyebrow="Live" title="Status">
+                Systems operational across React, Rails, and SwiftUI.
+              </Card>
+              <ListSection title="Settings">
+                <ListRow description="Reduce notification noise" icon="bell" selected title="Quiet mode" trailing="On" />
+                <ListRow description="Generated packages aligned" icon="sync" title="Sync" trailing="Now" />
+              </ListSection>
+              <Switch
+                checked={quietMode}
+                description="Use restrained notifications."
+                label="Quiet mode"
+                name="quiet-mode"
+                onChange={(event) => setQuietMode(event.currentTarget.checked)}
+              />
+            </div>
+          </AppShell>
+        </section>
         <section className="example-preview-card">
           <h3>Buttons</h3>
           <div className="example-component-bar">
@@ -512,10 +564,10 @@ function ChangelogPage() {
     <section className="example-panel" aria-labelledby="changelog-title">
       <div className="example-panel__header">
         <p className="example-kicker">CHANGELOG</p>
-        <h2 id="changelog-title">0.1.1</h2>
+        <h2 id="changelog-title">0.2.0</h2>
       </div>
       <p className="example-copy">
-        Establish the first Aurelglyph cross-platform design-system workspace.
+        Add Phase 1 mobile foundation components across React, SwiftUI, Rails, and docs.
       </p>
     </section>
   );

@@ -4,7 +4,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { Button } from "./Button";
+import { AppShell } from "./AppShell";
+import { Card } from "./Card";
 import { Icon, type AurelglyphIconName } from "./Icon";
+import { ListRow, ListSection } from "./List";
+import { SearchField } from "./SearchField";
+import { Switch } from "./Switch";
+import { TabBar } from "./TabBar";
+import { TopBar } from "./TopBar";
 
 const iconNames = [
   "home",
@@ -250,5 +257,68 @@ describe("ExpandableSection", () => {
     expect(css).toContain(".ag-disclosure__panel");
     expect(css).toContain("grid-template-rows var(--ag-motion-duration-base)");
     expect(css).toContain("opacity var(--ag-motion-duration-base)");
+  });
+});
+
+describe("Phase 1 mobile foundation components", () => {
+  it("exports app shell and top navigation primitives", () => {
+    const shell = AppShell({
+      children: "Content",
+      footer: "Tabs",
+      navigation: "Rail",
+      topBar: TopBar({ title: "Workbench", subtitle: "Systems" })
+    }) as ReactElement<Record<string, unknown>>;
+    const topBar = TopBar({ actions: "Edit", leading: "Back", title: "Workbench" }) as ReactElement<Record<string, unknown>>;
+
+    expect(shell.props.className).toContain("ag-app-shell");
+    expect(topBar.props.className).toContain("ag-top-bar");
+  });
+
+  it("renders tab bar items with active page semantics", () => {
+    const tabBar = TabBar({
+      activeId: "systems",
+      items: [
+        { href: "#workbench", icon: "dashboard", id: "workbench", label: "Workbench" },
+        { href: "#systems", icon: "settings", id: "systems", label: "Systems" }
+      ]
+    }) as ReactElement<Record<string, unknown>>;
+    const items = tabBar.props.children as ReactElement<Record<string, unknown>>[];
+
+    expect(tabBar.type).toBe("nav");
+    expect(items[1].props["aria-current"]).toBe("page");
+    expect(items[1].props.className).toContain("is-active");
+  });
+
+  it("renders list sections and rows with selected state", () => {
+    const row = ListRow({
+      description: "Quiet mode enabled",
+      icon: "bell",
+      selected: true,
+      title: "Notifications",
+      trailing: "On"
+    }) as ReactElement<Record<string, unknown>>;
+    const section = ListSection({ children: row, title: "Settings" }) as ReactElement<Record<string, unknown>>;
+
+    expect(section.props.className).toContain("ag-list-section");
+    expect(row.props.className).toContain("ag-list-row");
+    expect(row.props["aria-selected"]).toBe(true);
+  });
+
+  it("renders cards, search, and switches with mobile form semantics", () => {
+    const card = Card({ children: "Body", eyebrow: "Live", title: "Status" }) as ReactElement<Record<string, unknown>>;
+    const searchSource = readFileSync(join(import.meta.dirname, "SearchField.tsx"), "utf8");
+    const switchSource = readFileSync(join(import.meta.dirname, "Switch.tsx"), "utf8");
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+
+    expect(card.props.className).toContain("ag-card");
+    expect(typeof SearchField).toBe("function");
+    expect(typeof Switch).toBe("function");
+    expect(searchSource).toContain('type="search"');
+    expect(searchSource).toContain('name="search"');
+    expect(switchSource).toContain('role="switch"');
+    expect(switchSource).toContain('type="checkbox"');
+    expect(css).toContain(".ag-tab-bar");
+    expect(css).toContain(".ag-list-row");
+    expect(css).toContain(".ag-switch__input:checked");
   });
 });

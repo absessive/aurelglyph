@@ -15,7 +15,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/css",
-      version: "0.1.1",
+      version: "0.2.0",
       license: "MIT",
       type: "module",
       style: "dist/index.css",
@@ -29,7 +29,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.1"
+        "@aurelglyph/tokens": "0.2.0"
       }
     });
     expect(css).toContain('font-family: "Newsreader";');
@@ -43,12 +43,17 @@ describe("platform adapter skeletons", () => {
     expect(css).toContain(".ag-focus-ring:focus-visible");
   });
 
-  it("publishes built CSS that matches the source stylesheet", async () => {
+  it("publishes built CSS with base and shared component classes", async () => {
     const source = await read("packages/css/src/index.css");
     const built = await read("packages/css/dist/index.css");
     const font = await read("packages/css/dist/fonts/ofl/jetbrains-mono-400.woff2");
 
-    expect(built).toBe(source);
+    expect(built).toContain(source.trim());
+    expect(built).toContain("Shared component classes used by the React and Rails adapters.");
+    expect(built).toContain(".ag-app-shell");
+    expect(built).toContain(".ag-card");
+    expect(built).toContain(".ag-list-row");
+    expect(built).toContain(".ag-tab-bar");
     expect(font.length).toBeGreaterThan(0);
   });
 
@@ -58,7 +63,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react-native",
-      version: "0.1.1",
+      version: "0.2.0",
       license: "MIT",
       type: "module",
       main: "src/index.ts",
@@ -69,7 +74,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.1"
+        "@aurelglyph/tokens": "0.2.0"
       }
     });
     expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
@@ -85,12 +90,12 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toMatchObject({
       name: "@aurelglyph/swift",
-      version: "0.1.1",
+      version: "0.2.0",
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.1"
+        "@aurelglyph/tokens": "0.2.0"
       }
     });
     expect(packageSwift).toContain('name: "AurelglyphUI"');
@@ -113,7 +118,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "aurelglyph-rails",
-      version: "0.1.1",
+      version: "0.2.0",
       license: "MIT",
       files: ["app", "lib", "*.gemspec", "README.md"],
       scripts: {
@@ -122,10 +127,15 @@ describe("platform adapter skeletons", () => {
         test: "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.1"
+        "@aurelglyph/tokens": "0.2.0"
       }
     });
-    expect(copiedCss).toBe(generatedCss);
+    expect(copiedCss).toContain(generatedCss.trim());
+    expect(copiedCss).toContain("Shared component classes used by the React and Rails adapters.");
+    expect(copiedCss).toContain(".ag-app-shell");
+    expect(copiedCss).toContain(".ag-card");
+    expect(copiedCss).toContain(".ag-list-row");
+    expect(copiedCss).toContain(".ag-tab-bar");
     expect(copiedRuby).toBe(generatedRuby);
   });
 });

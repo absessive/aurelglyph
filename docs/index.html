@@ -414,6 +414,92 @@
       font-weight: 600;
     }
 
+    .ag-demo-mobile {
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-panel);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-topbar,
+    .ag-demo-tabbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-topbar strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 500;
+    }
+
+    .ag-demo-topbar small,
+    .ag-demo-row small {
+      color: var(--color-text-muted);
+    }
+
+    .ag-demo-mobile-body {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .ag-demo-search {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      color: var(--color-text-muted);
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-demo-card,
+    .ag-demo-list {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-card {
+      padding: 16px;
+    }
+
+    .ag-demo-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 14px;
+      border-top: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-row:first-child {
+      border-top: 0;
+    }
+
+    .ag-demo-switch {
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      background: var(--accent-300);
+    }
+
+    .ag-demo-tabbar {
+      border-top: 1px solid var(--color-border-soft);
+      border-bottom: 0;
+      justify-content: space-around;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .preview-row {
       display: flex;
       flex-wrap: wrap;
@@ -624,7 +710,7 @@
         <a class="button" href="usage.html">Use in apps</a>
       </div>
       <div class="meta" aria-label="Project metadata">
-        <div class="metric">Current release<strong>Version 0.1.1</strong></div>
+        <div class="metric">Current release<strong>Version 0.2.0</strong></div>
         <div class="metric">Package model<strong>Shared source files</strong></div>
         <div class="metric">Surface<strong>Raw GitHub Pages</strong></div>
       </div>

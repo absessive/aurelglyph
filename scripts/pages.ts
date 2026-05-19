@@ -17,12 +17,12 @@ const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const githubPagesCustomDomain = "aurelglyph.absessive.com";
 const componentGroups = [
   {
-    title: "Implemented starter controls",
-    items: ["Button", "Icon", "Text field", "Text area", "File upload"]
+    title: "Phase 1 mobile foundations",
+    items: ["App shell", "Top bar", "Tab bar", "List section", "List row", "Card", "Search field", "Switch"]
   },
   {
-    title: "Core controls",
-    items: ["Icon button", "Link", "Search field", "Select", "Checkbox", "Radio", "Toggle", "Slider"]
+    title: "Starter controls",
+    items: ["Button", "Icon", "Text field", "Text area", "File upload", "Expandable section"]
   },
   {
     title: "Navigation",
@@ -677,6 +677,92 @@ function pageShell(title: string, body: string, active = "index"): string {
       font-weight: 600;
     }
 
+    .ag-demo-mobile {
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-panel);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-topbar,
+    .ag-demo-tabbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-topbar strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 500;
+    }
+
+    .ag-demo-topbar small,
+    .ag-demo-row small {
+      color: var(--color-text-muted);
+    }
+
+    .ag-demo-mobile-body {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .ag-demo-search {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      color: var(--color-text-muted);
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-demo-card,
+    .ag-demo-list {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-card {
+      padding: 16px;
+    }
+
+    .ag-demo-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 14px;
+      border-top: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-row:first-child {
+      border-top: 0;
+    }
+
+    .ag-demo-switch {
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      background: var(--accent-300);
+    }
+
+    .ag-demo-tabbar {
+      border-top: 1px solid var(--color-border-soft);
+      border-bottom: 0;
+      justify-content: space-around;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .preview-row {
       display: flex;
       flex-wrap: wrap;
@@ -917,10 +1003,10 @@ function renderUsage(version: string): string {
       <pre><code>npm install @aurelglyph/css@${escapeHtml(version)} @aurelglyph/react@${escapeHtml(version)}</code></pre>
       <h2>React and CSS compatible range</h2>
       <pre><code>npm install @aurelglyph/css@^${escapeHtml(version)} @aurelglyph/react@^${escapeHtml(version)}</code></pre>
-      <pre><code>import "@aurelglyph/css";
-import "@aurelglyph/react/styles.css";</code></pre>
+      <pre><code>import "@aurelglyph/css";</code></pre>
+      <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
       <h2>React icons</h2>
-      <pre><code>import { Button, ExpandableSection, Icon } from "@aurelglyph/react";
+      <pre><code>import { AppShell, Button, Card, ExpandableSection, Icon, ListRow, ListSection, SearchField, Switch, TabBar, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
@@ -937,7 +1023,19 @@ import "@aurelglyph/react/styles.css";</code></pre>
 &lt;TextField label="Project name" name="projectName" helpText="Use a short name." /&gt;
 &lt;TextField label="Version" name="version" error="Use a supported version." /&gt;
 &lt;TextArea label="Notes" name="notes" placeholder="Describe the app surface." /&gt;
-&lt;FileUpload accept=".json,.css,.ts,.tsx,.swift,.rb" label="Generated outputs" name="outputs" /&gt;</code></pre>
+&lt;FileUpload accept=".json,.css,.ts,.tsx,.swift,.rb" label="Generated outputs" name="outputs" /&gt;
+
+&lt;AppShell
+  topBar={&lt;TopBar title="Workbench" subtitle="Systems" /&gt;}
+  footer={&lt;TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} /&gt;}
+&gt;
+  &lt;SearchField label="Search systems" name="query" /&gt;
+  &lt;Card eyebrow="Live" title="Status"&gt;Systems operational&lt;/Card&gt;
+  &lt;ListSection title="Settings"&gt;
+    &lt;ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" /&gt;
+  &lt;/ListSection&gt;
+  &lt;Switch label="Quiet mode" name="quiet" /&gt;
+&lt;/AppShell&gt;</code></pre>
       <h2>Rails Git tag</h2>
       <pre><code>gem "aurelglyph-rails",
   git: "https://github.com/absessive/aurelglyph",
@@ -950,6 +1048,13 @@ import "@aurelglyph/react/styles.css";</code></pre>
       <pre><code>&lt;%= aurelglyph_expandable_section("Advanced settings", eyebrow: "System", open: true) do %&gt;
   &lt;p&gt;Server-rendered disclosure content.&lt;/p&gt;
 &lt;% end %&gt;</code></pre>
+      <h2>Rails Phase 1 helpers</h2>
+      <pre><code>&lt;%= aurelglyph_search_field(name: "query", label: "Search systems") %&gt;
+&lt;%= aurelglyph_card(title: "Status", eyebrow: "Live") { "Systems operational" } %&gt;
+&lt;%= aurelglyph_list_section(title: "Settings") do %&gt;
+  &lt;%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %&gt;
+&lt;% end %&gt;
+&lt;%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %&gt;</code></pre>
       <h2>SwiftUI exact version</h2>
       <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "${escapeHtml(version)}")</code></pre>
       <h2>SwiftUI compatible version</h2>
@@ -975,6 +1080,19 @@ Text("color.accent.royal-purple.300")
 
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
   Text("Animated SwiftUI content")
+}</code></pre>
+      <h2>SwiftUI Phase 1 components</h2>
+      <pre><code>AurelglyphAppShell {
+  AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }
+} content: {
+  AurelglyphSearchField(text: $query)
+  AurelglyphCard(title: "Status", eyebrow: "Live") { Text("Systems operational") }
+  AurelglyphListSection("Settings") {
+    AurelglyphListRow("Quiet mode", subtitle: "Enabled", systemImage: "bell", isSelected: true) { Text("On") }
+  }
+  AurelglyphSwitch("Quiet mode", isOn: $quiet)
+} tabBar: {
+  AurelglyphTabBar(items: tabs, selection: $selectedTab)
 }</code></pre>
       <h2>Packaged fonts</h2>
       <p>The CSS package bundles OFL WOFF2 files for Newsreader, IBM Plex Serif, IBM Plex Sans, and JetBrains Mono. System UI fonts remain fallbacks.</p>
@@ -1002,6 +1120,24 @@ function renderComponents(glyphs: IconGlyphs): string {
       </div>
       <h2>Preview</h2>
       <div class="preview-stack">
+        <section class="preview-card">
+          <h3>Phase 1 mobile foundation</h3>
+          <div class="ag-demo-mobile">
+            <div class="ag-demo-topbar">
+              <span><strong>Workbench</strong><small>Systems online</small></span>
+              <button class="ag-demo-button">Edit</button>
+            </div>
+            <div class="ag-demo-mobile-body">
+              <div class="ag-demo-search">Search systems</div>
+              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Systems operational across mobile app surfaces.</p></div>
+              <div class="ag-demo-list">
+                <div class="ag-demo-row"><span><strong>Quiet mode</strong><br><small>Reduce notification noise</small></span><span class="ag-demo-switch"></span></div>
+                <div class="ag-demo-row"><span><strong>Sync</strong><br><small>All generated packages aligned</small></span><small>Now</small></div>
+              </div>
+            </div>
+            <div class="ag-demo-tabbar"><span>Workbench</span><span>Systems</span><span>Settings</span></div>
+          </div>
+        </section>
         <section class="preview-card">
           <h3>Buttons</h3>
           <div class="preview-row">

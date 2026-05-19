@@ -414,6 +414,92 @@
       font-weight: 600;
     }
 
+    .ag-demo-mobile {
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-panel);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-topbar,
+    .ag-demo-tabbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-topbar strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 500;
+    }
+
+    .ag-demo-topbar small,
+    .ag-demo-row small {
+      color: var(--color-text-muted);
+    }
+
+    .ag-demo-mobile-body {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .ag-demo-search {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      color: var(--color-text-muted);
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-demo-card,
+    .ag-demo-list {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-card {
+      padding: 16px;
+    }
+
+    .ag-demo-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 14px;
+      border-top: 1px solid var(--color-border-soft);
+    }
+
+    .ag-demo-row:first-child {
+      border-top: 0;
+    }
+
+    .ag-demo-switch {
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      background: var(--accent-300);
+    }
+
+    .ag-demo-tabbar {
+      border-top: 1px solid var(--color-border-soft);
+      border-bottom: 0;
+      justify-content: space-around;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .preview-row {
       display: flex;
       flex-wrap: wrap;
@@ -616,6 +702,12 @@
     </header>
     <article class="panel markdown">
 <h1>Changelog</h1>
+<h2>0.2.0</h2>
+<ul>
+<li>Add Phase 1 mobile foundation components across React, SwiftUI, Rails, and docs.</li>
+<li>Publish the shared component CSS through <code>@aurelglyph/css</code> and the generated Rails stylesheet so raw CSS, React, and Rails consumers render the same starter controls.</li>
+<li>Add SwiftUI app shell, top bar, tab bar, cards, lists, search, and switch controls with cross-platform iOS/macOS-safe styling.</li>
+</ul>
 <h2>0.1.1</h2>
 <ul>
 <li>Add iOS-compatible Swift font assets, runtime font registration, and custom-font typography roles.</li>
