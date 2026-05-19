@@ -15,7 +15,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/css",
-      version: "0.1.0",
+      version: "0.1.1",
       license: "MIT",
       type: "module",
       style: "dist/index.css",
@@ -29,7 +29,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.0"
+        "@aurelglyph/tokens": "0.1.1"
       }
     });
     expect(css).toContain('font-family: "Newsreader";');
@@ -58,7 +58,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react-native",
-      version: "0.1.0",
+      version: "0.1.1",
       license: "MIT",
       type: "module",
       main: "src/index.ts",
@@ -69,7 +69,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.0"
+        "@aurelglyph/tokens": "0.1.1"
       }
     });
     expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
@@ -80,22 +80,27 @@ describe("platform adapter skeletons", () => {
     const packageSwift = await read("packages/swift/Package.swift");
     const generated = await read("packages/tokens/dist/generated/AurelglyphTokens.swift");
     const copied = await read("packages/swift/Sources/AurelglyphUI/AurelglyphTokens.swift");
+    const fontRegistry = await read("packages/swift/Sources/AurelglyphUI/AurelglyphFontRegistry.swift");
+    const font = await read("packages/swift/Sources/AurelglyphUI/Resources/Fonts/Newsreader-Medium.ttf");
 
     expect(packageJson).toMatchObject({
       name: "@aurelglyph/swift",
-      version: "0.1.0",
+      version: "0.1.1",
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.0"
+        "@aurelglyph/tokens": "0.1.1"
       }
     });
     expect(packageSwift).toContain('name: "AurelglyphUI"');
     expect(packageSwift).toContain(".iOS(.v17)");
     expect(packageSwift).toContain(".macOS(.v14)");
     expect(packageSwift).toContain('.library(name: "AurelglyphUI", targets: ["AurelglyphUI"])');
-    expect(packageSwift).toContain('.target(name: "AurelglyphUI")');
+    expect(packageSwift).toContain('name: "AurelglyphUI"');
+    expect(packageSwift).toContain('.process("Resources")');
+    expect(fontRegistry).toContain("AurelglyphFontRegistry");
+    expect(font.length).toBeGreaterThan(0);
     expect(copied).toBe(generated);
   });
 
@@ -108,7 +113,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "aurelglyph-rails",
-      version: "0.1.0",
+      version: "0.1.1",
       license: "MIT",
       files: ["app", "lib", "*.gemspec", "README.md"],
       scripts: {
@@ -117,7 +122,7 @@ describe("platform adapter skeletons", () => {
         test: "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.1.0"
+        "@aurelglyph/tokens": "0.1.1"
       }
     });
     expect(copiedCss).toBe(generatedCss);

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Add iOS-compatible Swift font assets, runtime font registration, and custom-font typography roles.
+
 ## 0.1.0
 
 - Establish the first Aurelglyph cross-platform design-system workspace.

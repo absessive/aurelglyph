@@ -27,7 +27,8 @@ SOFTWARE.
 ## Packaged Fonts
 
 The `@aurelglyph/css` package includes locally packaged WOFF2 files for these
-font families:
+font families. The `AurelglyphUI` Swift package includes iOS-compatible TTF
+files for the same families:
 
 - Newsreader: display/editorial face
 - IBM Plex Serif: editorial serif fallback
@@ -50,3 +51,9 @@ Packaged WOFF2 files were copied from Fontsource packages:
 - https://www.npmjs.com/package/@fontsource/ibm-plex-serif
 - https://www.npmjs.com/package/@fontsource/ibm-plex-sans
 - https://www.npmjs.com/package/@fontsource/jetbrains-mono
+
+Packaged Swift TTF files were copied from the upstream font repositories:
+
+- Newsreader static TTF files from `productiontype/Newsreader`
+- IBM Plex Sans and IBM Plex Serif complete TTF files from `IBM/plex`
+- JetBrains Mono TTF files from `JetBrains/JetBrainsMono`

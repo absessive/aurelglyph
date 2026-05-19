@@ -11,6 +11,7 @@ type PackageJson = {
 };
 
 type PackageLock = {
+  version?: string;
   packages?: Record<string, PackageJson>;
 };
 
@@ -121,6 +122,12 @@ async function syncPackageLock(root: string, version: string): Promise<void> {
   const lock = await readJson<PackageLock>(path).catch(() => undefined);
   if (!lock?.packages) return;
 
+  lock.version = version;
+
+  if (lock.packages[""]) {
+    lock.packages[""].version = version;
+  }
+
   for (const packagePath of workspacePackagePaths) {
     if (lock.packages[packagePath]) {
       lock.packages[packagePath].version = version;
@@ -150,7 +157,7 @@ async function syncChangelog(root: string, version: string, changelogItems: stri
     return;
   }
 
-  await writeFile(path, `${normalized.replace(/^# Changelog\n*/u, "# Changelog\n\n")}${entry}\n`);
+  await writeFile(path, `${normalized.replace(/^# Changelog\n*/u, `# Changelog\n\n${entry}\n`)}\n`);
 }
 
 async function main(): Promise<void> {

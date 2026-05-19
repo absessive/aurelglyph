@@ -907,16 +907,16 @@ function renderIndex(version: string, description: string): string {
   , "index");
 }
 
-function renderUsage(): string {
+function renderUsage(version: string): string {
   return pageShell(
     "Aurelglyph Usage",
     `    <article class="panel markdown">
       <h1>Usage</h1>
       <p>Use Aurelglyph by installing the package for your platform, importing the generated styles or token values, then setting the theme attributes on the root surface. Pin exact versions for applications and loosen ranges only when you are ready to adopt compatible updates.</p>
       <h2>React and CSS exact version</h2>
-      <pre><code>npm install @aurelglyph/css@0.1.0 @aurelglyph/react@0.1.0</code></pre>
+      <pre><code>npm install @aurelglyph/css@${escapeHtml(version)} @aurelglyph/react@${escapeHtml(version)}</code></pre>
       <h2>React and CSS compatible range</h2>
-      <pre><code>npm install @aurelglyph/css@^0.1.0 @aurelglyph/react@^0.1.0</code></pre>
+      <pre><code>npm install @aurelglyph/css@^${escapeHtml(version)} @aurelglyph/react@^${escapeHtml(version)}</code></pre>
       <pre><code>import "@aurelglyph/css";
 import "@aurelglyph/react/styles.css";</code></pre>
       <h2>React icons</h2>
@@ -942,7 +942,7 @@ import "@aurelglyph/react/styles.css";</code></pre>
       <pre><code>gem "aurelglyph-rails",
   git: "https://github.com/absessive/aurelglyph",
   glob: "packages/rails/aurelglyph-rails.gemspec",
-  tag: "v0.1.0"</code></pre>
+  tag: "v${escapeHtml(version)}"</code></pre>
       <h2>Rails icons</h2>
       <pre><code>&lt;%= aurelglyph_icon("dashboard", title: "Dashboard") %&gt;
 &lt;%= aurelglyph_icon("sync", decorative: true, class: "toolbar-icon") %&gt;</code></pre>
@@ -951,15 +951,17 @@ import "@aurelglyph/react/styles.css";</code></pre>
   &lt;p&gt;Server-rendered disclosure content.&lt;/p&gt;
 &lt;% end %&gt;</code></pre>
       <h2>SwiftUI exact version</h2>
-      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "0.1.0")</code></pre>
+      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "${escapeHtml(version)}")</code></pre>
       <h2>SwiftUI compatible version</h2>
-      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", from: "0.1.0")</code></pre>
+      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", from: "${escapeHtml(version)}")</code></pre>
       <h2>Swift icons</h2>
       <pre><code>let icon = AurelglyphIcon.creditCard
 let assetName = icon.rawValue
 let label = icon.accessibilityLabel</code></pre>
       <h2>SwiftUI typography</h2>
-      <pre><code>Text("Aurelglyph")
+      <pre><code>AurelglyphFontRegistry.registerFonts()
+
+Text("Aurelglyph")
   .font(AurelglyphTypography.displayLarge)
 
 Text("System status")
@@ -967,7 +969,7 @@ Text("System status")
 
 Text("color.accent.royal-purple.300")
   .font(AurelglyphTypography.monoLabel)</code></pre>
-      <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. <code>AurelglyphTypography</code> maps display to native serif, UI/body to native sans, and mono to native monospaced SwiftUI fonts.</p>
+      <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. It bundles iOS-compatible TTF files for Newsreader, IBM Plex Sans, IBM Plex Serif, and JetBrains Mono. <code>AurelglyphTypography</code> registers and uses those fonts when available, with native SwiftUI fallbacks.</p>
       <h2>SwiftUI expandable section</h2>
       <pre><code>@State private var expanded = true
 
@@ -1078,7 +1080,7 @@ export async function buildGithubPages(root = repoRoot): Promise<PagesBuildResul
   await rm(fontDocsRoot, { recursive: true, force: true });
   await cp(fontSourceRoot, fontDocsRoot, { recursive: true });
   await writeFile(join(docsRoot, "index.html"), renderIndex(version, description));
-  await writeFile(join(docsRoot, "usage.html"), renderUsage());
+  await writeFile(join(docsRoot, "usage.html"), renderUsage(version));
   await writeFile(join(docsRoot, "components.html"), renderComponents(iconGlyphs));
   await writeFile(join(docsRoot, "changelog.html"), renderChangelog(changelog));
   await writeFile(join(docsRoot, "CNAME"), `${githubPagesCustomDomain}\n`);

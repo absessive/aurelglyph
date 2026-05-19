@@ -12,7 +12,12 @@ let package = Package(
     .library(name: "AurelglyphUI", targets: ["AurelglyphUI"])
   ],
   targets: [
-    .target(name: "AurelglyphUI"),
+    .target(
+      name: "AurelglyphUI",
+      resources: [
+        .process("Resources")
+      ]
+    ),
     .testTarget(
       name: "AurelglyphUITests",
       dependencies: ["AurelglyphUI"]

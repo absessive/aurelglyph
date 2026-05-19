@@ -82,15 +82,17 @@ describe("GitHub Pages generator", () => {
     expect(index).toContain("Shared source files");
 
     expect(usage).toContain("<title>Aurelglyph Usage</title>");
-    expect(usage).toContain("npm install @aurelglyph/css@0.1.0 @aurelglyph/react@0.1.0");
-    expect(usage).toContain('tag: "v0.1.0"');
-    expect(usage).toContain('exact: "0.1.0"');
+    expect(usage).toContain("npm install @aurelglyph/css@1.2.3 @aurelglyph/react@1.2.3");
+    expect(usage).toContain('tag: "v1.2.3"');
+    expect(usage).toContain('exact: "1.2.3"');
     expect(usage).toContain("aurelglyph-rails");
     expect(usage).toContain("SwiftUI");
     expect(usage).toContain("aurelglyph_icon");
     expect(usage).toContain("AurelglyphIcon.creditCard");
+    expect(usage).toContain("AurelglyphFontRegistry.registerFonts");
     expect(usage).toContain("AurelglyphTypography.displayLarge");
     expect(usage).toContain("does not bundle the web WOFF2 files");
+    expect(usage).toContain("iOS-compatible TTF files");
     expect(usage).toContain("Newsreader");
     expect(usage).toContain("IBM Plex Sans");
     expect(usage).toContain("JetBrains Mono");

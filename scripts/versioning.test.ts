@@ -19,7 +19,10 @@ async function createWorkspace(): Promise<string> {
     JSON.stringify({ name: "aurelglyph", version: "1.2.3", private: true }, null, 2)
   );
   await writeFile(join(root, "CHANGELOG.md"), "# Changelog\n\n## 1.2.3\n\n- Existing entry\n");
-  await writeFile(join(root, "package-lock.json"), JSON.stringify({ lockfileVersion: 3, packages: {} }, null, 2));
+  await writeFile(
+    join(root, "package-lock.json"),
+    JSON.stringify({ lockfileVersion: 3, packages: { "": { name: "aurelglyph", version: "0.0.1" } } }, null, 2)
+  );
 
   for (const path of workspacePackagePaths) {
     const directory = join(root, path);
@@ -55,9 +58,15 @@ describe("workspace versioning", () => {
 
     await syncWorkspaceVersions(root);
     const result = await checkWorkspaceVersions(root);
+    const packageLock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8")) as {
+      version: string;
+      packages: { "": { version: string } };
+    };
 
     expect(result.ok).toBe(true);
     expect(result.mismatches).toEqual([]);
+    expect(packageLock.version).toBe("1.2.3");
+    expect(packageLock.packages[""].version).toBe("1.2.3");
   });
 
   it("requires a changelog section for the shared version", async () => {
@@ -79,5 +88,18 @@ describe("workspace versioning", () => {
 
     expect(changelog).toContain("## 1.2.3");
     expect(changelog).toContain("- Add cross-platform versioning support.");
+    expect(changelog).toContain("# Changelog\n\n## 1.2.3");
+  });
+
+  it("prepends new changelog entries above existing versions", async () => {
+    const root = await createWorkspace();
+    await writeFile(join(root, "package.json"), JSON.stringify({ name: "aurelglyph", version: "2.0.0" }, null, 2));
+    await writeFile(join(root, "CHANGELOG.md"), "# Changelog\n\n## 1.2.3\n\n- Existing entry\n");
+
+    await syncWorkspaceVersions(root, ["Add the next release."]);
+    const changelog = await readFile(join(root, "CHANGELOG.md"), "utf8");
+
+    expect(changelog.indexOf("## 2.0.0")).toBeLessThan(changelog.indexOf("## 1.2.3"));
+    expect(changelog).toContain("- Add the next release.");
   });
 });

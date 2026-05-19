@@ -19,6 +19,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
+const packageVersion = "0.1.1";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -258,7 +259,7 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
     <>
       <header className="example-hero">
         <div className="example-hero__copy">
-          <p className="example-kicker">Aurelglyph React · v0.1.0</p>
+          <p className="example-kicker">Aurelglyph React · v{packageVersion}</p>
           <h1 id="hero-title">Aurelglyph React components.</h1>
           <p className="example-hero__summary">
             Buttons, fields, text areas, upload controls, and icons using the
@@ -449,7 +450,7 @@ function ComponentsPage() {
               error="Use a supported package version."
               label="Version"
               name="components-version"
-              placeholder="0.1.0"
+              placeholder={packageVersion}
             />
           </div>
         </section>
@@ -497,9 +498,9 @@ function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
         <h2 id="usage-title">Install and configure</h2>
       </div>
       <div className="example-code-grid">
-        <CodeBlock label="React exact version" code={"npm install @aurelglyph/css@0.1.0 @aurelglyph/react@0.1.0\n\nimport \"@aurelglyph/css\";\nimport \"@aurelglyph/react/styles.css\";"} />
-        <CodeBlock label="Rails Git ref" code={'gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v0.1.0"'} />
-        <CodeBlock label="SwiftPM version" code={'.package(url: "https://github.com/absessive/aurelglyph", exact: "0.1.0")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "0.1.0")'} />
+        <CodeBlock label="React exact version" code={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}\n\nimport "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";`} />
+        <CodeBlock label="Rails Git ref" code={`gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v${packageVersion}"`} />
+        <CodeBlock label="SwiftPM version" code={`.package(url: "https://github.com/absessive/aurelglyph", exact: "${packageVersion}")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "${packageVersion}")`} />
         <CodeBlock label="Current theme" code={`<html data-mode="${mode}" data-theme="${theme}">`} />
       </div>
     </section>
@@ -511,7 +512,7 @@ function ChangelogPage() {
     <section className="example-panel" aria-labelledby="changelog-title">
       <div className="example-panel__header">
         <p className="example-kicker">CHANGELOG</p>
-        <h2 id="changelog-title">0.1.0</h2>
+        <h2 id="changelog-title">0.1.1</h2>
       </div>
       <p className="example-copy">
         Establish the first Aurelglyph cross-platform design-system workspace.

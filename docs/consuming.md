@@ -303,6 +303,8 @@ let accent = AurelglyphTokens.colorAccentRoyalPurple300
 Use the native SwiftUI typography adapter for Aurelglyph roles:
 
 ```swift
+AurelglyphFontRegistry.registerFonts()
+
 Text("Aurelglyph")
   .font(AurelglyphTypography.displayLarge)
 
@@ -314,9 +316,9 @@ Text("color.accent.royal-purple.300")
 ```
 
 The Swift package does not bundle the web `.woff2` files from `@aurelglyph/css`.
-`AurelglyphTypography` maps display to a native serif font, UI/body to native
-sans, and mono to a native monospaced font. If a Swift app needs exact custom
-font names later, add iOS-compatible `.ttf` or `.otf` assets in the app target.
+It bundles iOS-compatible `.ttf` files for Newsreader, IBM Plex Sans, IBM Plex
+Serif, and JetBrains Mono. `AurelglyphTypography` registers and uses those
+fonts when available, with native SwiftUI serif, sans, and monospaced fallbacks.
 
 Use the typed icon contract when mapping Aurelglyph names to SwiftUI rendering,
 asset catalogs, or platform symbols:
@@ -341,5 +343,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.1.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.1.1")
 ```

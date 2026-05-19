@@ -14,7 +14,10 @@ let package = Package(
   targets: [
     .target(
       name: "AurelglyphUI",
-      path: "packages/swift/Sources/AurelglyphUI"
+      path: "packages/swift/Sources/AurelglyphUI",
+      resources: [
+        .process("Resources")
+      ]
     ),
     .testTarget(
       name: "AurelglyphUITests",
