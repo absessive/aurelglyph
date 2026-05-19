@@ -1,9 +1,8 @@
 # Consuming Aurelglyph
 
 This guide documents the minimum configuration needed to consume the current
-Aurelglyph workspace outputs. Package registry publishing is still settling, so
-the examples describe local workspace usage, Git consumption, and the package
-shape expected after publication.
+Aurelglyph workspace outputs. It covers local workspace usage, Git consumption,
+and the package shape used by published npm, RubyGems, and SwiftPM consumers.
 
 ## GitHub Pages
 
@@ -197,7 +196,10 @@ For expandable sections, use the animated disclosure component. It wires
 ```
 
 Use Phase 1 mobile foundations for app chrome, search, grouped settings, and
-binary controls:
+binary controls. Use Phase 2 controls for structured app surfaces, page actions,
+bounded choice inputs, alerts, identity, and compact status labels. Use Phase 3
+controls for workbench navigation, non-blocking feedback, loading state,
+measured values, bounded result sets, and keyboard-first commands:
 
 ```tsx
 <AppShell
@@ -210,6 +212,17 @@ binary controls:
     <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
   </ListSection>
   <Switch label="Quiet mode" name="quiet" />
+  <NavigationStack title="Workbench">
+    <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
+      <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
+      <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+      <Badge tone="accent">Live</Badge>
+    </NavigationPage>
+  </NavigationStack>
+  <Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}>Review generated package status.</Tabs>
+  <Metric label="Latency" value="42ms" delta="Stable" />
+  <Progress value={72} />
+  <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
 </AppShell>
 ```
 
@@ -317,6 +330,12 @@ Use the Rails view helpers installed by the engine:
   <%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %>
 <% end %>
 <%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %>
+<%= aurelglyph_alert("Build complete", tone: "success") { "Tokens and component styles compiled without errors." } %>
+<%= aurelglyph_segmented_control([{ id: "grid", label: "Grid" }, { id: "list", label: "List" }], active: "grid") %>
+<%= aurelglyph_badge("Live", tone: "accent") %>
+<%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %>
+<%= aurelglyph_progress(value: 72) %>
+<%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %>
 ```
 
 ## Swift
@@ -396,11 +415,20 @@ AurelglyphAppShell {
 } tabBar: {
   AurelglyphTabBar(items: tabs, selection: $selectedTab)
 }
+
+AurelglyphNavigationStack("Workbench") {
+  AurelglyphSegmentedControl(items: [AurelglyphSegmentedItem(id: "grid", title: "Grid")], selection: $viewMode)
+  AurelglyphAlert("Build complete") { Text("Tokens and component styles compiled without errors.") }
+  AurelglyphBadge("Live")
+  AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
+  AurelglyphProgress(value: 72)
+  AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
+}
 ```
 
 Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.2.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.3.0")
 ```

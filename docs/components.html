@@ -702,7 +702,7 @@
     </header>
     <article class="panel markdown">
       <h1>Components</h1>
-      <p>This page shows the starter visual contract for Aurelglyph components across CSS/Web, React, React Native, SwiftUI, and Rails. React has the first live implementation, but naming, variants, states, and accessibility expectations should carry across every platform package.</p>
+      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Phase 2 covers app structure, controls, and feedback. Phase 3 covers workbench navigation, loading state, measured values, tables, pagination, and command execution.</p>
       <h2>Platform targets</h2>
       <div class="catalog">
         <section class="catalog-card">
@@ -727,13 +727,36 @@
             </div>
             <div class="ag-demo-mobile-body">
               <div class="ag-demo-search">Search systems</div>
-              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Systems operational across mobile app surfaces.</p></div>
+              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Shared component classes are loaded from the CSS package.</p></div>
               <div class="ag-demo-list">
                 <div class="ag-demo-row"><span><strong>Quiet mode</strong><br><small>Reduce notification noise</small></span><span class="ag-demo-switch"></span></div>
                 <div class="ag-demo-row"><span><strong>Sync</strong><br><small>All generated packages aligned</small></span><small>Now</small></div>
               </div>
             </div>
             <div class="ag-demo-tabbar"><span>Workbench</span><span>Systems</span><span>Settings</span></div>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Phase 2 app controls</h3>
+          <p>Use these controls for nested pages, toolbar actions, bounded choices, status messages, identity, and compact state labels.</p>
+          <div class="preview-row">
+            <span class="ag-badge ag-badge--accent">Live</span>
+            <span class="ag-avatar" role="img" aria-label="Ajit Chakrapani"><span class="ag-avatar__initials">AC</span></span>
+            <span class="ag-alert ag-alert--success"><span class="ag-alert__dot" aria-hidden="true"></span><span class="ag-alert__content"><strong class="ag-alert__title">Build complete</strong><span class="ag-alert__body">Component styles compiled.</span></span></span>
+          </div>
+          <div class="ag-segmented" role="radiogroup" aria-label="View">
+            <button class="ag-segmented__item is-active" role="radio" aria-checked="true">Grid</button>
+            <button class="ag-segmented__item" role="radio" aria-checked="false">List</button>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Phase 3 workbench controls</h3>
+          <p>Use these controls for data-heavy workbenches that need location, measured state, loading feedback, and keyboard-first actions.</p>
+          <div class="ag-metric"><p class="ag-metric__label">Latency</p><strong class="ag-metric__value">42ms</strong><span class="ag-metric__delta">Stable</span></div>
+          <div class="ag-progress" role="progressbar" aria-label="Release readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><span class="ag-progress__bar" style="inline-size: 72%"></span></div>
+          <div class="ag-command-palette" role="dialog" aria-label="Command palette">
+            <label class="ag-command-palette__search"><span class="ag-command-palette__label">Command palette</span><input class="ag-command-palette__input" placeholder="Type a command" type="search"></label>
+            <div class="ag-command-palette__list" role="listbox"><button class="ag-command-palette__item" role="option" type="button"><span class="ag-command-palette__item-label">Search systems</span><kbd class="ag-command-palette__shortcut">Cmd-K</kbd></button></div>
           </div>
         </section>
         <section class="preview-card">

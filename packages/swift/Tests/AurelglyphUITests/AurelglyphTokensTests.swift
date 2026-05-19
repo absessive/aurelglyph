@@ -100,3 +100,72 @@ import SwiftUI
   #expect(String(describing: type(of: search)).contains("AurelglyphSearchField"))
   #expect(String(describing: type(of: toggle)).contains("AurelglyphSwitch"))
 }
+
+@Test func exposesPhaseTwoMobileAppComponents() {
+  let selection = Binding.constant("grid")
+  let item = AurelglyphSegmentedItem(id: "grid", title: "Grid")
+  let nav = AurelglyphNavigationStack("Workbench") {
+    Text("Systems")
+  }
+  let toolbar = AurelglyphToolbar {
+    Text("Save")
+  }
+  let sheet = AurelglyphSheet("Details") {
+    Text("Sheet body")
+  } actions: {
+    Text("Done")
+  }
+  let segmented = AurelglyphSegmentedControl(items: [item], selection: selection)
+  let select = AurelglyphSelect("Theme", items: [item], selection: selection)
+  let alert = AurelglyphAlert("Synced") {
+    Text("Systems operational")
+  }
+  let empty = AurelglyphEmptyState("No systems", message: "Create a system") {
+    Text("Create")
+  }
+  let avatar = AurelglyphAvatar("Ajit Chakrapani")
+  let badge = AurelglyphBadge("Live")
+
+  #expect(String(describing: type(of: nav)).contains("AurelglyphNavigationStack"))
+  #expect(String(describing: type(of: toolbar)).contains("AurelglyphToolbar"))
+  #expect(String(describing: type(of: sheet)).contains("AurelglyphSheet"))
+  #expect(String(describing: type(of: segmented)).contains("AurelglyphSegmentedControl"))
+  #expect(String(describing: type(of: select)).contains("AurelglyphSelect"))
+  #expect(String(describing: type(of: alert)).contains("AurelglyphAlert"))
+  #expect(String(describing: type(of: empty)).contains("AurelglyphEmptyState"))
+  #expect(String(describing: type(of: avatar)).contains("AurelglyphAvatar"))
+  #expect(String(describing: type(of: badge)).contains("AurelglyphBadge"))
+}
+
+@Test func exposesPhaseThreeWorkbenchComponents() {
+  let selection = Binding.constant("overview")
+  let tabItem = AurelglyphSegmentedItem(id: "overview", title: "Overview")
+  let tabs = AurelglyphTabs(items: [tabItem], selection: selection) {
+    Text("Panel")
+  }
+  let breadcrumbs = AurelglyphBreadcrumbs(items: [
+    AurelglyphBreadcrumbItem(id: "workbench", title: "Workbench"),
+    AurelglyphBreadcrumbItem(id: "systems", title: "Systems")
+  ])
+  let toast = AurelglyphToast("Saved") {
+    Text("Changes synced")
+  }
+  let progress = AurelglyphProgress(value: 42)
+  let skeleton = AurelglyphSkeleton()
+  let metric = AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
+  let table = AurelglyphDataTable(headers: ["Name"], rows: [["System"]])
+  let pagination = AurelglyphPagination(currentPage: 2, totalPages: 3)
+  let command = AurelglyphCommandPalette(items: [
+    AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")
+  ])
+
+  #expect(String(describing: type(of: tabs)).contains("AurelglyphTabs"))
+  #expect(String(describing: type(of: breadcrumbs)).contains("AurelglyphBreadcrumbs"))
+  #expect(String(describing: type(of: toast)).contains("AurelglyphToast"))
+  #expect(String(describing: type(of: progress)).contains("AurelglyphProgress"))
+  #expect(String(describing: type(of: skeleton)).contains("AurelglyphSkeleton"))
+  #expect(String(describing: type(of: metric)).contains("AurelglyphMetric"))
+  #expect(String(describing: type(of: table)).contains("AurelglyphDataTable"))
+  #expect(String(describing: type(of: pagination)).contains("AurelglyphPagination"))
+  #expect(String(describing: type(of: command)).contains("AurelglyphCommandPalette"))
+}

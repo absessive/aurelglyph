@@ -21,6 +21,14 @@ const componentGroups = [
     items: ["App shell", "Top bar", "Tab bar", "List section", "List row", "Card", "Search field", "Switch"]
   },
   {
+    title: "Phase 2 app controls",
+    items: ["Nested app surfaces", "Page actions", "Focused sheets", "Bounded choices", "Alerts", "Empty states", "Identity", "Compact status"]
+  },
+  {
+    title: "Phase 3 workbench controls",
+    items: ["Workbench navigation", "Breadcrumb location", "Non-blocking feedback", "Loading state", "Measured values", "Data tables", "Pagination", "Command palette"]
+  },
+  {
     title: "Starter controls",
     items: ["Button", "Icon", "Text field", "Text area", "File upload", "Expandable section"]
   },
@@ -1006,7 +1014,7 @@ function renderUsage(version: string): string {
       <pre><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
       <h2>React icons</h2>
-      <pre><code>import { AppShell, Button, Card, ExpandableSection, Icon, ListRow, ListSection, SearchField, Switch, TabBar, TopBar } from "@aurelglyph/react";
+      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, Toast, Toolbar, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
@@ -1035,6 +1043,27 @@ function renderUsage(version: string): string {
     &lt;ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" /&gt;
   &lt;/ListSection&gt;
   &lt;Switch label="Quiet mode" name="quiet" /&gt;
+  &lt;NavigationStack title="Workbench"&gt;
+    &lt;NavigationPage actions={&lt;Toolbar&gt;&lt;Button icon="save"&gt;Save&lt;/Button&gt;&lt;/Toolbar&gt;} title="Systems"&gt;
+      &lt;SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} /&gt;
+      &lt;Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} /&gt;
+      &lt;Alert title="Build complete" tone="success"&gt;Tokens and component styles compiled without errors.&lt;/Alert&gt;
+      &lt;Avatar name="Ajit Chakrapani" /&gt;
+      &lt;Badge tone="accent"&gt;Live&lt;/Badge&gt;
+      &lt;EmptyState title="No archived releases"&gt;Use this state when a filtered list has no records.&lt;/EmptyState&gt;
+      &lt;Button onClick={() =&gt; setDetailsOpen(true)} variant="secondary"&gt;Open sheet&lt;/Button&gt;
+      &lt;Sheet open={detailsOpen} title="Details"&gt;Use sheets for focused edits without leaving the current page.&lt;/Sheet&gt;
+    &lt;/NavigationPage&gt;
+  &lt;/NavigationStack&gt;
+  &lt;Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} /&gt;
+  &lt;Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}&gt;Review generated package status.&lt;/Tabs&gt;
+  &lt;Metric label="Latency" value="42ms" delta="Stable" /&gt;
+  &lt;Progress value={72} /&gt;
+  &lt;Skeleton /&gt;
+  &lt;DataTable columns={[{ header: "System", key: "system", render: (row) =&gt; row.system }]} getRowId={(row) =&gt; row.system} rows={[{ system: "Pages" }]} /&gt;
+  &lt;Pagination currentPage={2} totalPages={3} /&gt;
+  &lt;Toast title="Settings saved" tone="success"&gt;The toast reports a non-blocking outcome.&lt;/Toast&gt;
+  &lt;CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} /&gt;
 &lt;/AppShell&gt;</code></pre>
       <h2>Rails Git tag</h2>
       <pre><code>gem "aurelglyph-rails",
@@ -1054,7 +1083,13 @@ function renderUsage(version: string): string {
 &lt;%= aurelglyph_list_section(title: "Settings") do %&gt;
   &lt;%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %&gt;
 &lt;% end %&gt;
-&lt;%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %&gt;</code></pre>
+&lt;%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %&gt;
+&lt;%= aurelglyph_alert("Build complete", tone: "success") { "Tokens and component styles compiled without errors." } %&gt;
+&lt;%= aurelglyph_segmented_control([{ id: "grid", label: "Grid" }, { id: "list", label: "List" }], active: "grid") %&gt;
+&lt;%= aurelglyph_badge("Live", tone: "accent") %&gt;
+&lt;%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %&gt;
+&lt;%= aurelglyph_progress(value: 72) %&gt;
+&lt;%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %&gt;</code></pre>
       <h2>SwiftUI exact version</h2>
       <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "${escapeHtml(version)}")</code></pre>
       <h2>SwiftUI compatible version</h2>
@@ -1093,6 +1128,15 @@ AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: 
   AurelglyphSwitch("Quiet mode", isOn: $quiet)
 } tabBar: {
   AurelglyphTabBar(items: tabs, selection: $selectedTab)
+}
+
+AurelglyphNavigationStack("Workbench") {
+  AurelglyphSegmentedControl(items: [AurelglyphSegmentedItem(id: "grid", title: "Grid")], selection: $viewMode)
+  AurelglyphAlert("Build complete") { Text("Tokens and component styles compiled without errors.") }
+  AurelglyphBadge("Live")
+  AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
+  AurelglyphProgress(value: 72)
+  AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
 }</code></pre>
       <h2>Packaged fonts</h2>
       <p>The CSS package bundles OFL WOFF2 files for Newsreader, IBM Plex Serif, IBM Plex Sans, and JetBrains Mono. System UI fonts remain fallbacks.</p>
@@ -1108,7 +1152,7 @@ function renderComponents(glyphs: IconGlyphs): string {
     "Aurelglyph Components",
     `    <article class="panel markdown">
       <h1>Components</h1>
-      <p>This page shows the starter visual contract for Aurelglyph components across CSS/Web, React, React Native, SwiftUI, and Rails. React has the first live implementation, but naming, variants, states, and accessibility expectations should carry across every platform package.</p>
+      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Phase 2 covers app structure, controls, and feedback. Phase 3 covers workbench navigation, loading state, measured values, tables, pagination, and command execution.</p>
       <h2>Platform targets</h2>
       <div class="catalog">
         <section class="catalog-card">
@@ -1129,13 +1173,36 @@ function renderComponents(glyphs: IconGlyphs): string {
             </div>
             <div class="ag-demo-mobile-body">
               <div class="ag-demo-search">Search systems</div>
-              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Systems operational across mobile app surfaces.</p></div>
+              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Shared component classes are loaded from the CSS package.</p></div>
               <div class="ag-demo-list">
                 <div class="ag-demo-row"><span><strong>Quiet mode</strong><br><small>Reduce notification noise</small></span><span class="ag-demo-switch"></span></div>
                 <div class="ag-demo-row"><span><strong>Sync</strong><br><small>All generated packages aligned</small></span><small>Now</small></div>
               </div>
             </div>
             <div class="ag-demo-tabbar"><span>Workbench</span><span>Systems</span><span>Settings</span></div>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Phase 2 app controls</h3>
+          <p>Use these controls for nested pages, toolbar actions, bounded choices, status messages, identity, and compact state labels.</p>
+          <div class="preview-row">
+            <span class="ag-badge ag-badge--accent">Live</span>
+            <span class="ag-avatar" role="img" aria-label="Ajit Chakrapani"><span class="ag-avatar__initials">AC</span></span>
+            <span class="ag-alert ag-alert--success"><span class="ag-alert__dot" aria-hidden="true"></span><span class="ag-alert__content"><strong class="ag-alert__title">Build complete</strong><span class="ag-alert__body">Component styles compiled.</span></span></span>
+          </div>
+          <div class="ag-segmented" role="radiogroup" aria-label="View">
+            <button class="ag-segmented__item is-active" role="radio" aria-checked="true">Grid</button>
+            <button class="ag-segmented__item" role="radio" aria-checked="false">List</button>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>Phase 3 workbench controls</h3>
+          <p>Use these controls for data-heavy workbenches that need location, measured state, loading feedback, and keyboard-first actions.</p>
+          <div class="ag-metric"><p class="ag-metric__label">Latency</p><strong class="ag-metric__value">42ms</strong><span class="ag-metric__delta">Stable</span></div>
+          <div class="ag-progress" role="progressbar" aria-label="Release readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><span class="ag-progress__bar" style="inline-size: 72%"></span></div>
+          <div class="ag-command-palette" role="dialog" aria-label="Command palette">
+            <label class="ag-command-palette__search"><span class="ag-command-palette__label">Command palette</span><input class="ag-command-palette__input" placeholder="Type a command" type="search"></label>
+            <div class="ag-command-palette__list" role="listbox"><button class="ag-command-palette__item" role="option" type="button"><span class="ag-command-palette__item-label">Search systems</span><kbd class="ag-command-palette__shortcut">Cmd-K</kbd></button></div>
           </div>
         </section>
         <section class="preview-card">

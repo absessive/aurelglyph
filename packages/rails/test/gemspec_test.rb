@@ -10,7 +10,7 @@ class AurelglyphRailsGemspecTest < Minitest::Test
 
   def test_gemspec_supports_git_installation
     assert_equal "aurelglyph-rails", @spec.name
-    assert_equal "0.2.0", @spec.version.to_s
+    assert_equal "0.3.0", @spec.version.to_s
     assert_includes @spec.files, "lib/aurelglyph.rb"
     assert_includes @spec.files, "lib/aurelglyph/rails.rb"
     assert_includes @spec.files, "lib/aurelglyph/rails/engine.rb"

@@ -3,14 +3,32 @@ import type { ReactElement } from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { Alert } from "./Alert";
 import { Button } from "./Button";
 import { AppShell } from "./AppShell";
+import { Avatar } from "./Avatar";
+import { Badge } from "./Badge";
+import { Breadcrumbs } from "./Breadcrumbs";
 import { Card } from "./Card";
+import { CommandPalette } from "./CommandPalette";
+import { DataTable } from "./Table";
+import { EmptyState } from "./EmptyState";
 import { Icon, type AurelglyphIconName } from "./Icon";
 import { ListRow, ListSection } from "./List";
+import { Metric } from "./Metric";
+import { NavigationPage, NavigationStack } from "./NavigationStack";
+import { Pagination } from "./Pagination";
+import { Progress } from "./Progress";
 import { SearchField } from "./SearchField";
+import { SegmentedControl } from "./SegmentedControl";
+import { Select } from "./Select";
+import { Sheet } from "./Sheet";
+import { Skeleton } from "./Skeleton";
 import { Switch } from "./Switch";
+import { Tabs } from "./Tabs";
 import { TabBar } from "./TabBar";
+import { Toast } from "./Toast";
+import { Toolbar } from "./Toolbar";
 import { TopBar } from "./TopBar";
 
 const iconNames = [
@@ -320,5 +338,98 @@ describe("Phase 1 mobile foundation components", () => {
     expect(css).toContain(".ag-tab-bar");
     expect(css).toContain(".ag-list-row");
     expect(css).toContain(".ag-switch__input:checked");
+  });
+});
+
+describe("Phase 2 mobile app components", () => {
+  it("renders navigation stack, toolbar, and sheet semantics", () => {
+    const page = NavigationPage({ children: "Body", title: "Systems" }) as ReactElement<Record<string, unknown>>;
+    const stack = NavigationStack({ children: page, title: "Workbench" }) as ReactElement<Record<string, unknown>>;
+    const toolbar = Toolbar({ children: "Tools" }) as ReactElement<Record<string, unknown>>;
+    const sheet = Sheet({ children: "Sheet body", open: true, title: "Details" }) as ReactElement<Record<string, unknown>>;
+
+    expect(stack.props.className).toContain("ag-nav-stack");
+    expect(page.props.className).toContain("ag-nav-page");
+    expect(toolbar.props.role).toBe("toolbar");
+    expect(sheet.type).toBe("dialog");
+    expect(sheet.props["aria-modal"]).toBe("true");
+    expect(sheet.props.open).toBe(true);
+  });
+
+  it("renders segmented controls, selects, alerts, empty states, avatars, and badges", () => {
+    const segmented = SegmentedControl({
+      activeId: "grid",
+      items: [
+        { id: "grid", label: "Grid" },
+        { id: "list", label: "List" }
+      ]
+    }) as ReactElement<Record<string, unknown>>;
+    const select = Select({
+      label: "Theme",
+      name: "theme",
+      options: [{ label: "Royal purple", value: "royal-purple" }]
+    }) as ReactElement<Record<string, unknown>>;
+    const alert = Alert({ title: "Synced", tone: "success" }) as ReactElement<Record<string, unknown>>;
+    const empty = EmptyState({ title: "No systems" }) as ReactElement<Record<string, unknown>>;
+    const avatar = Avatar({ name: "Ajit Chakrapani" }) as ReactElement<Record<string, unknown>>;
+    const badge = Badge({ children: "Live", tone: "accent" }) as ReactElement<Record<string, unknown>>;
+
+    expect(segmented.props.role).toBe("radiogroup");
+    expect(select.props.className).toBe("ag-select");
+    expect(alert.props.role).toBe("status");
+    expect(empty.props.className).toContain("ag-empty-state");
+    expect(avatar.props["aria-label"]).toBe("Ajit Chakrapani");
+    expect(badge.props.className).toContain("ag-badge--accent");
+  });
+});
+
+describe("Phase 3 product workbench components", () => {
+  it("renders tabs, breadcrumbs, toast, progress, skeleton, and metrics", () => {
+    const tabs = Tabs({
+      activeId: "overview",
+      children: "Panel",
+      items: [
+        { id: "overview", label: "Overview" },
+        { id: "logs", label: "Logs" }
+      ]
+    }) as ReactElement<Record<string, unknown>>;
+    const breadcrumbs = Breadcrumbs({
+      items: [
+        { href: "#workbench", label: "Workbench" },
+        { current: true, label: "Systems" }
+      ]
+    }) as ReactElement<Record<string, unknown>>;
+    const toast = Toast({ title: "Saved", tone: "success" }) as ReactElement<Record<string, unknown>>;
+    const progress = Progress({ value: 42 }) as ReactElement<Record<string, unknown>>;
+    const skeleton = Skeleton({}) as ReactElement<Record<string, unknown>>;
+    const metric = Metric({ label: "Latency", value: "42ms" }) as ReactElement<Record<string, unknown>>;
+
+    expect(tabs.props.className).toContain("ag-tabs");
+    expect(breadcrumbs.type).toBe("nav");
+    expect(toast.props.role).toBe("status");
+    expect(progress.props.role).toBe("progressbar");
+    expect(progress.props["aria-valuenow"]).toBe(42);
+    expect(skeleton.props.role).toBe("status");
+    expect(metric.props.className).toContain("ag-metric");
+  });
+
+  it("renders data table, pagination, and command palette contracts", () => {
+    const table = DataTable({
+      columns: [{ header: "Name", key: "name", render: (row: { name: string }) => row.name }],
+      getRowId: (row) => row.name,
+      rows: [{ name: "System" }]
+    }) as ReactElement<Record<string, unknown>>;
+    const pagination = Pagination({ currentPage: 2, totalPages: 3 }) as ReactElement<Record<string, unknown>>;
+    const command = CommandPalette({
+      items: [{ icon: "search", id: "search", label: "Search", shortcut: "Cmd-K" }]
+    }) as ReactElement<Record<string, unknown>>;
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+
+    expect(table.props.className).toContain("ag-table-wrap");
+    expect(pagination.type).toBe("nav");
+    expect(command.props.role).toBe("dialog");
+    expect(css).toContain(".ag-command-palette");
+    expect(css).toContain(".ag-skeleton");
+    expect(css).toContain(".ag-table");
   });
 });

@@ -7,13 +7,13 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.2.0`
+Current version: `0.3.0`
 
 ## Status
 
-This repository is a first-pass workspace. The package-manager examples below
-show the intended consumer API for npm, RubyGems, Swift Package Manager, Git,
-and local workspace paths.
+This repository is the Aurelglyph workspace. The package-manager examples below
+show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
+local workspace paths.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -25,6 +25,10 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
 - Theme support for dark mode, light mode, and multiple accent themes
 - Phase 1 mobile foundations: app shell, top bar, tab bar, list rows, cards,
   search, switches, buttons, fields, file upload, icons, and expandable sections
+- Phase 2 app controls: navigation stack, toolbar, sheet, segmented control,
+  select, alert, empty state, avatar, and badge
+- Phase 3 workbench controls: tabs, breadcrumbs, toast, progress, skeleton,
+  metrics, data table, pagination, and command palette
 - A static preview and a Vite React example app that consume the packages
 
 ## Install
@@ -62,18 +66,37 @@ Use the components in app code:
 ```tsx
 import {
   AppShell,
+  Alert,
+  Avatar,
+  Badge,
+  Breadcrumbs,
   Button,
   Card,
+  CommandPalette,
+  DataTable,
+  EmptyState,
   ExpandableSection,
   FileUpload,
   Icon,
   ListRow,
   ListSection,
+  Metric,
+  NavigationPage,
+  NavigationStack,
+  Pagination,
+  Progress,
   SearchField,
+  SegmentedControl,
+  Select,
+  Sheet,
+  Skeleton,
   Switch,
+  Tabs,
   TabBar,
   TextArea,
   TextField,
+  Toast,
+  Toolbar,
   TopBar
 } from "@aurelglyph/react";
 
@@ -89,6 +112,27 @@ export function DesignSystemSetup() {
         <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
       </ListSection>
       <Switch label="Quiet mode" name="quiet" />
+      <NavigationStack title="Workbench">
+        <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
+          <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
+          <Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} />
+          <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+          <Avatar name="Ajit Chakrapani" />
+          <Badge tone="accent">Live</Badge>
+          <EmptyState title="No archived releases">Use this state when a filtered list has no records.</EmptyState>
+          <Button onClick={() => setDetailsOpen(true)} variant="secondary">Open sheet</Button>
+          <Sheet open={detailsOpen} title="Details">Use sheets for focused edits without leaving the current page.</Sheet>
+        </NavigationPage>
+      </NavigationStack>
+      <Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} />
+      <Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}>Review generated package status.</Tabs>
+      <Metric label="Latency" value="42ms" delta="Stable" />
+      <Progress value={72} />
+      <Skeleton />
+      <DataTable columns={[{ header: "System", key: "system", render: (row: { system: string }) => row.system }]} getRowId={(row) => row.system} rows={[{ system: "Pages" }]} />
+      <Pagination currentPage={2} totalPages={3} />
+      <Toast title="Settings saved" tone="success">The toast reports a non-blocking outcome.</Toast>
+      <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
       <TextField
         label="Install"
         name="install"
@@ -179,6 +223,50 @@ settings lists, status cards, search, and binary controls.
 </AppShell>
 ```
 
+#### Phase 2 App Controls
+
+Use Phase 2 controls for application structure and immediate feedback.
+`NavigationStack` and `NavigationPage` define nested app surfaces, `Toolbar`
+holds page actions, `Sheet` handles focused secondary tasks, and
+`SegmentedControl` plus `Select` switch between bounded choices. `Alert`,
+`EmptyState`, `Avatar`, and `Badge` cover status, identity, and compact state
+labels without requiring custom markup.
+
+```tsx
+<NavigationStack title="Workbench">
+  <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
+    <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
+    <Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} />
+    <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+    <Avatar name="Ajit Chakrapani" />
+    <Badge tone="accent">Live</Badge>
+    <EmptyState title="No archived releases">Use this state when a filtered list has no records.</EmptyState>
+    <Button onClick={() => setDetailsOpen(true)} variant="secondary">Open sheet</Button>
+    <Sheet open={detailsOpen} title="Details">Use sheets for focused edits without leaving the current page.</Sheet>
+  </NavigationPage>
+</NavigationStack>
+```
+
+#### Phase 3 Workbench Controls
+
+Use Phase 3 controls for workbench and data-heavy product surfaces. `Tabs` and
+`Breadcrumbs` organize location, `Toast` reports non-blocking outcomes,
+`Progress` and `Skeleton` show loading state, `Metric` summarizes a measured
+value, `DataTable` and `Pagination` handle bounded result sets, and
+`CommandPalette` exposes keyboard-first actions.
+
+```tsx
+<Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} />
+<Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}>Review generated package status.</Tabs>
+<Metric label="Latency" value="42ms" delta="Stable" />
+<Progress value={72} />
+<Skeleton />
+<DataTable columns={[{ header: "System", key: "system", render: (row: { system: string }) => row.system }]} getRowId={(row) => row.system} rows={[{ system: "Pages" }]} />
+<Pagination currentPage={2} totalPages={3} />
+<Toast title="Settings saved" tone="success">The toast reports a non-blocking outcome.</Toast>
+<CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
+```
+
 #### TextField
 
 Use `TextField` for one-line values. Labels are required, while helper and error
@@ -236,6 +324,12 @@ Rails apps can use the helper exposed by the engine:
   <%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %>
 <% end %>
 <%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %>
+<%= aurelglyph_alert("Build complete", tone: "success") { "Tokens and component styles compiled without errors." } %>
+<%= aurelglyph_segmented_control([{ id: "grid", label: "Grid" }, { id: "list", label: "List" }], active: "grid") %>
+<%= aurelglyph_badge("Live", tone: "accent") %>
+<%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %>
+<%= aurelglyph_progress(value: 72) %>
+<%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %>
 ```
 
 Swift apps can use the typed icon contract when mapping to SwiftUI rendering or
@@ -265,6 +359,15 @@ AurelglyphAppShell {
   AurelglyphSwitch("Quiet mode", isOn: $quiet)
 } tabBar: {
   AurelglyphTabBar(items: tabs, selection: $selectedTab)
+}
+
+AurelglyphNavigationStack("Workbench") {
+  AurelglyphSegmentedControl(items: [AurelglyphSegmentedItem(id: "grid", title: "Grid")], selection: $viewMode)
+  AurelglyphAlert("Build complete") { Text("Tokens and component styles compiled without errors.") }
+  AurelglyphBadge("Live")
+  AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
+  AurelglyphProgress(value: 72)
+  AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
 }
 ```
 

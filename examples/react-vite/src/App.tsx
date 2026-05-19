@@ -1,27 +1,46 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   AppShell,
+  Alert,
+  Avatar,
+  Badge,
+  Breadcrumbs,
   Button,
   Card,
+  CommandPalette,
+  DataTable,
+  EmptyState,
   ExpandableSection,
   FileUpload,
   Icon,
   ListRow,
   ListSection,
+  Metric,
+  NavigationPage,
+  NavigationStack,
+  Pagination,
+  Progress,
   SearchField,
+  SegmentedControl,
+  Select,
+  Sheet,
+  Skeleton,
   Switch,
+  Tabs,
   TabBar,
   TextArea,
   TextField,
+  Toast,
+  Toolbar,
   TopBar
 } from "@aurelglyph/react";
 import type { AurelglyphIconName } from "@aurelglyph/react";
 
 const mediaTools = [
-  { name: "settings", label: "Design tokens", detail: "Color, type, spacing, radius, motion." },
-  { name: "edit", label: "React controls", detail: "Button, field, textarea, upload, icon." },
-  { name: "filter", label: "Platform outputs", detail: "CSS, TypeScript, Swift, Ruby, native." },
-  { name: "check", label: "Release checks", detail: "Version sync, build, tests, typecheck." }
+  { name: "settings", label: "Token source", detail: "Color, type, spacing, radius, and motion values." },
+  { name: "edit", label: "React package", detail: "Import controls from @aurelglyph/react." },
+  { name: "filter", label: "Generated outputs", detail: "CSS, TypeScript, Swift, Ruby, and native values." },
+  { name: "check", label: "Verification", detail: "Run version sync, builds, tests, and typecheck." }
 ] as const;
 
 const navItems = [
@@ -34,7 +53,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.2.0";
+const packageVersion = "0.3.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -275,20 +294,20 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
       <header className="example-hero">
         <div className="example-hero__copy">
           <p className="example-kicker">Aurelglyph React · v{packageVersion}</p>
-          <h1 id="hero-title">Aurelglyph React components.</h1>
+          <h1 id="hero-title">Use Aurelglyph React components.</h1>
           <p className="example-hero__summary">
-            Buttons, fields, text areas, upload controls, and icons using the
-            same generated design values as the CSS, Rails, and Swift packages.
+            Import the CSS package once, set theme attributes on the document,
+            then compose React controls with shared variants, icons, and focus states.
           </p>
         </div>
 
         <div className="example-hero__actions" aria-label="Package actions">
-          <Button icon="upload">Install</Button>
+          <Button icon="upload">Install packages</Button>
           <Button icon="settings" variant="secondary">
-            {mode}
+            Mode: {mode}
           </Button>
           <Button icon="search" variant="ghost">
-            {theme}
+            Theme: {theme}
           </Button>
         </div>
       </header>
@@ -296,16 +315,20 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
       <section className="example-panel example-panel--preview" aria-label="React component preview">
         <div className="example-panel__header">
           <p className="example-kicker">COMPONENT PREVIEW</p>
-          <h2>Starter controls</h2>
+          <h2>Buttons and fields</h2>
+          <p className="example-panel__summary">
+            These controls come from <code>@aurelglyph/react</code> and inherit
+            tokens from <code>@aurelglyph/css</code>.
+          </p>
         </div>
 
         <div className="example-component-bar" aria-label="Button variants">
-          <Button icon="send">Primary action</Button>
+          <Button icon="send">Save project</Button>
           <Button icon="settings" variant="secondary">
-            Secondary
+            Configure
           </Button>
           <Button icon="search" variant="ghost">
-            Ghost
+            Search docs
           </Button>
         </div>
 
@@ -314,13 +337,13 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
             helpText="A styled input with label, helper text, and focus treatment."
             label="Project name"
             name="preview-project"
-            placeholder="Smart home dashboard"
+            placeholder="Home operations console"
           />
           <TextArea
             helpText="Textarea, upload, and field controls share spacing and border values."
             label="Notes"
             name="preview-notes"
-            placeholder="Describe the app surface this component library will support."
+            placeholder="Describe the React screen that will use these controls."
           />
         </div>
       </section>
@@ -334,10 +357,10 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
 
             <div className="example-fields">
               <TextField
-                helpText="Use the CSS package plus the adapter for your app framework."
+                helpText="Install the token CSS plus the React adapter at the same version."
                 label="Install"
                 name="install"
-                placeholder="npm install @aurelglyph/css @aurelglyph/react"
+                placeholder={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}`}
               />
               <TextField
                 helpText="Set these attributes once on the root element."
@@ -346,10 +369,10 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
                 placeholder="data-mode=&quot;dark&quot; data-theme=&quot;royal-purple&quot;"
               />
               <TextArea
-                helpText="Use semantic variables and package components instead of one-off styles."
-                label="Usage"
+                helpText="Import package styles before composing controls."
+                label="React entry"
                 name="integration-notes"
-                placeholder="Import @aurelglyph/css once, import @aurelglyph/react/styles.css for controls, then compose Button, TextField, TextArea, FileUpload, and Icon."
+                placeholder={`import "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";\nimport { Button, TextField } from "@aurelglyph/react";`}
               />
             </div>
           </div>
@@ -382,9 +405,9 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
             </div>
 
             <div className="example-panel__footer">
-              <Button icon="send">Open README</Button>
+              <Button icon="send">Read setup</Button>
               <Button icon="save" variant="secondary">
-                Run verify
+                Run checks
               </Button>
             </div>
           </aside>
@@ -395,6 +418,9 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
 
 function ComponentsPage() {
   const [quietMode, setQuietMode] = useState(true);
+  const [viewMode, setViewMode] = useState("grid");
+  const [tab, setTab] = useState("overview");
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   return (
     <section className="example-panel" aria-labelledby="components-title">
@@ -403,9 +429,9 @@ function ComponentsPage() {
         <h2 id="components-title">Component previews</h2>
       </div>
       <p className="example-copy">
-        These are the first live React controls and companion previews for the
-        cross-platform component contract. The same names, variants, and states
-        should carry across CSS/Web, React Native, SwiftUI, and Rails.
+        Use the same component names, variants, and states across CSS/Web,
+        React, React Native, SwiftUI, and Rails. This page shows the React
+        package rendering the shared contract.
       </p>
       <div className="example-platform-list" aria-label="Platform targets">
         {platformTargets.map((target) => (
@@ -414,7 +440,7 @@ function ComponentsPage() {
       </div>
       <div className="example-component-previews">
         <section className="example-preview-card">
-          <h3>Phase 1 mobile foundations</h3>
+          <h3>Mobile shell</h3>
           <AppShell
             className="example-mobile-shell"
             footer={
@@ -432,7 +458,7 @@ function ComponentsPage() {
             <div className="example-mobile-stack">
               <SearchField label="Search systems" name="systems-query" />
               <Card eyebrow="Live" title="Status">
-                Systems operational across React, Rails, and SwiftUI.
+                Shared component classes are loaded from the CSS package.
               </Card>
               <ListSection title="Settings">
                 <ListRow description="Reduce notification noise" icon="bell" selected title="Quiet mode" trailing="On" />
@@ -449,20 +475,107 @@ function ComponentsPage() {
           </AppShell>
         </section>
         <section className="example-preview-card">
+          <h3>Navigation and selections</h3>
+          <NavigationStack title="Workbench">
+            <NavigationPage
+              actions={
+                <Toolbar label="System actions">
+                  <Button icon="save" variant="secondary">Save</Button>
+                  <Button icon="more-horizontal" variant="ghost">More</Button>
+                </Toolbar>
+              }
+              title="Systems"
+            >
+              <div className="example-mobile-stack">
+                <SegmentedControl
+                  activeId={viewMode}
+                  items={[
+                    { id: "grid", label: "Grid" },
+                    { id: "list", label: "List" }
+                  ]}
+                  onValueChange={setViewMode}
+                />
+                <Select
+                  label="Theme"
+                  name="theme-select"
+                  options={[
+                    { label: "Royal purple", value: "royal-purple" },
+                    { label: "Forest", value: "forest" }
+                  ]}
+                />
+                <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+                <div className="example-inline-row">
+                  <Avatar name="Ajit Chakrapani" />
+                  <Badge tone="accent">Live</Badge>
+                  <Badge tone="success">Ready</Badge>
+                  <Button icon="external-link" onClick={() => setDetailsOpen(true)} variant="secondary">
+                    Open sheet
+                  </Button>
+                </div>
+                <EmptyState title="No archived releases" icon="archive">Use this state when a filtered list has no records.</EmptyState>
+                <Sheet
+                  actions={
+                    <Button icon="close" onClick={() => setDetailsOpen(false)} variant="ghost">
+                      Close
+                    </Button>
+                  }
+                  open={detailsOpen}
+                  title="Details"
+                >
+                  Use sheets for focused edits without leaving the current page.
+                </Sheet>
+              </div>
+            </NavigationPage>
+          </NavigationStack>
+        </section>
+        <section className="example-preview-card">
+          <h3>Workbench data</h3>
+          <div className="example-mobile-stack">
+            <Breadcrumbs items={[{ href: "#overview", label: "Workbench" }, { current: true, label: "Systems" }]} />
+            <Tabs
+              activeId={tab}
+              items={[
+                { id: "overview", label: "Overview" },
+                { id: "logs", label: "Logs" }
+              ]}
+              onValueChange={setTab}
+            >
+              The active tab owns the panel content and selected state.
+            </Tabs>
+            <div className="example-metric-grid">
+              <Metric label="Latency" value="42ms" delta="Stable" />
+              <Metric label="Sync" value="99.8%" delta="Now" />
+            </div>
+            <Progress label="Release readiness" value={72} />
+            <Skeleton />
+            <DataTable
+              columns={[
+                { header: "System", key: "system", render: (row: { system: string; state: string }) => row.system },
+                { header: "State", key: "state", render: (row: { system: string; state: string }) => row.state }
+              ]}
+              getRowId={(row) => row.system}
+              rows={[{ state: "Operational", system: "Pages" }, { state: "Ready", system: "SwiftUI" }]}
+            />
+            <Pagination currentPage={2} totalPages={3} />
+            <Toast title="Settings saved" tone="success">The toast reports a non-blocking outcome.</Toast>
+            <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
+          </div>
+        </section>
+        <section className="example-preview-card">
           <h3>Buttons</h3>
           <div className="example-component-bar">
-            <Button icon="send">Primary action</Button>
+            <Button icon="send">Publish</Button>
             <Button icon="settings" variant="secondary">
-              Secondary
+              Configure
             </Button>
             <Button icon="search" variant="ghost">
-              Ghost
+              Search
             </Button>
             <Button icon="warning" variant="danger">
-              Danger
+              Remove
             </Button>
             <Button disabled icon="check" variant="secondary">
-              Disabled
+              Synced
             </Button>
           </div>
         </section>
@@ -490,13 +603,13 @@ function ComponentsPage() {
               helpText="Label, helper text, placeholder, and focus treatment."
               label="Project name"
               name="components-project"
-              placeholder="Smart home dashboard"
+              placeholder="Home operations console"
             />
             <TextArea
               helpText="Textarea uses the same field contract."
               label="Notes"
               name="components-notes"
-              placeholder="Describe the app surface."
+              placeholder="Add implementation notes for this React view."
             />
             <TextField
               error="Use a supported package version."
@@ -550,7 +663,9 @@ function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
         <h2 id="usage-title">Install and configure</h2>
       </div>
       <div className="example-code-grid">
-        <CodeBlock label="React exact version" code={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}\n\nimport "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";`} />
+        <CodeBlock label="React install" code={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}`} />
+        <CodeBlock label="React styles" code={`import "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";`} />
+        <CodeBlock label="React component" code={`import { Button, TextField } from "@aurelglyph/react";\n\n<Button icon="send">Publish</Button>\n<TextField label="Project name" name="project" />`} />
         <CodeBlock label="Rails Git ref" code={`gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v${packageVersion}"`} />
         <CodeBlock label="SwiftPM version" code={`.package(url: "https://github.com/absessive/aurelglyph", exact: "${packageVersion}")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "${packageVersion}")`} />
         <CodeBlock label="Current theme" code={`<html data-mode="${mode}" data-theme="${theme}">`} />
@@ -564,10 +679,11 @@ function ChangelogPage() {
     <section className="example-panel" aria-labelledby="changelog-title">
       <div className="example-panel__header">
         <p className="example-kicker">CHANGELOG</p>
-        <h2 id="changelog-title">0.2.0</h2>
+        <h2 id="changelog-title">0.3.0</h2>
       </div>
       <p className="example-copy">
-        Add Phase 1 mobile foundation components across React, SwiftUI, Rails, and docs.
+        Adds mobile shell controls, navigation controls, workbench previews, and
+        aligned examples across React, SwiftUI, Rails, CSS, and docs.
       </p>
     </section>
   );

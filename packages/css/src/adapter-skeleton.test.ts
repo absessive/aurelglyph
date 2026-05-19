@@ -15,7 +15,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/css",
-      version: "0.2.0",
+      version: "0.3.0",
       license: "MIT",
       type: "module",
       style: "dist/index.css",
@@ -29,7 +29,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.2.0"
+        "@aurelglyph/tokens": "0.3.0"
       }
     });
     expect(css).toContain('font-family: "Newsreader";');
@@ -54,6 +54,11 @@ describe("platform adapter skeletons", () => {
     expect(built).toContain(".ag-card");
     expect(built).toContain(".ag-list-row");
     expect(built).toContain(".ag-tab-bar");
+    expect(built).toContain(".ag-nav-stack");
+    expect(built).toContain(".ag-sheet");
+    expect(built).toContain(".ag-segmented");
+    expect(built).toContain(".ag-command-palette");
+    expect(built).toContain(".ag-table");
     expect(font.length).toBeGreaterThan(0);
   });
 
@@ -63,7 +68,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react-native",
-      version: "0.2.0",
+      version: "0.3.0",
       license: "MIT",
       type: "module",
       main: "src/index.ts",
@@ -74,7 +79,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.2.0"
+        "@aurelglyph/tokens": "0.3.0"
       }
     });
     expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
@@ -90,12 +95,12 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toMatchObject({
       name: "@aurelglyph/swift",
-      version: "0.2.0",
+      version: "0.3.0",
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.2.0"
+        "@aurelglyph/tokens": "0.3.0"
       }
     });
     expect(packageSwift).toContain('name: "AurelglyphUI"');
@@ -118,7 +123,7 @@ describe("platform adapter skeletons", () => {
 
     expect(packageJson).toEqual({
       name: "aurelglyph-rails",
-      version: "0.2.0",
+      version: "0.3.0",
       license: "MIT",
       files: ["app", "lib", "*.gemspec", "README.md"],
       scripts: {
@@ -127,7 +132,7 @@ describe("platform adapter skeletons", () => {
         test: "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.2.0"
+        "@aurelglyph/tokens": "0.3.0"
       }
     });
     expect(copiedCss).toContain(generatedCss.trim());
@@ -136,6 +141,11 @@ describe("platform adapter skeletons", () => {
     expect(copiedCss).toContain(".ag-card");
     expect(copiedCss).toContain(".ag-list-row");
     expect(copiedCss).toContain(".ag-tab-bar");
+    expect(copiedCss).toContain(".ag-nav-stack");
+    expect(copiedCss).toContain(".ag-sheet");
+    expect(copiedCss).toContain(".ag-segmented");
+    expect(copiedCss).toContain(".ag-command-palette");
+    expect(copiedCss).toContain(".ag-table");
     expect(copiedRuby).toBe(generatedRuby);
   });
 });

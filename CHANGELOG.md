@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Add Phase 2 and Phase 3 component support across React, SwiftUI, Rails, CSS, docs, and examples.
+- Add Phase 2 app controls: navigation stack, toolbar, sheet, segmented control, select, alert, empty state, avatar, and badge.
+- Add Phase 3 workbench controls: tabs, breadcrumbs, toast, progress, skeleton, metric, data table, pagination, and command palette.
+- Extend Rails helpers, SwiftUI components, generated Pages, and the React Vite example to show the same component contract.
+- Clarify Phase 2 and Phase 3 documentation so examples describe concrete app structure, feedback, data, and command use cases.
+- Update the React example so the sheet opens from an explicit control instead of rendering as an always-open preview surface.
+
 ## 0.2.0
 
 - Add Phase 1 mobile foundation components across React, SwiftUI, Rails, and docs.
