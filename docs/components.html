@@ -639,6 +639,53 @@
       background: linear-gradient(90deg, var(--color-surface-2), var(--color-border-soft), var(--color-surface-2));
     }
 
+    .ag-demo-motion {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .ag-demo-motion-card,
+    .ag-demo-motion-detail {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-motion-visual {
+      min-height: 112px;
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      border-radius: var(--radius-sm);
+      background:
+        radial-gradient(circle at 70% 30%, rgba(var(--accent-rgb), 0.34), transparent 38%),
+        linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), transparent),
+        var(--color-surface-2);
+      view-transition-name: event-card-image;
+    }
+
+    .ag-demo-motion-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .ag-demo-motion-labels span {
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.1);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .ag-demo-icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -757,6 +804,21 @@
           <div class="ag-command-palette" role="dialog" aria-label="Command palette">
             <label class="ag-command-palette__search"><span class="ag-command-palette__label">Command palette</span><input class="ag-command-palette__input" placeholder="Type a command" type="search"></label>
             <div class="ag-command-palette__list" role="listbox"><button class="ag-command-palette__item" role="option" type="button"><span class="ag-command-palette__item-label">Search systems</span><kbd class="ag-command-palette__shortcut">Cmd-K</kbd></button></div>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>GlyphMotion</h3>
+          <p>Matched elements, bloom, drift, collapse, glass, thread, tilt, and arc share one motion language across React, CSS/Rails, and SwiftUI.</p>
+          <div class="ag-demo-motion">
+            <div class="ag-demo-motion-card">
+              <div class="ag-demo-motion-visual" data-glyph-match="event-card-image"></div>
+              <div class="ag-demo-motion-labels"><span>bloom</span><span>drift</span><span>glass</span></div>
+            </div>
+            <div class="ag-demo-motion-detail">
+              <span class="ag-demo-badge">GlyphMotion</span>
+              <p>Use <code>GlyphMatch</code> and <code>GlyphTransition</code> on web, and <code>.glyphMatch</code> plus <code>.glyphTransition</code> in SwiftUI.</p>
+              <div class="ag-demo-motion-labels"><span>collapse</span><span>thread</span><span>arc</span></div>
+            </div>
           </div>
         </section>
         <section class="preview-card">

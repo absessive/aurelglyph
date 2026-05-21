@@ -389,6 +389,13 @@ textarea {
   line-height: var(--ag-font-lineHeight-loose);
 }
 
+.example-card-copy {
+  margin: 0;
+  color: var(--ag-color-semantic-muted);
+  font-size: var(--ag-font-size-sm);
+  line-height: var(--ag-font-lineHeight-normal);
+}
+
 .example-fields {
   display: grid;
   gap: var(--ag-space-4);
@@ -500,6 +507,62 @@ textarea {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ag-space-3);
+}
+
+.example-motion-demo {
+  display: grid;
+  gap: var(--ag-space-3);
+}
+
+.example-motion-card,
+.example-motion-detail {
+  min-width: 0;
+  border: 1px solid var(--ag-color-semantic-border);
+  border-radius: var(--ag-radius-md);
+  background:
+    linear-gradient(180deg, rgba(var(--ag-accent-rgb), 0.08), transparent),
+    var(--ag-color-semantic-surface-muted);
+  box-shadow: var(--ag-shadow-inset);
+}
+
+.example-motion-card {
+  display: grid;
+  grid-template-columns: minmax(6rem, 0.8fr) minmax(0, 1fr);
+  gap: var(--ag-space-3);
+  align-items: center;
+  padding: var(--ag-space-3);
+}
+
+.example-motion-card strong,
+.example-motion-card small,
+.example-motion-detail span {
+  display: block;
+}
+
+.example-motion-card strong {
+  color: var(--ag-color-semantic-foreground);
+}
+
+.example-motion-card small,
+.example-motion-detail span {
+  margin-top: var(--ag-space-1);
+  color: var(--ag-color-semantic-muted);
+  font-size: var(--ag-font-size-sm);
+  line-height: var(--ag-font-lineHeight-normal);
+}
+
+.example-motion-visual {
+  min-height: 6.5rem;
+  border: 1px solid rgba(var(--ag-accent-rgb), 0.32);
+  border-radius: var(--ag-radius-sm);
+  background:
+    radial-gradient(circle at 70% 28%, rgba(var(--ag-accent-rgb), 0.38), transparent 36%),
+    linear-gradient(135deg, rgba(var(--ag-accent-rgb), 0.18), transparent),
+    var(--ag-color-semantic-surface);
+}
+
+.example-motion-detail {
+  padding: var(--ag-space-4);
 }
 
 .example-disclosure-stack {

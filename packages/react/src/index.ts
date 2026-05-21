@@ -22,6 +22,25 @@ export { ExpandableSection } from "./components/ExpandableSection.js";
 export type { ExpandableSectionProps } from "./components/ExpandableSection.js";
 export { FileUpload } from "./components/FileUpload.js";
 export type { FileUploadProps } from "./components/FileUpload.js";
+export {
+  createGlyphInteractiveState,
+  GlyphMatch,
+  GlyphMotionProvider,
+  GlyphTransition,
+  useGlyphMotion
+} from "./components/GlyphMotion.js";
+export type {
+  GlyphDirection,
+  GlyphInteractiveState,
+  GlyphMatchProps,
+  GlyphMotionContextValue,
+  GlyphMotionProviderProps,
+  GlyphSnapshotStrategy,
+  GlyphSpring,
+  GlyphState,
+  GlyphTransitionName,
+  GlyphTransitionProps
+} from "./components/GlyphMotion.js";
 export { Icon } from "./components/Icon.js";
 export type { AurelglyphIconName, IconProps } from "./components/Icon.js";
 export { ListRow, ListSection } from "./components/List.js";

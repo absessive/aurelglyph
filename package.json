@@ -1,6 +1,6 @@
 {
   "name": "aurelglyph",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "A token-first UX design language and component system for SwiftUI, React, React Native, and Rails.",
   "type": "module",

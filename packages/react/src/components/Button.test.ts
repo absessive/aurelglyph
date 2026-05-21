@@ -13,6 +13,7 @@ import { Card } from "./Card";
 import { CommandPalette } from "./CommandPalette";
 import { DataTable } from "./Table";
 import { EmptyState } from "./EmptyState";
+import { createGlyphInteractiveState, GlyphMatch, GlyphMotionProvider } from "./GlyphMotion";
 import { Icon, type AurelglyphIconName } from "./Icon";
 import { ListRow, ListSection } from "./List";
 import { Metric } from "./Metric";
@@ -431,5 +432,43 @@ describe("Phase 3 product workbench components", () => {
     expect(css).toContain(".ag-command-palette");
     expect(css).toContain(".ag-skeleton");
     expect(css).toContain(".ag-table");
+  });
+});
+
+describe("GlyphMotion", () => {
+  it("renders shared element attributes with Aurelglyph-native names", () => {
+    const match = GlyphMatch({
+      children: "Image",
+      id: "event-card-image",
+      snapshot: "optimized",
+      state: "matched"
+    }) as ReactElement<Record<string, unknown>>;
+
+    expect(match.props.className).toContain("ag-glyph-match");
+    expect(match.props["data-glyph-match"]).toBe("event-card-image");
+    expect(match.props["data-glyph-snapshot"]).toBe("optimized");
+    expect(match.props.style).toMatchObject({ viewTransitionName: "event-card-image" });
+  });
+
+  it("exports provider, transition styles, and interactive progress helpers", () => {
+    const provider = GlyphMotionProvider({
+      children: "Motion",
+      prefersReducedMotion: true,
+      spring: "quiet",
+      viewTransitionsAvailable: true
+    }) as ReactElement<Record<string, unknown>>;
+    const interactive = createGlyphInteractiveState(0.42);
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+    const source = readFileSync(join(import.meta.dirname, "GlyphMotion.tsx"), "utf8");
+
+    expect(provider.type).toBeDefined();
+    expect(interactive).toEqual({ active: true, phase: "updating", progress: 0.42 });
+    expect(source).toContain("export function GlyphTransition");
+    expect(source).toContain("data-glyph-transition={name}");
+    expect(source).toContain("data-glyph-spring={resolvedSpring}");
+    expect(css).toContain(".ag-glyph-transition--collapse");
+    expect(css).toContain(".ag-glyph-transition--glass");
+    expect(css).toContain("prefers-reduced-motion");
+    expect(css).toContain("view-transition-name");
   });
 });

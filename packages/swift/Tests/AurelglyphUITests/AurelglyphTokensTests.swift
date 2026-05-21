@@ -28,6 +28,34 @@ import SwiftUI
   #expect(String(describing: type(of: section)).contains("AurelglyphExpandableSection"))
 }
 
+private struct GlyphMotionProbe: View {
+  @Namespace private var namespace
+
+  var body: some View {
+    Text("Event")
+      .glyphMatch("event-card-image", in: namespace)
+      .glyphTransition(.bloom)
+      .glyphSpring(.standard)
+  }
+}
+
+@Test func exposesGlyphMotionVocabularyAndModifiers() {
+  let probe = GlyphMotionProbe()
+  let interactive = GlyphInteractive(progress: 0.42)
+  let cancelled = GlyphInteractive(progress: 0.1, phase: .cancelling)
+
+  #expect(GlyphSpring.allCases.map(\.rawValue) == ["quiet", "standard", "expressive"])
+  #expect(GlyphTransition.allCases.map(\.rawValue) == ["bloom", "drift", "collapse", "glass", "thread", "tilt", "arc", "none"])
+  #expect(GlyphState.allCases.count == 5)
+  #expect(GlyphDirection.allCases.count == 6)
+  #expect(GlyphSnapshotStrategy.optimized.rawValue == "optimized")
+  #expect(GlyphMotion.standardSpringToken == AurelglyphTokens.motionSpringStandard)
+  #expect(interactive.active)
+  #expect(interactive.progress == 0.42)
+  #expect(cancelled.phase == .cancelling)
+  #expect(String(describing: type(of: probe)).contains("GlyphMotionProbe"))
+}
+
 @Test func exposesNativeTypographyAdapterWithBundledNativeFonts() {
   let display = AurelglyphTypography.display(size: 34)
   let serif = AurelglyphTypography.editorialSerif(size: 20)

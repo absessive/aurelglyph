@@ -639,6 +639,53 @@
       background: linear-gradient(90deg, var(--color-surface-2), var(--color-border-soft), var(--color-surface-2));
     }
 
+    .ag-demo-motion {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .ag-demo-motion-card,
+    .ag-demo-motion-detail {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-motion-visual {
+      min-height: 112px;
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      border-radius: var(--radius-sm);
+      background:
+        radial-gradient(circle at 70% 30%, rgba(var(--accent-rgb), 0.34), transparent 38%),
+        linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), transparent),
+        var(--color-surface-2);
+      view-transition-name: event-card-image;
+    }
+
+    .ag-demo-motion-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .ag-demo-motion-labels span {
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.1);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .ag-demo-icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -702,6 +749,26 @@
     </header>
     <article class="panel markdown">
 <h1>Changelog</h1>
+<h2>0.4.0</h2>
+<ul>
+<li>Add GlyphMotion shared transition system for SwiftUI and React.</li>
+<li>Add motion token groups for springs, depth, blur, scale, opacity, drift,</li>
+</ul>
+<p>  arcs, and stagger timing across generated CSS, TypeScript, React Native,</p>
+<p>  Swift, and Ruby outputs.</p>
+<ul>
+<li>Add React <code>GlyphMotionProvider</code>, <code>GlyphMatch</code>, <code>GlyphTransition</code>, and</li>
+</ul>
+<p>  interactive progress helpers with shared CSS motion classes.</p>
+<ul>
+<li>Add SwiftUI <code>GlyphMotion</code>, <code>GlyphSpring</code>, <code>GlyphTransition</code>, <code>GlyphState</code>,</li>
+</ul>
+<p>  <code>GlyphDirection</code>, <code>GlyphSnapshotStrategy</code>, <code>GlyphInteractive</code>, and</p>
+<p>  <code>.glyphMatch</code>, <code>.glyphTransition</code>, and <code>.glyphSpring</code> modifiers.</p>
+<ul>
+<li>Update README, consuming docs, generated GitHub Pages, and the React Vite</li>
+</ul>
+<p>  example with concrete motion usage.</p>
 <h2>0.3.0</h2>
 <ul>
 <li>Add Phase 2 and Phase 3 component support across React, SwiftUI, Rails, CSS, docs, and examples.</li>

@@ -639,6 +639,53 @@
       background: linear-gradient(90deg, var(--color-surface-2), var(--color-border-soft), var(--color-surface-2));
     }
 
+    .ag-demo-motion {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .ag-demo-motion-card,
+    .ag-demo-motion-detail {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-motion-visual {
+      min-height: 112px;
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      border-radius: var(--radius-sm);
+      background:
+        radial-gradient(circle at 70% 30%, rgba(var(--accent-rgb), 0.34), transparent 38%),
+        linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), transparent),
+        var(--color-surface-2);
+      view-transition-name: event-card-image;
+    }
+
+    .ag-demo-motion-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .ag-demo-motion-labels span {
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.1);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .ag-demo-icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -710,7 +757,7 @@
         <a class="button" href="usage.html">Use in apps</a>
       </div>
       <div class="meta" aria-label="Project metadata">
-        <div class="metric">Current release<strong>Version 0.3.0</strong></div>
+        <div class="metric">Current release<strong>Version 0.4.0</strong></div>
         <div class="metric">Package model<strong>Shared source files</strong></div>
         <div class="metric">Surface<strong>Raw GitHub Pages</strong></div>
       </div>

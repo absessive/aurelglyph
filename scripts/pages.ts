@@ -29,6 +29,10 @@ const componentGroups = [
     items: ["Workbench navigation", "Breadcrumb location", "Non-blocking feedback", "Loading state", "Measured values", "Data tables", "Pagination", "Command palette"]
   },
   {
+    title: "GlyphMotion",
+    items: ["Matched elements", "Bloom", "Drift", "Collapse", "Glass", "Thread", "Tilt", "Arc"]
+  },
+  {
     title: "Starter controls",
     items: ["Button", "Icon", "Text field", "Text area", "File upload", "Expandable section"]
   },
@@ -910,6 +914,53 @@ function pageShell(title: string, body: string, active = "index"): string {
       background: linear-gradient(90deg, var(--color-surface-2), var(--color-border-soft), var(--color-surface-2));
     }
 
+    .ag-demo-motion {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .ag-demo-motion-card,
+    .ag-demo-motion-detail {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-demo-motion-visual {
+      min-height: 112px;
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      border-radius: var(--radius-sm);
+      background:
+        radial-gradient(circle at 70% 30%, rgba(var(--accent-rgb), 0.34), transparent 38%),
+        linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), transparent),
+        var(--color-surface-2);
+      view-transition-name: event-card-image;
+    }
+
+    .ag-demo-motion-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .ag-demo-motion-labels span {
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.1);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
     .ag-demo-icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -1014,12 +1065,21 @@ function renderUsage(version: string): string {
       <pre><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
       <h2>React icons</h2>
-      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, Toast, Toolbar, TopBar } from "@aurelglyph/react";
+      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, GlyphMatch, GlyphMotionProvider, GlyphTransition, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, Toast, Toolbar, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
 &lt;Icon decorative name="sync" /&gt;
 &lt;Button icon="external-link"&gt;Open&lt;/Button&gt;</code></pre>
+      <h2>React GlyphMotion</h2>
+      <pre><code>&lt;GlyphMotionProvider spring="standard"&gt;
+  &lt;GlyphTransition name="bloom" direction="forward" spring="expressive"&gt;
+    &lt;GlyphMatch id="event-card-image" snapshot="optimized"&gt;
+      Shared element content
+    &lt;/GlyphMatch&gt;
+  &lt;/GlyphTransition&gt;
+  &lt;GlyphTransition name="thread" threadIndex={1}&gt;Details&lt;/GlyphTransition&gt;
+&lt;/GlyphMotionProvider&gt;</code></pre>
       <h2>React components</h2>
       <pre><code>&lt;Button icon="save" type="submit"&gt;Save&lt;/Button&gt;
 &lt;Button icon="delete" variant="danger"&gt;Delete&lt;/Button&gt;
@@ -1077,6 +1137,10 @@ function renderUsage(version: string): string {
       <pre><code>&lt;%= aurelglyph_expandable_section("Advanced settings", eyebrow: "System", open: true) do %&gt;
   &lt;p&gt;Server-rendered disclosure content.&lt;/p&gt;
 &lt;% end %&gt;</code></pre>
+      <h2>Rails and CSS motion classes</h2>
+      <pre><code>&lt;div class="ag-glyph-transition ag-glyph-transition--bloom" data-glyph-transition="bloom"&gt;
+  &lt;div class="ag-glyph-match" data-glyph-match="event-card-image"&gt;Shared element content&lt;/div&gt;
+&lt;/div&gt;</code></pre>
       <h2>Rails Phase 1 helpers</h2>
       <pre><code>&lt;%= aurelglyph_search_field(name: "query", label: "Search systems") %&gt;
 &lt;%= aurelglyph_card(title: "Status", eyebrow: "Live") { "Systems operational" } %&gt;
@@ -1116,6 +1180,16 @@ Text("color.accent.royal-purple.300")
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
   Text("Animated SwiftUI content")
 }</code></pre>
+      <h2>SwiftUI GlyphMotion</h2>
+      <pre><code>@Namespace private var glyphNamespace
+
+Image("event")
+  .glyphMatch("event-card-image", in: glyphNamespace)
+  .glyphTransition(.bloom)
+  .glyphSpring(.standard)
+
+Text("Details")
+  .glyphTransition(.thread, direction: .forward)</code></pre>
       <h2>SwiftUI Phase 1 components</h2>
       <pre><code>AurelglyphAppShell {
   AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }
@@ -1203,6 +1277,21 @@ function renderComponents(glyphs: IconGlyphs): string {
           <div class="ag-command-palette" role="dialog" aria-label="Command palette">
             <label class="ag-command-palette__search"><span class="ag-command-palette__label">Command palette</span><input class="ag-command-palette__input" placeholder="Type a command" type="search"></label>
             <div class="ag-command-palette__list" role="listbox"><button class="ag-command-palette__item" role="option" type="button"><span class="ag-command-palette__item-label">Search systems</span><kbd class="ag-command-palette__shortcut">Cmd-K</kbd></button></div>
+          </div>
+        </section>
+        <section class="preview-card">
+          <h3>GlyphMotion</h3>
+          <p>Matched elements, bloom, drift, collapse, glass, thread, tilt, and arc share one motion language across React, CSS/Rails, and SwiftUI.</p>
+          <div class="ag-demo-motion">
+            <div class="ag-demo-motion-card">
+              <div class="ag-demo-motion-visual" data-glyph-match="event-card-image"></div>
+              <div class="ag-demo-motion-labels"><span>bloom</span><span>drift</span><span>glass</span></div>
+            </div>
+            <div class="ag-demo-motion-detail">
+              <span class="ag-demo-badge">GlyphMotion</span>
+              <p>Use <code>GlyphMatch</code> and <code>GlyphTransition</code> on web, and <code>.glyphMatch</code> plus <code>.glyphTransition</code> in SwiftUI.</p>
+              <div class="ag-demo-motion-labels"><span>collapse</span><span>thread</span><span>arc</span></div>
+            </div>
           </div>
         </section>
         <section class="preview-card">

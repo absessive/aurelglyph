@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0
+
+- Add GlyphMotion shared transition system for SwiftUI and React.
+- Add motion token groups for springs, depth, blur, scale, opacity, drift,
+  arcs, and stagger timing across generated CSS, TypeScript, React Native,
+  Swift, and Ruby outputs.
+- Add React `GlyphMotionProvider`, `GlyphMatch`, `GlyphTransition`, and
+  interactive progress helpers with shared CSS motion classes.
+- Add SwiftUI `GlyphMotion`, `GlyphSpring`, `GlyphTransition`, `GlyphState`,
+  `GlyphDirection`, `GlyphSnapshotStrategy`, `GlyphInteractive`, and
+  `.glyphMatch`, `.glyphTransition`, and `.glyphSpring` modifiers.
+- Update README, consuming docs, generated GitHub Pages, and the React Vite
+  example with concrete motion usage.
+
 ## 0.3.0
 
 - Add Phase 2 and Phase 3 component support across React, SwiftUI, Rails, CSS, docs, and examples.

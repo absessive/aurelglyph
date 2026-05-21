@@ -14,7 +14,7 @@ describe("React package contract", () => {
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react",
-      version: "0.3.0",
+      version: "0.4.0",
       license: "MIT",
       type: "module",
       main: "dist/index.js",
@@ -38,7 +38,7 @@ describe("React package contract", () => {
         react: "^19.1.0"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.3.0"
+        "@aurelglyph/tokens": "0.4.0"
       }
     });
   });
@@ -55,5 +55,7 @@ describe("React package contract", () => {
 
     expect(source).toContain('export { ExpandableSection } from "./components/ExpandableSection.js";');
     expect(source).toContain('export type { ExpandableSectionProps } from "./components/ExpandableSection.js";');
+    expect(source).toContain('GlyphMotionProvider');
+    expect(source).toContain('GlyphTransitionProps');
   });
 });

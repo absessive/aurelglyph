@@ -132,10 +132,11 @@ startup:
 <html data-mode="dark" data-theme="royal-purple">
 ```
 
-Use React mobile foundations, controls, and icons from `@aurelglyph/react`:
+Use React mobile foundations, controls, motion adapters, and icons from
+`@aurelglyph/react`:
 
 ```tsx
-import { AppShell, Button, Card, Icon, ListRow, ListSection, SearchField, Switch, TabBar, TextField, TopBar } from "@aurelglyph/react";
+import { AppShell, Button, Card, GlyphMatch, GlyphMotionProvider, GlyphTransition, Icon, ListRow, ListSection, SearchField, Switch, TabBar, TextField, TopBar } from "@aurelglyph/react";
 
 export function SettingsForm() {
   return (
@@ -150,6 +151,11 @@ export function SettingsForm() {
       </ListSection>
       <Switch label="Quiet mode" name="quiet" />
       <TextField label="System name" name="systemName" />
+      <GlyphMotionProvider spring="standard">
+        <GlyphTransition name="bloom" direction="forward">
+          <GlyphMatch id="system-card">Shared element content</GlyphMatch>
+        </GlyphTransition>
+      </GlyphMotionProvider>
       <Button icon="save" type="submit">Save</Button>
       <Icon name="dashboard" title="Dashboard" />
     </AppShell>
@@ -194,6 +200,33 @@ For expandable sections, use the animated disclosure component. It wires
   <p>Animated content with accessible disclosure semantics.</p>
 </ExpandableSection>
 ```
+
+Use GlyphMotion for production-style shared element continuity and transition
+names that stay native to Aurelglyph:
+
+```tsx
+import {
+  createGlyphInteractiveState,
+  GlyphMatch,
+  GlyphMotionProvider,
+  GlyphTransition
+} from "@aurelglyph/react";
+
+const interaction = createGlyphInteractiveState(0.42);
+
+<GlyphMotionProvider spring="standard">
+  <GlyphTransition name="bloom" direction="forward" spring="expressive">
+    <GlyphMatch id="event-card-image" snapshot="optimized">
+      Shared image content
+    </GlyphMatch>
+  </GlyphTransition>
+  <GlyphTransition name="thread" threadIndex={1}>Details</GlyphTransition>
+</GlyphMotionProvider>
+```
+
+CSS-only apps and Rails apps can use `.ag-glyph-match` and
+`.ag-glyph-transition` from the shared stylesheet for static previews or
+progressive enhancement.
 
 Use Phase 1 mobile foundations for app chrome, search, grouped settings, and
 binary controls. Use Phase 2 controls for structured app surfaces, page actions,
@@ -422,13 +455,30 @@ AurelglyphNavigationStack("Workbench") {
   AurelglyphBadge("Live")
   AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
   AurelglyphProgress(value: 72)
-  AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
+AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
 }
+```
+
+Use GlyphMotion for SwiftUI matched elements, transitions, and shared spring
+tokens:
+
+```swift
+@Namespace private var glyphNamespace
+
+Image("event")
+  .glyphMatch("event-card-image", in: glyphNamespace)
+  .glyphTransition(.bloom)
+  .glyphSpring(.standard)
+
+Text("Details")
+  .glyphTransition(.thread, direction: .forward)
+
+let interaction = GlyphInteractive(progress: 0.42)
 ```
 
 Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.3.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.0")
 ```

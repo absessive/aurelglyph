@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/example-react-vite",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aurelglyph/css": "0.3.0",
-    "@aurelglyph/react": "0.3.0",
+    "@aurelglyph/css": "0.4.0",
+    "@aurelglyph/react": "0.4.0",
     "@vitejs/plugin-react": "^4.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

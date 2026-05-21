@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.3.0`
+Current version: `0.4.0`
 
 ## Status
 
@@ -29,6 +29,9 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
   select, alert, empty state, avatar, and badge
 - Phase 3 workbench controls: tabs, breadcrumbs, toast, progress, skeleton,
   metrics, data table, pagination, and command palette
+- GlyphMotion shared transition tokens, React adapters, SwiftUI modifiers, and
+  CSS/Rails motion classes for matched elements, bloom, drift, collapse, glass,
+  thread, tilt, and arc transitions
 - A static preview and a Vite React example app that consume the packages
 
 ## Install
@@ -47,6 +50,12 @@ by React and Rails:
 
 ```tsx
 import "@aurelglyph/css";
+```
+
+Pin exact versions in production apps when you need repeatable releases:
+
+```bash
+npm install @aurelglyph/css@0.4.0 @aurelglyph/react@0.4.0
 ```
 
 `@aurelglyph/react/styles.css` is also available for React-only adopters that
@@ -77,6 +86,9 @@ import {
   EmptyState,
   ExpandableSection,
   FileUpload,
+  GlyphMatch,
+  GlyphMotionProvider,
+  GlyphTransition,
   Icon,
   ListRow,
   ListSection,
@@ -155,6 +167,11 @@ export function DesignSystemSetup() {
       <ExpandableSection eyebrow="System" title="Advanced settings">
         <p>Animated content with accessible disclosure semantics.</p>
       </ExpandableSection>
+      <GlyphMotionProvider spring="standard">
+        <GlyphTransition name="bloom" direction="forward">
+          <GlyphMatch id="event-card-image">Shared element content</GlyphMatch>
+        </GlyphTransition>
+      </GlyphMotionProvider>
       <Icon name="credit-card" title="Billing" />
     </AppShell>
   );
@@ -203,6 +220,37 @@ import { ExpandableSection } from "@aurelglyph/react";
   <p>Animated content with accessible disclosure semantics.</p>
 </ExpandableSection>
 ```
+
+#### GlyphMotion
+
+Use `GlyphMotionProvider`, `GlyphMatch`, and `GlyphTransition` for shared
+element continuity, card expansion, tab drift, glass/depth transitions, and
+gesture-driven progress state. The API uses Aurelglyph-native names and does
+not copy another transition library's names or implementation.
+
+```tsx
+import {
+  createGlyphInteractiveState,
+  GlyphMatch,
+  GlyphMotionProvider,
+  GlyphTransition
+} from "@aurelglyph/react";
+
+const drag = createGlyphInteractiveState(0.42);
+
+<GlyphMotionProvider spring="standard">
+  <GlyphTransition name="bloom" direction="forward" spring="expressive">
+    <GlyphMatch id="event-card-image" snapshot="optimized">
+      <img alt="" src="/event.jpg" />
+    </GlyphMatch>
+  </GlyphTransition>
+  <GlyphTransition name="thread" threadIndex={1}>Details</GlyphTransition>
+</GlyphMotionProvider>
+```
+
+CSS-only and Rails consumers receive the same `.ag-glyph-match` and
+`.ag-glyph-transition` class contract through `@aurelglyph/css` and the Rails
+stylesheet. Use those classes for static or progressively enhanced surfaces.
 
 #### Phase 1 Mobile Foundations
 
@@ -371,6 +419,21 @@ AurelglyphNavigationStack("Workbench") {
 }
 ```
 
+Use GlyphMotion for SwiftUI matched elements and original Aurelglyph transition
+names:
+
+```swift
+@Namespace private var glyphNamespace
+
+Image("event")
+  .glyphMatch("event-card-image", in: glyphNamespace)
+  .glyphTransition(.bloom)
+  .glyphSpring(.standard)
+
+Text("Details")
+  .glyphTransition(.thread, direction: .forward)
+```
+
 ### CSS-Only Apps
 
 ```bash
@@ -474,6 +537,10 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development. Then import the module:
 
 ```swift
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.0")
+```
+
+```swift
 import AurelglyphUI
 
 let background = AurelglyphTokens.colorModeDarkBackground
@@ -563,7 +630,7 @@ Components should use semantic variables like
 - `@aurelglyph/css`: CSS variables, packaged fonts, base styles, and shared component classes
 - `@aurelglyph/react`: React components and component styles
 - `@aurelglyph/react-native`: React Native theme export
-- `AurelglyphUI`: Swift Package exposing generated token constants
+- `AurelglyphUI`: Swift Package exposing generated token constants, typography, components, and GlyphMotion modifiers
 - `aurelglyph-rails`: Rails engine, stylesheet, token helper, and view helper
 
 ## Examples

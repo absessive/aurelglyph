@@ -12,6 +12,9 @@ import {
   EmptyState,
   ExpandableSection,
   FileUpload,
+  GlyphMatch,
+  GlyphMotionProvider,
+  GlyphTransition,
   Icon,
   ListRow,
   ListSection,
@@ -53,7 +56,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.3.0";
+const packageVersion = "0.4.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -562,6 +565,31 @@ function ComponentsPage() {
           </div>
         </section>
         <section className="example-preview-card">
+          <h3>GlyphMotion</h3>
+          <p className="example-card-copy">
+            Shared element matching, bloom, drift, collapse, glass, thread,
+            tilt, and arc transitions use Aurelglyph-native names across React
+            and SwiftUI.
+          </p>
+          <GlyphMotionProvider spring="standard" viewTransitionsAvailable>
+            <div className="example-motion-demo">
+              <GlyphTransition name="bloom" direction="forward" spring="expressive">
+                <GlyphMatch id="event-card-image" className="example-motion-card">
+                  <span className="example-motion-visual" />
+                  <span>
+                    <strong>Event card</strong>
+                    <small>Matched image and text continuity</small>
+                  </span>
+                </GlyphMatch>
+              </GlyphTransition>
+              <GlyphTransition name="thread" threadIndex={1} className="example-motion-detail">
+                <Badge tone="accent">Thread</Badge>
+                <span>Persistent background layer with staggered detail reveal.</span>
+              </GlyphTransition>
+            </div>
+          </GlyphMotionProvider>
+        </section>
+        <section className="example-preview-card">
           <h3>Buttons</h3>
           <div className="example-component-bar">
             <Button icon="send">Publish</Button>
@@ -666,8 +694,10 @@ function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
         <CodeBlock label="React install" code={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}`} />
         <CodeBlock label="React styles" code={`import "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";`} />
         <CodeBlock label="React component" code={`import { Button, TextField } from "@aurelglyph/react";\n\n<Button icon="send">Publish</Button>\n<TextField label="Project name" name="project" />`} />
+        <CodeBlock label="React GlyphMotion" code={`import { GlyphMatch, GlyphMotionProvider, GlyphTransition } from "@aurelglyph/react";\n\n<GlyphMotionProvider spring="standard">\n  <GlyphTransition name="bloom" direction="forward">\n    <GlyphMatch id="event-card-image">Shared content</GlyphMatch>\n  </GlyphTransition>\n</GlyphMotionProvider>`} />
         <CodeBlock label="Rails Git ref" code={`gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v${packageVersion}"`} />
         <CodeBlock label="SwiftPM version" code={`.package(url: "https://github.com/absessive/aurelglyph", exact: "${packageVersion}")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "${packageVersion}")`} />
+        <CodeBlock label="SwiftUI GlyphMotion" code={`@Namespace private var glyphNamespace\n\nImage("event")\n  .glyphMatch("event-card-image", in: glyphNamespace)\n  .glyphTransition(.bloom)\n  .glyphSpring(.standard)`} />
         <CodeBlock label="Current theme" code={`<html data-mode="${mode}" data-theme="${theme}">`} />
       </div>
     </section>
@@ -679,11 +709,12 @@ function ChangelogPage() {
     <section className="example-panel" aria-labelledby="changelog-title">
       <div className="example-panel__header">
         <p className="example-kicker">CHANGELOG</p>
-        <h2 id="changelog-title">0.3.0</h2>
+        <h2 id="changelog-title">0.4.0</h2>
       </div>
       <p className="example-copy">
-        Adds mobile shell controls, navigation controls, workbench previews, and
-        aligned examples across React, SwiftUI, Rails, CSS, and docs.
+        Adds GlyphMotion tokens, React adapters, SwiftUI modifiers, shared
+        motion classes, and aligned docs/examples for production-style shared
+        transitions.
       </p>
     </section>
   );
