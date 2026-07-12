@@ -1,11 +1,12 @@
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
   checkWorkspaceVersions,
   syncWorkspaceVersions,
+  versionedArtifactPaths,
   workspacePackagePaths
 } from "./versioning";
 
@@ -33,6 +34,19 @@ async function createWorkspace(): Promise<string> {
     );
   }
 
+  const artifactContents: Record<string, string> = {
+    "preview/index.html": "<p>Aurelglyph Static Preview · v0.0.1</p>",
+    "examples/react-vite/index.html": "<p>Aurelglyph React · v0.0.1</p>",
+    "examples/react-vite/src/App.tsx": 'const packageVersion = "0.0.1";',
+    "packages/rails/lib/aurelglyph/rails/version.rb": 'VERSION = "0.0.1"'
+  };
+
+  for (const [path, contents] of Object.entries(artifactContents)) {
+    const fullPath = join(root, path);
+    await import("node:fs/promises").then(({ mkdir }) => mkdir(dirname(fullPath), { recursive: true }));
+    await writeFile(fullPath, contents);
+  }
+
   return root;
 }
 
@@ -49,7 +63,7 @@ describe("workspace versioning", () => {
 
     expect(result.version).toBe("1.2.3");
     expect(result.ok).toBe(false);
-    expect(result.mismatches).toHaveLength(workspacePackagePaths.length);
+    expect(result.mismatches).toHaveLength(workspacePackagePaths.length + versionedArtifactPaths.length);
     expect(result.mismatches[0]).toMatchObject({ actual: "0.0.1", expected: "1.2.3" });
   });
 
@@ -67,6 +81,8 @@ describe("workspace versioning", () => {
     expect(result.mismatches).toEqual([]);
     expect(packageLock.version).toBe("1.2.3");
     expect(packageLock.packages[""].version).toBe("1.2.3");
+    await expect(readFile(join(root, "preview/index.html"), "utf8")).resolves.toContain("v1.2.3");
+    await expect(readFile(join(root, "examples/react-vite/src/App.tsx"), "utf8")).resolves.toContain('"1.2.3"');
   });
 
   it("requires a changelog section for the shared version", async () => {

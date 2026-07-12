@@ -12,9 +12,6 @@ import {
   EmptyState,
   ExpandableSection,
   FileUpload,
-  GlyphMatch,
-  GlyphMotionProvider,
-  GlyphTransition,
   Icon,
   ListRow,
   ListSection,
@@ -461,7 +458,7 @@ function ComponentsPage() {
             <div className="example-mobile-stack">
               <SearchField label="Search systems" name="systems-query" />
               <Card eyebrow="Live" title="Status">
-                Shared component classes are loaded from the CSS package.
+                The same component language carries from web previews into native apps.
               </Card>
               <ListSection title="Settings">
                 <ListRow description="Reduce notification noise" icon="bell" selected title="Quiet mode" trailing="On" />
@@ -506,7 +503,7 @@ function ComponentsPage() {
                     { label: "Forest", value: "forest" }
                   ]}
                 />
-                <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+                <Alert title="Package ready" tone="success">Design tokens and native controls are ready to use.</Alert>
                 <div className="example-inline-row">
                   <Avatar name="Ajit Chakrapani" />
                   <Badge tone="accent">Live</Badge>
@@ -563,31 +560,6 @@ function ComponentsPage() {
             <Toast title="Settings saved" tone="success">The toast reports a non-blocking outcome.</Toast>
             <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
           </div>
-        </section>
-        <section className="example-preview-card">
-          <h3>GlyphMotion</h3>
-          <p className="example-card-copy">
-            Shared element matching, bloom, drift, collapse, glass, thread,
-            tilt, and arc transitions use Aurelglyph-native names across React
-            and SwiftUI.
-          </p>
-          <GlyphMotionProvider spring="standard" viewTransitionsAvailable>
-            <div className="example-motion-demo">
-              <GlyphTransition name="bloom" direction="forward" spring="expressive">
-                <GlyphMatch id="event-card-image" className="example-motion-card">
-                  <span className="example-motion-visual" />
-                  <span>
-                    <strong>Event card</strong>
-                    <small>Matched image and text continuity</small>
-                  </span>
-                </GlyphMatch>
-              </GlyphTransition>
-              <GlyphTransition name="thread" threadIndex={1} className="example-motion-detail">
-                <Badge tone="accent">Thread</Badge>
-                <span>Persistent background layer with staggered detail reveal.</span>
-              </GlyphTransition>
-            </div>
-          </GlyphMotionProvider>
         </section>
         <section className="example-preview-card">
           <h3>Buttons</h3>
@@ -694,10 +666,8 @@ function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
         <CodeBlock label="React install" code={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}`} />
         <CodeBlock label="React styles" code={`import "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";`} />
         <CodeBlock label="React component" code={`import { Button, TextField } from "@aurelglyph/react";\n\n<Button icon="send">Publish</Button>\n<TextField label="Project name" name="project" />`} />
-        <CodeBlock label="React GlyphMotion" code={`import { GlyphMatch, GlyphMotionProvider, GlyphTransition } from "@aurelglyph/react";\n\n<GlyphMotionProvider spring="standard">\n  <GlyphTransition name="bloom" direction="forward">\n    <GlyphMatch id="event-card-image">Shared content</GlyphMatch>\n  </GlyphTransition>\n</GlyphMotionProvider>`} />
         <CodeBlock label="Rails Git ref" code={`gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v${packageVersion}"`} />
         <CodeBlock label="SwiftPM version" code={`.package(url: "https://github.com/absessive/aurelglyph", exact: "${packageVersion}")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "${packageVersion}")`} />
-        <CodeBlock label="SwiftUI GlyphMotion" code={`@Namespace private var glyphNamespace\n\nImage("event")\n  .glyphMatch("event-card-image", in: glyphNamespace)\n  .glyphTransition(.bloom)\n  .glyphSpring(.standard)`} />
         <CodeBlock label="Current theme" code={`<html data-mode="${mode}" data-theme="${theme}">`} />
       </div>
     </section>
@@ -712,9 +682,8 @@ function ChangelogPage() {
         <h2 id="changelog-title">0.4.0</h2>
       </div>
       <p className="example-copy">
-        Adds GlyphMotion tokens, React adapters, SwiftUI modifiers, shared
-        motion classes, and aligned docs/examples for production-style shared
-        transitions.
+        Replaces the packaged typography stack, carries font assets into every
+        platform adapter, and hardens licensing, accessibility, and release checks.
       </p>
     </section>
   );

@@ -38,6 +38,31 @@ export const workspacePackagePaths = [
   "examples/react-vite"
 ] as const;
 
+const versionedArtifacts = [
+  {
+    path: "preview/index.html",
+    pattern: /Aurelglyph Static Preview · v([^<]+)/u,
+    replacement: (version: string) => `Aurelglyph Static Preview · v${version}`
+  },
+  {
+    path: "examples/react-vite/index.html",
+    pattern: /Aurelglyph React · v([^<]+)/u,
+    replacement: (version: string) => `Aurelglyph React · v${version}`
+  },
+  {
+    path: "examples/react-vite/src/App.tsx",
+    pattern: /const packageVersion = "([^"]+)";/u,
+    replacement: (version: string) => `const packageVersion = "${version}";`
+  },
+  {
+    path: "packages/rails/lib/aurelglyph/rails/version.rb",
+    pattern: /VERSION = "([^"]+)"/u,
+    replacement: (version: string) => `VERSION = "${version}"`
+  }
+] as const;
+
+export const versionedArtifactPaths = versionedArtifacts.map(({ path }) => path);
+
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const workspaceDependencyNames = new Set([
   "@aurelglyph/tokens",
@@ -89,6 +114,14 @@ export async function checkWorkspaceVersions(root = repoRoot): Promise<VersionCh
     }
   }
 
+  for (const artifact of versionedArtifacts) {
+    const content = await readFile(join(root, artifact.path), "utf8").catch(() => undefined);
+    const actual = content ? artifact.pattern.exec(content)?.[1] : undefined;
+    if (actual !== version) {
+      mismatches.push({ actual, expected: version, packagePath: artifact.path });
+    }
+  }
+
   const changelog = await readFile(join(root, "CHANGELOG.md"), "utf8").catch(() => "");
   const hasChangelogEntry = changelogHasVersion(changelog, version);
 
@@ -114,7 +147,19 @@ export async function syncWorkspaceVersions(root = repoRoot, changelogItems: str
   }
 
   await syncPackageLock(root, version);
+  await syncVersionedArtifacts(root, version);
   await syncChangelog(root, version, changelogItems);
+}
+
+async function syncVersionedArtifacts(root: string, version: string): Promise<void> {
+  for (const artifact of versionedArtifacts) {
+    const path = join(root, artifact.path);
+    const content = await readFile(path, "utf8");
+    if (!artifact.pattern.test(content)) {
+      throw new Error(`Unable to locate version marker in ${artifact.path}.`);
+    }
+    await writeFile(path, content.replace(artifact.pattern, artifact.replacement(version)));
+  }
 }
 
 async function syncPackageLock(root: string, version: string): Promise<void> {

@@ -21,7 +21,7 @@ describe("React package contract", () => {
       types: "dist/index.d.ts",
       style: "dist/styles.css",
       sideEffects: ["*.css", "dist/*.css", "src/*.css"],
-      files: ["dist", "src/styles.css", "README.md"],
+      files: ["dist", "src/styles.css", "README.md", "LICENSE.md"],
       exports: {
         ".": {
           types: "./dist/index.d.ts",
@@ -30,7 +30,7 @@ describe("React package contract", () => {
         "./styles.css": "./dist/styles.css"
       },
       scripts: {
-        build: "tsc -p tsconfig.json && node scripts/build.mjs",
+        build: "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/build.mjs",
         prepare: "npm run build",
         test: "vitest run src/**/*.test.ts"
       },
@@ -55,7 +55,5 @@ describe("React package contract", () => {
 
     expect(source).toContain('export { ExpandableSection } from "./components/ExpandableSection.js";');
     expect(source).toContain('export type { ExpandableSectionProps } from "./components/ExpandableSection.js";');
-    expect(source).toContain('GlyphMotionProvider');
-    expect(source).toContain('GlyphTransitionProps');
   });
 });

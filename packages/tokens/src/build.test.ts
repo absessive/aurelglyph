@@ -48,28 +48,24 @@ describe("token compiler helpers", () => {
     expect(reactNative).toContain('"color.accent.royal-purple.300": "#9358e8"');
     expect(reactNative).toContain('"color.semantic.accent-control": "#562a93"');
     expect(reactNative).toContain('"color.semantic.accent-control-strong": "#2d174f"');
-    expect(reactNative).toContain('"motion.spring.standard": "response:0.36,damping:0.86,blend:0.12"');
-    expect(reactNative).toContain('"motion.drift.medium": "28px"');
-    expect(reactNative).toContain(
-      '"font.family.body": "\\"IBM Plex Sans\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
-    );
+    expect(reactNative).toContain('"font.family.display": "AurelglyphDisplay"');
+    expect(reactNative).toContain('"font.family.body": "AurelglyphUI"');
+    expect(reactNative).toContain('"font.family.mono": "AurelglyphMono"');
     expect(swift).toContain('public static let colorAccentRoyalPurple300 = "#9358e8"');
     expect(swift).toContain('public static let colorSemanticAccentControl = "#562a93"');
-    expect(swift).toContain('public static let motionSpringStandard = "response:0.36,damping:0.86,blend:0.12"');
-    expect(swift).toContain('public static let motionDriftMedium = "28px"');
     expect(swift).toContain(
-      'public static let fontFamilyBody = "\\"IBM Plex Sans\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      'public static let fontFamilyBody = "\\"Atkinson Hyperlegible\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
     expect(ruby).toContain('"color.accent.royal-purple.300" => "#9358e8"');
     expect(ruby).toContain('"color.semantic.accent-control" => "#562a93"');
-    expect(ruby).toContain('"motion.spring.standard" => "response:0.36,damping:0.86,blend:0.12"');
-    expect(ruby).toContain('"motion.drift.medium" => "28px"');
     expect(ruby).toContain(
-      '"font.family.body" => "\\"IBM Plex Sans\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
+      '"font.family.body" => "\\"Atkinson Hyperlegible\\", Inter, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif"'
     );
     expect(reactNativeJs).toContain("export const aurelglyphTheme = {");
+    expect(reactNativeJs).toContain('"font.family.ui": "AurelglyphUI"');
     expect(reactNativeJs).not.toContain("as const");
     expect(reactNativeTypes).toContain("export declare const aurelglyphTheme:");
+    expect(reactNativeTypes).toContain('readonly "font.family.mono": "AurelglyphMono";');
     expect(tokenJs).toContain("export const tokens = {");
     expect(tokenJs).not.toContain("as const");
     expect(tokenTypes).toContain("export declare const tokens:");

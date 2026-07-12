@@ -6,15 +6,18 @@
   "type": "module",
   "workspaces": ["packages/*", "examples/*"],
   "scripts": {
-    "build": "npm run build -ws --if-present",
+    "build": "npm run build:assets && npm run build --workspaces --if-present",
+    "build:assets": "node --experimental-strip-types scripts/font-assets.ts",
     "build:pages": "node --experimental-strip-types scripts/pages.ts",
     "build:tokens": "npm run build -w @aurelglyph/tokens",
     "test": "vitest run",
+    "test:rails": "npm test -w aurelglyph-rails",
+    "test:swift": "swift test --package-path packages/swift",
     "test:watch": "vitest",
     "typecheck": "npm run build:tokens && tsc -p tsconfig.base.json --noEmit",
     "version:check": "tsx scripts/versioning.ts check",
     "version:sync": "tsx scripts/versioning.ts sync",
-    "verify": "npm run version:check && npm run build && npm test && npm run typecheck"
+    "verify": "npm run version:check && npm run build && npm run build:pages && npm test && npm run test:rails && npm run test:swift && npm run typecheck"
   },
   "devDependencies": {
     "@types/node": "^22.15.18",

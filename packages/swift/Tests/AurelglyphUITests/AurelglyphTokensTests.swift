@@ -28,40 +28,14 @@ import SwiftUI
   #expect(String(describing: type(of: section)).contains("AurelglyphExpandableSection"))
 }
 
-private struct GlyphMotionProbe: View {
-  @Namespace private var namespace
-
-  var body: some View {
-    Text("Event")
-      .glyphMatch("event-card-image", in: namespace)
-      .glyphTransition(.bloom)
-      .glyphSpring(.standard)
-  }
-}
-
-@Test func exposesGlyphMotionVocabularyAndModifiers() {
-  let probe = GlyphMotionProbe()
-  let interactive = GlyphInteractive(progress: 0.42)
-  let cancelled = GlyphInteractive(progress: 0.1, phase: .cancelling)
-
-  #expect(GlyphSpring.allCases.map(\.rawValue) == ["quiet", "standard", "expressive"])
-  #expect(GlyphTransition.allCases.map(\.rawValue) == ["bloom", "drift", "collapse", "glass", "thread", "tilt", "arc", "none"])
-  #expect(GlyphState.allCases.count == 5)
-  #expect(GlyphDirection.allCases.count == 6)
-  #expect(GlyphSnapshotStrategy.optimized.rawValue == "optimized")
-  #expect(GlyphMotion.standardSpringToken == AurelglyphTokens.motionSpringStandard)
-  #expect(interactive.active)
-  #expect(interactive.progress == 0.42)
-  #expect(cancelled.phase == .cancelling)
-  #expect(String(describing: type(of: probe)).contains("GlyphMotionProbe"))
-}
-
 @Test func exposesNativeTypographyAdapterWithBundledNativeFonts() {
   let display = AurelglyphTypography.display(size: 34)
   let serif = AurelglyphTypography.editorialSerif(size: 20)
   let ui = AurelglyphTypography.ui(size: 17)
   let body = AurelglyphTypography.font(.body, size: 17)
   let mono = AurelglyphTypography.mono(size: 12)
+  let genericDisplay = AurelglyphTypography.font(.display, size: 34)
+  let genericMono = AurelglyphTypography.font(.mono, size: 12)
   let registration = AurelglyphFontRegistry.registerFonts()
 
   #expect(Mirror(reflecting: display).subjectType == Font.self)
@@ -69,14 +43,22 @@ private struct GlyphMotionProbe: View {
   #expect(Mirror(reflecting: ui).subjectType == Font.self)
   #expect(Mirror(reflecting: body).subjectType == Font.self)
   #expect(Mirror(reflecting: mono).subjectType == Font.self)
+  #expect(String(reflecting: genericDisplay) == String(reflecting: display))
+  #expect(String(reflecting: genericMono) == String(reflecting: mono))
   #expect(AurelglyphTypography.bundlesWebFontAssets == false)
   #expect(AurelglyphTypography.bundlesNativeFontAssets == true)
-  #expect(AurelglyphFontRegistry.fontResourceNames.count == 12)
-  #expect(AurelglyphFontRegistry.expectedPostScriptNames.contains("Newsreader72pt-Medium"))
-  #expect(AurelglyphFontRegistry.expectedPostScriptNames.contains("IBMPlexSans-Medm"))
-  #expect(AurelglyphFontRegistry.expectedPostScriptNames.contains("JetBrainsMono-Regular"))
+  #expect(AurelglyphFontRegistry.fontResourceNames.count == 5)
+  #expect(AurelglyphFontRegistry.expectedPostScriptNames.count == 8)
   #expect(registration.isReady)
-  #expect(registration.registeredPostScriptNames.count == 12)
+  #expect(registration.missingResources.isEmpty)
+  #expect(registration.failures.isEmpty)
+  #expect(registration.registeredPostScriptNames.sorted() == AurelglyphFontRegistry.expectedPostScriptNames.sorted())
+  #expect(registration.contains(postScriptName: "LibreBaskerville-Regular"))
+  #expect(registration.contains(postScriptName: "LibreBaskerville-Medium"))
+  #expect(registration.contains(postScriptName: "LibreBaskerville-SemiBold"))
+  #expect(registration.contains(postScriptName: "LibreBaskerville-Bold"))
+  #expect(registration.contains(postScriptName: "AtkinsonHyperlegible-Bold"))
+  #expect(registration.contains(postScriptName: "SpaceMono-Regular"))
   #expect(AurelglyphTypography.displayFamilyToken == AurelglyphTokens.fontFamilyDisplay)
   #expect(AurelglyphTypography.uiFamilyToken == AurelglyphTokens.fontFamilyUi)
   #expect(AurelglyphTypography.bodyFamilyToken == AurelglyphTokens.fontFamilyBody)

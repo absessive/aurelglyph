@@ -13,6 +13,8 @@ class AurelglyphRailsTest < Minitest::Test
 
     assert_instance_of Pathname, asset_path
     assert asset_path.join("stylesheets/aurelglyph.css").exist?
+    assert asset_path.join("fonts/aurelglyph/libre-baskerville-400.woff2").exist?
+    assert asset_path.join("fonts/aurelglyph/OFL-1.1.txt").exist?
   end
 
   def test_helper_reads_generated_tokens

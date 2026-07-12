@@ -29,9 +29,6 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
   select, alert, empty state, avatar, and badge
 - Phase 3 workbench controls: tabs, breadcrumbs, toast, progress, skeleton,
   metrics, data table, pagination, and command palette
-- GlyphMotion shared transition tokens, React adapters, SwiftUI modifiers, and
-  CSS/Rails motion classes for matched elements, bloom, drift, collapse, glass,
-  thread, tilt, and arc transitions
 - A static preview and a Vite React example app that consume the packages
 
 ## Install
@@ -52,23 +49,20 @@ by React and Rails:
 import "@aurelglyph/css";
 ```
 
-Pin exact versions in production apps when you need repeatable releases:
-
-```bash
-npm install @aurelglyph/css@0.4.0 @aurelglyph/react@0.4.0
-```
-
 `@aurelglyph/react/styles.css` is also available for React-only adopters that
 want just the component class layer.
 
 `@aurelglyph/css` packages the Aurelglyph web fonts locally as WOFF2 files.
-Newsreader is used for display text, IBM Plex Sans for UI/body copy, IBM Plex
-Serif as the editorial serif fallback, and JetBrains Mono for code, token
-names, technical labels, and metadata. The bundled font files are distributed
+Libre Baskerville is used for display and editorial text, Atkinson Hyperlegible
+for UI/body copy, and Space Mono for code, token names, technical labels, and
+metadata. The bundled font files are distributed
 under the SIL Open Font License 1.1, while Aurelglyph code remains MIT. No
 Google Fonts runtime request is required. SwiftUI consumers receive native TTF
 assets in the Swift package and should use `AurelglyphFontRegistry` plus
 `AurelglyphTypography` for registered custom fonts with system fallbacks.
+`npm run build:assets` verifies locked SHA-256 checksums and synchronizes the
+canonical web/native assets into docs, preview, Rails, and React Native outputs.
+Every distributed font directory includes the upstream notices and full OFL.
 
 Use the components in app code:
 
@@ -86,9 +80,6 @@ import {
   EmptyState,
   ExpandableSection,
   FileUpload,
-  GlyphMatch,
-  GlyphMotionProvider,
-  GlyphTransition,
   Icon,
   ListRow,
   ListSection,
@@ -128,7 +119,7 @@ export function DesignSystemSetup() {
         <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
           <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
           <Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} />
-          <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+          <Alert title="Package ready" tone="success">Design tokens and native controls are ready to use.</Alert>
           <Avatar name="Ajit Chakrapani" />
           <Badge tone="accent">Live</Badge>
           <EmptyState title="No archived releases">Use this state when a filtered list has no records.</EmptyState>
@@ -167,11 +158,6 @@ export function DesignSystemSetup() {
       <ExpandableSection eyebrow="System" title="Advanced settings">
         <p>Animated content with accessible disclosure semantics.</p>
       </ExpandableSection>
-      <GlyphMotionProvider spring="standard">
-        <GlyphTransition name="bloom" direction="forward">
-          <GlyphMatch id="event-card-image">Shared element content</GlyphMatch>
-        </GlyphTransition>
-      </GlyphMotionProvider>
       <Icon name="credit-card" title="Billing" />
     </AppShell>
   );
@@ -221,37 +207,6 @@ import { ExpandableSection } from "@aurelglyph/react";
 </ExpandableSection>
 ```
 
-#### GlyphMotion
-
-Use `GlyphMotionProvider`, `GlyphMatch`, and `GlyphTransition` for shared
-element continuity, card expansion, tab drift, glass/depth transitions, and
-gesture-driven progress state. The API uses Aurelglyph-native names and does
-not copy another transition library's names or implementation.
-
-```tsx
-import {
-  createGlyphInteractiveState,
-  GlyphMatch,
-  GlyphMotionProvider,
-  GlyphTransition
-} from "@aurelglyph/react";
-
-const drag = createGlyphInteractiveState(0.42);
-
-<GlyphMotionProvider spring="standard">
-  <GlyphTransition name="bloom" direction="forward" spring="expressive">
-    <GlyphMatch id="event-card-image" snapshot="optimized">
-      <img alt="" src="/event.jpg" />
-    </GlyphMatch>
-  </GlyphTransition>
-  <GlyphTransition name="thread" threadIndex={1}>Details</GlyphTransition>
-</GlyphMotionProvider>
-```
-
-CSS-only and Rails consumers receive the same `.ag-glyph-match` and
-`.ag-glyph-transition` class contract through `@aurelglyph/css` and the Rails
-stylesheet. Use those classes for static or progressively enhanced surfaces.
-
 #### Phase 1 Mobile Foundations
 
 Use the mobile foundation components for app chrome, navigable sections,
@@ -285,7 +240,7 @@ labels without requiring custom markup.
   <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
     <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
     <Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} />
-    <Alert title="Build complete" tone="success">Tokens and component styles compiled without errors.</Alert>
+    <Alert title="Package ready" tone="success">Design tokens and native controls are ready to use.</Alert>
     <Avatar name="Ajit Chakrapani" />
     <Badge tone="accent">Live</Badge>
     <EmptyState title="No archived releases">Use this state when a filtered list has no records.</EmptyState>
@@ -372,7 +327,7 @@ Rails apps can use the helper exposed by the engine:
   <%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %>
 <% end %>
 <%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %>
-<%= aurelglyph_alert("Build complete", tone: "success") { "Tokens and component styles compiled without errors." } %>
+<%= aurelglyph_alert("Package ready", tone: "success") { "Design tokens and native controls are ready to use." } %>
 <%= aurelglyph_segmented_control([{ id: "grid", label: "Grid" }, { id: "list", label: "List" }], active: "grid") %>
 <%= aurelglyph_badge("Live", tone: "accent") %>
 <%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %>
@@ -393,7 +348,7 @@ let label = icon.accessibilityLabel
 @State private var expanded = true
 
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
-  Text("Animated SwiftUI content")
+  Text("Advanced settings stay visible while details expand.")
 }
 
 AurelglyphAppShell {
@@ -411,27 +366,12 @@ AurelglyphAppShell {
 
 AurelglyphNavigationStack("Workbench") {
   AurelglyphSegmentedControl(items: [AurelglyphSegmentedItem(id: "grid", title: "Grid")], selection: $viewMode)
-  AurelglyphAlert("Build complete") { Text("Tokens and component styles compiled without errors.") }
+  AurelglyphAlert("Package ready") { Text("Design tokens and native controls are ready to use.") }
   AurelglyphBadge("Live")
   AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
   AurelglyphProgress(value: 72)
   AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
 }
-```
-
-Use GlyphMotion for SwiftUI matched elements and original Aurelglyph transition
-names:
-
-```swift
-@Namespace private var glyphNamespace
-
-Image("event")
-  .glyphMatch("event-card-image", in: glyphNamespace)
-  .glyphTransition(.bloom)
-  .glyphSpring(.standard)
-
-Text("Details")
-  .glyphTransition(.thread, direction: .forward)
 ```
 
 ### CSS-Only Apps
@@ -524,9 +464,28 @@ import { aurelglyphTheme } from "@aurelglyph/react-native";
 
 export const screen = {
   backgroundColor: aurelglyphTheme["color.mode.dark.background"],
-  color: aurelglyphTheme["color.mode.dark.text"]
+  color: aurelglyphTheme["color.mode.dark.text"],
+  fontFamily: aurelglyphTheme["font.family.body"]
 };
 ```
+
+React Native font-family tokens resolve to native-safe Aurelglyph aliases, not
+CSS stacks. The optional font subpath exposes Metro-compatible static requires
+for the packaged TTF files:
+
+```tsx
+import { useFonts } from "expo-font";
+import {
+  aurelglyphFontAssets,
+  aurelglyphFontFamilies
+} from "@aurelglyph/react-native/fonts";
+
+const [fontsLoaded] = useFonts(aurelglyphFontAssets);
+const strongLabel = { fontFamily: aurelglyphFontFamilies.uiBold };
+```
+
+Bare React Native apps can link the same files from the package's
+`assets/fonts` directory.
 
 ### SwiftUI
 
@@ -534,11 +493,14 @@ The workspace root exposes a Swift Package named `AurelglyphUI`. Its target
 source lives in `packages/swift/Sources/AurelglyphUI`.
 
 Add the repository as a Swift Package dependency, or use a local package path
-to the workspace root during development. Then import the module:
+to the workspace root during development:
 
 ```swift
 .package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.0")
+.product(name: "AurelglyphUI", package: "aurelglyph")
 ```
+
+Then import the module:
 
 ```swift
 import AurelglyphUI
@@ -560,11 +522,19 @@ Text("System status")
 
 Text("color.accent.royal-purple.300")
   .font(AurelglyphTypography.monoLabel)
+
+Text("Calibrated systems")
+  .font(AurelglyphTypography.display(size: 48, relativeTo: .largeTitle))
 ```
 
+Custom typography methods preserve the requested baseline while scaling
+relative to the supplied Dynamic Type role. The generic `font` factory uses
+role-specific defaults: large title for display, title 3 for editorial serif,
+body for UI/body, and caption for mono.
+
 The Swift package does not bundle the web `.woff2` font assets. It keeps the
-font-family token strings available for reference, and bundles iOS-compatible
-`.ttf` files for Newsreader, IBM Plex Sans, IBM Plex Serif, and JetBrains Mono.
+font-family token strings available for reference, and bundles Apple-platform
+`.ttf` files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono.
 `AurelglyphTypography` registers and uses those fonts when available, with
 native SwiftUI serif, sans, and monospaced fallbacks.
 
@@ -576,11 +546,13 @@ Rails apps can consume the `aurelglyph-rails` gem from a local path, from this
 Git repository, or from RubyGems once published. The package ships a Rails
 engine, generated CSS with tokens plus shared component classes, generated token
 helpers, and view helpers for tokens, icons, disclosure, cards, lists, tabs,
-search, and switches.
+search, and switches. It also packages the same WOFF2 font set and
+`@font-face` declarations as the CSS adapter.
 
 After `npm run build -w aurelglyph-rails`, the generated Rails-facing files are:
 
 - `packages/rails/app/assets/stylesheets/aurelglyph.css`
+- `packages/rails/app/assets/fonts/aurelglyph/`
 - `packages/rails/lib/aurelglyph/tokens.rb`
 
 For gem consumption, point Bundler at the package gemspec:
@@ -591,7 +563,9 @@ gem "aurelglyph-rails",
   glob: "packages/rails/aurelglyph-rails.gemspec"
 ```
 
-Use the stylesheet through the asset pipeline:
+Use the stylesheet through the asset pipeline. Keep the bundled
+`app/assets/fonts/aurelglyph` directory on the same asset path so the relative
+font URLs resolve:
 
 ```css
 /*
@@ -629,8 +603,8 @@ Components should use semantic variables like
 - `@aurelglyph/tokens`: canonical tokens and generator
 - `@aurelglyph/css`: CSS variables, packaged fonts, base styles, and shared component classes
 - `@aurelglyph/react`: React components and component styles
-- `@aurelglyph/react-native`: React Native theme export
-- `AurelglyphUI`: Swift Package exposing generated token constants, typography, components, and GlyphMotion modifiers
+- `@aurelglyph/react-native`: React Native theme plus optional packaged native-font adapter
+- `AurelglyphUI`: Swift Package exposing generated token constants, typography, and components
 - `aurelglyph-rails`: Rails engine, stylesheet, token helper, and view helper
 
 ## Examples
@@ -662,7 +636,8 @@ npm run build:pages
 ```
 
 This writes `docs/index.html`, `docs/usage.html`, `docs/components.html`,
-`docs/changelog.html`, `docs/CNAME`, and `docs/assets/fonts/ofl/`. The
+`docs/changelog.html`, `docs/CNAME`, and `docs/assets/fonts/ofl/`. The font
+directory includes `OFL-1.1.txt` with upstream notices and the complete license. The
 generated pages can be published with GitHub Pages configured to deploy from
 the `docs/` directory on the selected branch.
 
@@ -719,9 +694,12 @@ base path before uploading `examples/react-vite/dist/`.
 
 ```bash
 npm install
+npm run build:assets
 npm run build
 npm run build:pages
 npm test
+npm run test:rails
+npm run test:swift
 npm run typecheck
 npm run version:check
 npm run version:sync -- "Describe the changelog item"
@@ -735,6 +713,7 @@ No lint script exists yet. Add one before introducing lintable source rules.
 Aurelglyph uses one shared version across every platform package. The root
 `package.json` version is canonical. Run `npm run version:sync -- "Change
 summary"` after changing the root version to update all package versions,
-workspace package dependency pins, `package-lock.json`, and `CHANGELOG.md`.
+workspace package dependency pins, `package-lock.json`, `CHANGELOG.md`, and
+version markers in the React example, Rails adapter, and static preview.
 
 Run `npm run version:check` before publishing or consuming packages from apps.

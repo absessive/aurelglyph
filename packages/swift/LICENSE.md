@@ -1,19 +1,37 @@
-# Aurelglyph Swift Package License Notes
+# Aurelglyph Swift Package License
 
-The Aurelglyph Swift package code is MIT licensed as part of Aurelglyph.
+MIT License
 
-This package also includes locally packaged TTF files for these font families:
+Copyright (c) 2026 Ajit Chakrapani
 
-- Newsreader
-- IBM Plex Serif
-- IBM Plex Sans
-- JetBrains Mono
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-These font files are governed by the SIL Open Font License 1.1 and are not
-relicensed under MIT.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Packaged Fonts
+
+The bundled Libre Baskerville, Atkinson Hyperlegible, and Space Mono TTF files
+are licensed separately under the SIL Open Font License 1.1. Their copyright
+notices and full license text ship beside the fonts at
+`Sources/AurelglyphUI/Resources/Fonts/OFL-1.1.txt` and remain outside the
+Aurelglyph MIT license.
 
 Sources:
 
-- https://github.com/productiontype/Newsreader
-- https://github.com/IBM/plex
-- https://github.com/JetBrains/JetBrainsMono
+- https://github.com/google/fonts/tree/main/ofl/librebaskerville
+- https://github.com/google/fonts/tree/main/ofl/atkinsonhyperlegible
+- https://github.com/google/fonts/tree/main/ofl/spacemono

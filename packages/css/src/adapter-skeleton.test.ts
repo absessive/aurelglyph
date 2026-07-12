@@ -32,9 +32,9 @@ describe("platform adapter skeletons", () => {
         "@aurelglyph/tokens": "0.4.0"
       }
     });
-    expect(css).toContain('font-family: "Newsreader";');
-    expect(css).toContain('url("./fonts/ofl/ibm-plex-sans-400.woff2")');
-    expect(css).toContain('url("./fonts/ofl/jetbrains-mono-400.woff2")');
+    expect(css).toContain('font-family: "Libre Baskerville";');
+    expect(css).toContain('url("./fonts/ofl/atkinson-hyperlegible-400.woff2")');
+    expect(css).toContain('url("./fonts/ofl/space-mono-400.woff2")');
     expect(css).toContain('@import "@aurelglyph/tokens/generated.css";');
     expect(css).toContain("box-sizing: border-box;");
     expect(css).toContain("background: var(--ag-color-semantic-background);");
@@ -46,7 +46,14 @@ describe("platform adapter skeletons", () => {
   it("publishes built CSS with base and shared component classes", async () => {
     const source = await read("packages/css/src/index.css");
     const built = await read("packages/css/dist/index.css");
-    const font = await read("packages/css/dist/fonts/ofl/jetbrains-mono-400.woff2");
+    const fontFiles = [
+      "libre-baskerville-400.woff2",
+      "libre-baskerville-700.woff2",
+      "atkinson-hyperlegible-400.woff2",
+      "atkinson-hyperlegible-700.woff2",
+      "space-mono-400.woff2",
+      "space-mono-700.woff2"
+    ];
 
     expect(built).toContain(source.trim());
     expect(built).toContain("Shared component classes used by the React and Rails adapters.");
@@ -59,9 +66,10 @@ describe("platform adapter skeletons", () => {
     expect(built).toContain(".ag-segmented");
     expect(built).toContain(".ag-command-palette");
     expect(built).toContain(".ag-table");
-    expect(built).toContain(".ag-glyph-match");
-    expect(built).toContain(".ag-glyph-transition");
-    expect(font.length).toBeGreaterThan(0);
+    for (const fontFile of fontFiles) {
+      await expect(read(`packages/css/dist/fonts/ofl/${fontFile}`)).resolves.not.toHaveLength(0);
+    }
+    await expect(read("packages/css/dist/fonts/ofl/OFL-1.1.txt")).resolves.toContain("SIL OPEN FONT LICENSE Version 1.1");
   });
 
   it("defines the React Native package contract and generated theme export", async () => {
@@ -75,9 +83,19 @@ describe("platform adapter skeletons", () => {
       type: "module",
       main: "src/index.ts",
       types: "src/index.ts",
-      files: ["src", "README.md"],
+      exports: {
+        ".": {
+          types: "./src/index.ts",
+          default: "./src/index.ts"
+        },
+        "./fonts": {
+          types: "./src/fonts.ts",
+          default: "./src/fonts.ts"
+        }
+      },
+      files: ["src", "assets/fonts", "README.md", "LICENSE.md"],
       scripts: {
-        build: "npm run build -w @aurelglyph/tokens",
+        build: "npm run build -w @aurelglyph/tokens && node --experimental-strip-types ../../scripts/font-assets.ts",
         prepare: "npm run build"
       },
       dependencies: {
@@ -85,6 +103,11 @@ describe("platform adapter skeletons", () => {
       }
     });
     expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
+    const fontAdapter = await read("packages/react-native/src/fonts.ts");
+    expect(fontAdapter).toContain("aurelglyphFontAssets");
+    expect(fontAdapter).toContain("AurelglyphDisplay");
+    await expect(read("packages/react-native/assets/fonts/LibreBaskerville-Regular.ttf")).resolves.not.toHaveLength(0);
+    await expect(read("packages/react-native/assets/fonts/OFL-1.1.txt")).resolves.toContain("Braille Institute of America");
   });
 
   it("defines the Swift package and copies generated Swift tokens", async () => {
@@ -93,11 +116,13 @@ describe("platform adapter skeletons", () => {
     const generated = await read("packages/tokens/dist/generated/AurelglyphTokens.swift");
     const copied = await read("packages/swift/Sources/AurelglyphUI/AurelglyphTokens.swift");
     const fontRegistry = await read("packages/swift/Sources/AurelglyphUI/AurelglyphFontRegistry.swift");
-    const font = await read("packages/swift/Sources/AurelglyphUI/Resources/Fonts/Newsreader-Medium.ttf");
+    const font = await read("packages/swift/Sources/AurelglyphUI/Resources/Fonts/LibreBaskerville-Regular.ttf");
 
     expect(packageJson).toMatchObject({
       name: "@aurelglyph/swift",
       version: "0.4.0",
+      private: true,
+      files: ["Package.swift", "Sources", "README.md", "LICENSE.md"],
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
       },
@@ -126,6 +151,7 @@ describe("platform adapter skeletons", () => {
     expect(packageJson).toEqual({
       name: "aurelglyph-rails",
       version: "0.4.0",
+      private: true,
       license: "MIT",
       files: ["app", "lib", "*.gemspec", "README.md"],
       scripts: {
@@ -138,6 +164,8 @@ describe("platform adapter skeletons", () => {
       }
     });
     expect(copiedCss).toContain(generatedCss.trim());
+    expect(copiedCss).toContain('font-family: "Libre Baskerville";');
+    expect(copiedCss).toContain('url("aurelglyph/atkinson-hyperlegible-400.woff2")');
     expect(copiedCss).toContain("Shared component classes used by the React and Rails adapters.");
     expect(copiedCss).toContain(".ag-app-shell");
     expect(copiedCss).toContain(".ag-card");
@@ -148,8 +176,15 @@ describe("platform adapter skeletons", () => {
     expect(copiedCss).toContain(".ag-segmented");
     expect(copiedCss).toContain(".ag-command-palette");
     expect(copiedCss).toContain(".ag-table");
-    expect(copiedCss).toContain(".ag-glyph-match");
-    expect(copiedCss).toContain(".ag-glyph-transition");
     expect(copiedRuby).toBe(generatedRuby);
+    await expect(read("packages/rails/app/assets/fonts/aurelglyph/space-mono-700.woff2")).resolves.not.toHaveLength(0);
+    await expect(read("packages/rails/app/assets/fonts/aurelglyph/OFL-1.1.txt")).resolves.toContain("Space Mono Project Authors");
+  });
+
+  it("ships package documentation and license files", async () => {
+    for (const packagePath of ["tokens", "css", "react", "react-native", "swift", "rails"]) {
+      await expect(read(`packages/${packagePath}/README.md`)).resolves.toContain("Aurelglyph");
+      await expect(read(`packages/${packagePath}/LICENSE.md`)).resolves.toContain("MIT License");
+    }
   });
 });

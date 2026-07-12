@@ -1,4 +1,3 @@
-import CoreGraphics
 import CoreText
 import Foundation
 
@@ -9,39 +8,34 @@ public enum AurelglyphFontRegistry {
     public let failures: [String]
 
     public var isReady: Bool {
-      missingResources.isEmpty && failures.isEmpty
+      missingResources.isEmpty
+        && failures.isEmpty
+        && Set(registeredPostScriptNames) == Set(AurelglyphFontRegistry.expectedPostScriptNames)
+    }
+
+    public func contains(postScriptName: String) -> Bool {
+      registeredPostScriptNames.contains(postScriptName)
     }
   }
 
-  public static let fontResourceNames = [
-    "Newsreader-Regular",
-    "Newsreader-Medium",
-    "Newsreader-Bold",
-    "IBMPlexSans-Regular",
-    "IBMPlexSans-Medium",
-    "IBMPlexSans-Bold",
-    "IBMPlexSerif-Regular",
-    "IBMPlexSerif-Medium",
-    "IBMPlexSerif-Bold",
-    "JetBrainsMono-Regular",
-    "JetBrainsMono-Medium",
-    "JetBrainsMono-Bold"
+  private static let fontResources: [(resourceName: String, postScriptNames: [String])] = [
+    (
+      "LibreBaskerville-Regular",
+      [
+        "LibreBaskerville-Regular",
+        "LibreBaskerville-Medium",
+        "LibreBaskerville-SemiBold",
+        "LibreBaskerville-Bold"
+      ]
+    ),
+    ("AtkinsonHyperlegible-Regular", ["AtkinsonHyperlegible-Regular"]),
+    ("AtkinsonHyperlegible-Bold", ["AtkinsonHyperlegible-Bold"]),
+    ("SpaceMono-Regular", ["SpaceMono-Regular"]),
+    ("SpaceMono-Bold", ["SpaceMono-Bold"])
   ]
 
-  public static let expectedPostScriptNames = [
-    "Newsreader72pt-Regular",
-    "Newsreader72pt-Medium",
-    "Newsreader72pt-Bold",
-    "IBMPlexSans",
-    "IBMPlexSans-Medm",
-    "IBMPlexSans-Bold",
-    "IBMPlexSerif-Regular",
-    "IBMPlexSerif-Medium",
-    "IBMPlexSerif-Bold",
-    "JetBrainsMono-Regular",
-    "JetBrainsMono-Medium",
-    "JetBrainsMono-Bold"
-  ]
+  public static let fontResourceNames = fontResources.map(\.resourceName)
+  public static let expectedPostScriptNames = fontResources.flatMap(\.postScriptNames)
 
   @discardableResult
   public static func registerFonts() -> RegistrationResult {
@@ -53,7 +47,8 @@ public enum AurelglyphFontRegistry {
     var missingResources: [String] = []
     var failures: [String] = []
 
-    for resourceName in fontResourceNames {
+    for resource in fontResources {
+      let resourceName = resource.resourceName
       guard let url = fontURL(for: resourceName) else {
         missingResources.append("\(resourceName).ttf")
         continue
@@ -65,8 +60,11 @@ public enum AurelglyphFontRegistry {
         .map { CFErrorGetCode($0.takeRetainedValue()) == CTFontManagerError.alreadyRegistered.rawValue } ?? false
 
       if registered || alreadyRegistered {
-        if let postScriptName = postScriptName(for: url) {
-          registeredPostScriptNames.append(postScriptName)
+        let postScriptNames = postScriptNames(for: url)
+        if Set(postScriptNames) == Set(resource.postScriptNames) {
+          registeredPostScriptNames.append(contentsOf: postScriptNames)
+        } else {
+          failures.append("\(resourceName): unexpected PostScript names")
         }
       } else {
         failures.append(resourceName)
@@ -80,16 +78,11 @@ public enum AurelglyphFontRegistry {
     )
   }()
 
-  private static func postScriptName(for url: URL) -> String? {
-    guard
-      let provider = CGDataProvider(url: url as CFURL),
-      let font = CGFont(provider),
-      let postScriptName = font.postScriptName
-    else {
-      return nil
+  private static func postScriptNames(for url: URL) -> [String] {
+    let descriptors = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL) as? [CTFontDescriptor] ?? []
+    return descriptors.compactMap { descriptor in
+      CTFontDescriptorCopyAttribute(descriptor, kCTFontNameAttribute) as? String
     }
-
-    return postScriptName as String
   }
 
   private static func fontURL(for resourceName: String) -> URL? {

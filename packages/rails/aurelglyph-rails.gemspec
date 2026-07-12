@@ -14,9 +14,10 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir.chdir(__dir__) do
     Dir[
-      "app/assets/stylesheets/aurelglyph.css",
+      "app/assets/**/*",
       "lib/**/*.rb",
       "README.md",
+      "LICENSE.md",
       "aurelglyph-rails.gemspec"
     ]
   end

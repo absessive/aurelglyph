@@ -194,23 +194,34 @@ function renderTokenTypes(flat: FlatToken[], tree: TokenTree): string {
   return `export declare const tokens: {\n${body}\n};\n\nexport type AurelglyphTokenName = keyof typeof tokens;\n`;
 }
 
+const reactNativeOverrides: Record<string, string> = {
+  "font.family.display": "AurelglyphDisplay",
+  "font.family.ui": "AurelglyphUI",
+  "font.family.body": "AurelglyphUI",
+  "font.family.mono": "AurelglyphMono"
+};
+
+function resolveReactNativeToken(token: FlatToken, tree: TokenTree): string {
+  return reactNativeOverrides[token.name] ?? resolveTokenValue(token.value, tree);
+}
+
 function renderReactNative(flat: FlatToken[], tree: TokenTree): string {
   const body = flat
-    .map((token) => `  ${JSON.stringify(token.name)}: ${JSON.stringify(resolveTokenValue(token.value, tree))}`)
+    .map((token) => `  ${JSON.stringify(token.name)}: ${JSON.stringify(resolveReactNativeToken(token, tree))}`)
     .join(",\n");
   return `export const aurelglyphTheme = {\n${body}\n} as const;\n`;
 }
 
 function renderReactNativeJavaScript(flat: FlatToken[], tree: TokenTree): string {
   const body = flat
-    .map((token) => `  ${JSON.stringify(token.name)}: ${JSON.stringify(resolveTokenValue(token.value, tree))}`)
+    .map((token) => `  ${JSON.stringify(token.name)}: ${JSON.stringify(resolveReactNativeToken(token, tree))}`)
     .join(",\n");
   return `export const aurelglyphTheme = {\n${body}\n};\n`;
 }
 
 function renderReactNativeTypes(flat: FlatToken[], tree: TokenTree): string {
   const body = flat
-    .map((token) => `  readonly ${JSON.stringify(token.name)}: ${JSON.stringify(resolveTokenValue(token.value, tree))};`)
+    .map((token) => `  readonly ${JSON.stringify(token.name)}: ${JSON.stringify(resolveReactNativeToken(token, tree))};`)
     .join("\n");
   return `export declare const aurelglyphTheme: {\n${body}\n};\n`;
 }

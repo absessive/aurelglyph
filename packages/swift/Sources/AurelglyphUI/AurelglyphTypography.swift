@@ -16,118 +16,184 @@ public enum AurelglyphTypography {
   public static let bodyFamilyToken = AurelglyphTokens.fontFamilyBody
   public static let monoFamilyToken = AurelglyphTokens.fontFamilyMono
 
-  public static func font(_ role: Role, size: CGFloat, weight: Font.Weight = .regular) -> Font {
+  public static func font(
+    _ role: Role,
+    size: CGFloat,
+    weight: Font.Weight = .regular,
+    relativeTo textStyle: Font.TextStyle? = nil
+  ) -> Font {
     switch role {
     case .display:
-      return display(size: size, weight: weight)
+      return display(size: size, weight: weight, relativeTo: textStyle ?? .largeTitle)
     case .editorialSerif:
-      return editorialSerif(size: size, weight: weight)
+      return editorialSerif(size: size, weight: weight, relativeTo: textStyle ?? .title3)
     case .ui:
-      return ui(size: size, weight: weight)
+      return ui(size: size, weight: weight, relativeTo: textStyle ?? .body)
     case .body:
-      return bodyText(size: size, weight: weight)
+      return bodyText(size: size, weight: weight, relativeTo: textStyle ?? .body)
     case .mono:
-      return mono(size: size, weight: weight)
+      return mono(size: size, weight: weight, relativeTo: textStyle ?? .caption)
     }
   }
 
-  public static func display(size: CGFloat, weight: Font.Weight = .medium) -> Font {
-    customFont(postScriptName: newsreaderName(for: weight), fallback: .serif, size: size, weight: weight)
+  public static func display(
+    size: CGFloat,
+    weight: Font.Weight = .regular,
+    relativeTo textStyle: Font.TextStyle = .largeTitle
+  ) -> Font {
+    customFont(
+      postScriptName: libreBaskervilleName(for: weight),
+      fallback: .serif,
+      size: size,
+      weight: weight,
+      relativeTo: textStyle,
+      appliesRequestedWeight: usesSyntheticLibreBaskervilleWeight(for: weight)
+    )
   }
 
-  public static func editorialSerif(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    customFont(postScriptName: plexSerifName(for: weight), fallback: .serif, size: size, weight: weight)
+  public static func editorialSerif(
+    size: CGFloat,
+    weight: Font.Weight = .regular,
+    relativeTo textStyle: Font.TextStyle = .title3
+  ) -> Font {
+    customFont(
+      postScriptName: libreBaskervilleName(for: weight),
+      fallback: .serif,
+      size: size,
+      weight: weight,
+      relativeTo: textStyle,
+      appliesRequestedWeight: usesSyntheticLibreBaskervilleWeight(for: weight)
+    )
   }
 
-  public static func ui(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    customFont(postScriptName: plexSansName(for: weight), fallback: .default, size: size, weight: weight)
+  public static func ui(
+    size: CGFloat,
+    weight: Font.Weight = .regular,
+    relativeTo textStyle: Font.TextStyle = .body
+  ) -> Font {
+    customFont(
+      postScriptName: atkinsonHyperlegibleName(for: weight),
+      fallback: .default,
+      size: size,
+      weight: weight,
+      relativeTo: textStyle,
+      appliesRequestedWeight: usesSyntheticWeight(for: weight)
+    )
   }
 
-  public static func bodyText(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    customFont(postScriptName: plexSansName(for: weight), fallback: .default, size: size, weight: weight)
+  public static func bodyText(
+    size: CGFloat,
+    weight: Font.Weight = .regular,
+    relativeTo textStyle: Font.TextStyle = .body
+  ) -> Font {
+    customFont(
+      postScriptName: atkinsonHyperlegibleName(for: weight),
+      fallback: .default,
+      size: size,
+      weight: weight,
+      relativeTo: textStyle,
+      appliesRequestedWeight: usesSyntheticWeight(for: weight)
+    )
   }
 
-  public static func mono(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    customFont(postScriptName: jetBrainsMonoName(for: weight), fallback: .monospaced, size: size, weight: weight)
+  public static func mono(
+    size: CGFloat,
+    weight: Font.Weight = .regular,
+    relativeTo textStyle: Font.TextStyle = .caption
+  ) -> Font {
+    customFont(
+      postScriptName: spaceMonoName(for: weight),
+      fallback: .monospaced,
+      size: size,
+      weight: weight,
+      relativeTo: textStyle,
+      appliesRequestedWeight: usesSyntheticWeight(for: weight)
+    )
   }
 
-  public static let displayLarge = display(size: 38, weight: .medium)
-  public static let displayTitle = display(size: 30, weight: .medium)
-  public static let title = ui(size: 22, weight: .semibold)
-  public static let headline = ui(size: 17, weight: .semibold)
-  public static let body = font(.body, size: 17)
-  public static let label = ui(size: 13, weight: .semibold)
-  public static let caption = ui(size: 12)
-  public static let monoLabel = mono(size: 12, weight: .medium)
-  public static let monoCaption = mono(size: 11)
+  public static let displayLarge = display(size: 38, relativeTo: .largeTitle)
+  public static let displayTitle = display(size: 30, relativeTo: .title)
+  public static let title = ui(size: 22, weight: .semibold, relativeTo: .title2)
+  public static let headline = ui(size: 17, weight: .semibold, relativeTo: .headline)
+  public static let body = font(.body, size: 17, relativeTo: .body)
+  public static let label = ui(size: 13, weight: .semibold, relativeTo: .subheadline)
+  public static let caption = ui(size: 12, relativeTo: .caption)
+  public static let monoLabel = mono(size: 12, weight: .medium, relativeTo: .caption)
+  public static let monoCaption = mono(size: 11, relativeTo: .caption2)
 
   private static func customFont(
     postScriptName: String,
     fallback: Font.Design,
     size: CGFloat,
-    weight: Font.Weight
+    weight: Font.Weight,
+    relativeTo textStyle: Font.TextStyle,
+    appliesRequestedWeight: Bool
   ) -> Font {
-    if AurelglyphFontRegistry.registerFonts().isReady {
-      return .custom(postScriptName, size: size)
+    if AurelglyphFontRegistry.registerFonts().contains(postScriptName: postScriptName) {
+      let font = Font.custom(postScriptName, size: size, relativeTo: textStyle)
+      return appliesRequestedWeight ? font.weight(weight) : font
     }
 
-    return .system(size: size, weight: weight, design: fallback)
+    return Font.system(size: size, weight: weight, design: fallback)
   }
 
-  private static func newsreaderName(for weight: Font.Weight) -> String {
-    switch weightBucket(for: weight) {
-    case .bold:
-      return "Newsreader72pt-Bold"
-    case .medium:
-      return "Newsreader72pt-Medium"
-    case .regular:
-      return "Newsreader72pt-Regular"
+  private static func libreBaskervilleName(for weight: Font.Weight) -> String {
+    if weight == .bold || weight == .heavy || weight == .black {
+      return "LibreBaskerville-Bold"
     }
-  }
 
-  private static func plexSansName(for weight: Font.Weight) -> String {
-    switch weightBucket(for: weight) {
-    case .bold:
-      return "IBMPlexSans-Bold"
-    case .medium:
-      return "IBMPlexSans-Medm"
-    case .regular:
-      return "IBMPlexSans"
+    if weight == .semibold {
+      return "LibreBaskerville-SemiBold"
     }
+
+    if weight == .medium {
+      return "LibreBaskerville-Medium"
+    }
+
+    return "LibreBaskerville-Regular"
   }
 
-  private static func plexSerifName(for weight: Font.Weight) -> String {
+  private static func atkinsonHyperlegibleName(for weight: Font.Weight) -> String {
     switch weightBucket(for: weight) {
     case .bold:
-      return "IBMPlexSerif-Bold"
-    case .medium:
-      return "IBMPlexSerif-Medium"
-    case .regular:
-      return "IBMPlexSerif-Regular"
+      return "AtkinsonHyperlegible-Bold"
+    case .medium, .regular:
+      return "AtkinsonHyperlegible-Regular"
     }
   }
 
-  private static func jetBrainsMonoName(for weight: Font.Weight) -> String {
+  private static func spaceMonoName(for weight: Font.Weight) -> String {
     switch weightBucket(for: weight) {
     case .bold:
-      return "JetBrainsMono-Bold"
-    case .medium:
-      return "JetBrainsMono-Medium"
-    case .regular:
-      return "JetBrainsMono-Regular"
+      return "SpaceMono-Bold"
+    case .medium, .regular:
+      return "SpaceMono-Regular"
     }
   }
 
   private static func weightBucket(for weight: Font.Weight) -> WeightBucket {
-    if weight == .bold || weight == .heavy || weight == .black {
+    if weight == .semibold || weight == .bold || weight == .heavy || weight == .black {
       return .bold
     }
 
-    if weight == .medium || weight == .semibold {
+    if weight == .medium {
       return .medium
     }
 
     return .regular
+  }
+
+  private static func usesSyntheticWeight(for weight: Font.Weight) -> Bool {
+    weightBucket(for: weight) != .bold && weight != .regular
+  }
+
+  private static func usesSyntheticLibreBaskervilleWeight(for weight: Font.Weight) -> Bool {
+    weight != .regular
+      && weight != .medium
+      && weight != .semibold
+      && weight != .bold
+      && weight != .heavy
+      && weight != .black
   }
 
   private enum WeightBucket {

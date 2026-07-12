@@ -2,17 +2,21 @@
 
 ## 0.4.0
 
-- Add GlyphMotion shared transition system for SwiftUI and React.
-- Add motion token groups for springs, depth, blur, scale, opacity, drift,
-  arcs, and stagger timing across generated CSS, TypeScript, React Native,
-  Swift, and Ruby outputs.
-- Add React `GlyphMotionProvider`, `GlyphMatch`, `GlyphTransition`, and
-  interactive progress helpers with shared CSS motion classes.
-- Add SwiftUI `GlyphMotion`, `GlyphSpring`, `GlyphTransition`, `GlyphState`,
-  `GlyphDirection`, `GlyphSnapshotStrategy`, `GlyphInteractive`, and
-  `.glyphMatch`, `.glyphTransition`, and `.glyphSpring` modifiers.
-- Update README, consuming docs, generated GitHub Pages, and the React Vite
-  example with concrete motion usage.
+- Replace the packaged typography set with a more distinct OFL stack:
+  Libre Baskerville for display/editorial text, Atkinson Hyperlegible for
+  UI/body copy, and Space Mono for technical labels and code.
+- Update CSS WOFF2 assets, Swift TTF assets, token font families, generated
+  Pages typography, README guidance, and font license attribution.
+- Package matching WOFF2 assets with Rails and native-safe font aliases plus TTF
+  assets with React Native so every supported adapter can use the new stack.
+- Preserve Dynamic Type-relative Swift custom fonts, validate registered faces
+  exactly, use available faces independently, and preserve requested fallback sizes.
+- Add checksum-verified font synchronization, complete OFL notices, package
+  READMEs/licenses, safe private build-harness manifests, and broader Rails and
+  Swift verification.
+- Add accessible light-mode controls to generated Pages and the static preview,
+  correct light-mode accent contrast, prevent code clipping, and improve preview
+  responsiveness and version synchronization.
 
 ## 0.3.0
 

@@ -10,8 +10,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(rgba(231, 223, 209, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(231, 223, 209, 0.03) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--ag-color-semantic-foreground) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ag-color-semantic-foreground) 3%, transparent) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: linear-gradient(180deg, black, transparent 78%);
   content: "";
@@ -199,27 +199,27 @@ textarea {
 }
 
 .example-swatch--royal-purple {
-  background: #9358e8;
+  background: var(--ag-color-accent-royal-purple-300);
 }
 
 .example-swatch--amber {
-  background: #c88a3d;
+  background: var(--ag-color-accent-amber-300);
 }
 
 .example-swatch--forest {
-  background: #6f9a45;
+  background: var(--ag-color-accent-forest-300);
 }
 
 .example-swatch--deep-blue {
-  background: #4d7fd0;
+  background: var(--ag-color-accent-deep-blue-300);
 }
 
 .example-swatch--cyan {
-  background: #4aa7b3;
+  background: var(--ag-color-accent-cyan-300);
 }
 
 .example-swatch--steel {
-  background: #858176;
+  background: var(--ag-color-accent-steel-300);
 }
 
 .example-hero,
@@ -272,7 +272,7 @@ textarea {
   pointer-events: none;
   background:
     radial-gradient(circle at 80% 20%, rgba(var(--ag-accent-rgb), 0.18), transparent 24rem),
-    linear-gradient(90deg, transparent, rgba(231, 223, 209, 0.035));
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--ag-color-semantic-foreground) 4%, transparent));
   content: "";
 }
 
@@ -389,13 +389,6 @@ textarea {
   line-height: var(--ag-font-lineHeight-loose);
 }
 
-.example-card-copy {
-  margin: 0;
-  color: var(--ag-color-semantic-muted);
-  font-size: var(--ag-font-size-sm);
-  line-height: var(--ag-font-lineHeight-normal);
-}
-
 .example-fields {
   display: grid;
   gap: var(--ag-space-4);
@@ -462,7 +455,7 @@ textarea {
   border: 1px solid var(--ag-color-semantic-border);
   border-radius: var(--ag-radius-md);
   padding: var(--ag-space-4);
-  background: rgba(255, 255, 255, 0.025);
+  background: color-mix(in srgb, var(--ag-color-semantic-surface-muted) 72%, transparent);
   box-shadow: var(--ag-shadow-inset);
 }
 
@@ -507,62 +500,6 @@ textarea {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ag-space-3);
-}
-
-.example-motion-demo {
-  display: grid;
-  gap: var(--ag-space-3);
-}
-
-.example-motion-card,
-.example-motion-detail {
-  min-width: 0;
-  border: 1px solid var(--ag-color-semantic-border);
-  border-radius: var(--ag-radius-md);
-  background:
-    linear-gradient(180deg, rgba(var(--ag-accent-rgb), 0.08), transparent),
-    var(--ag-color-semantic-surface-muted);
-  box-shadow: var(--ag-shadow-inset);
-}
-
-.example-motion-card {
-  display: grid;
-  grid-template-columns: minmax(6rem, 0.8fr) minmax(0, 1fr);
-  gap: var(--ag-space-3);
-  align-items: center;
-  padding: var(--ag-space-3);
-}
-
-.example-motion-card strong,
-.example-motion-card small,
-.example-motion-detail span {
-  display: block;
-}
-
-.example-motion-card strong {
-  color: var(--ag-color-semantic-foreground);
-}
-
-.example-motion-card small,
-.example-motion-detail span {
-  margin-top: var(--ag-space-1);
-  color: var(--ag-color-semantic-muted);
-  font-size: var(--ag-font-size-sm);
-  line-height: var(--ag-font-lineHeight-normal);
-}
-
-.example-motion-visual {
-  min-height: 6.5rem;
-  border: 1px solid rgba(var(--ag-accent-rgb), 0.32);
-  border-radius: var(--ag-radius-sm);
-  background:
-    radial-gradient(circle at 70% 28%, rgba(var(--ag-accent-rgb), 0.38), transparent 36%),
-    linear-gradient(135deg, rgba(var(--ag-accent-rgb), 0.18), transparent),
-    var(--ag-color-semantic-surface);
-}
-
-.example-motion-detail {
-  padding: var(--ag-space-4);
 }
 
 .example-disclosure-stack {
@@ -670,7 +607,7 @@ textarea {
   border: 1px solid var(--ag-color-semantic-border);
   border-radius: var(--ag-radius-md);
   padding: var(--ag-space-3);
-  background: rgba(255, 255, 255, 0.025);
+  background: color-mix(in srgb, var(--ag-color-semantic-surface-muted) 72%, transparent);
   box-shadow: var(--ag-shadow-inset);
 }
 

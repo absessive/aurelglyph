@@ -14,7 +14,8 @@
   "files": [
     "dist",
     "src/styles.css",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "exports": {
     ".": {
@@ -24,7 +25,7 @@
     "./styles.css": "./dist/styles.css"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/build.mjs",
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/build.mjs",
     "prepare": "npm run build",
     "test": "vitest run src/**/*.test.ts"
   },

@@ -8,7 +8,8 @@
   "files": [
     "dist",
     "src/tokens.json",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "exports": {
     ".": {

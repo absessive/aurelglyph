@@ -98,17 +98,17 @@ accent. Avoid uppercase wordmarks unless required by context.
 Use open/free fonts with redistribution terms that support the target package.
 
 ```css
---font-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
---font-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
---font-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+--font-display: "Libre Baskerville", Georgia, serif;
+--font-ui: "Atkinson Hyperlegible", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+--font-mono: "Space Mono", "SFMono-Regular", Consolas, monospace;
 ```
 
-- Use Newsreader for brand, hero headings, editorial moments, and large display
-  text, with IBM Plex Serif as the editorial fallback.
-- Use IBM Plex Sans for UI labels, navigation, body text, forms, buttons, and
-  dashboards, with Inter and system UI as fallbacks.
-- Use JetBrains Mono for code, technical labels, token names, and metadata,
-  with IBM Plex Mono as a fallback for code-like text.
+- Use Libre Baskerville for brand, hero headings, editorial moments, and large display
+  text, with Georgia as the serif fallback.
+- Use Atkinson Hyperlegible for UI labels, navigation, body text, forms,
+  buttons, and dashboards, with Inter and system UI as fallbacks.
+- Use Space Mono for code, technical labels, token names, and metadata,
+  with system monospace fallbacks for code-like text.
 - Headings should feel editorial, not corporate.
 - Body copy should remain practical and readable.
 - Labels should be small, spaced, and precise.
@@ -466,9 +466,9 @@ Use this as a starter if a consuming project lacks design tokens:
 :root {
   color-scheme: dark light;
 
-  --font-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
-  --font-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-display: "Libre Baskerville", Georgia, serif;
+  --font-ui: "Atkinson Hyperlegible", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Space Mono", "SFMono-Regular", Consolas, monospace;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -548,8 +548,8 @@ excessive emojis, and salesy marketing copy.
 ### Default Direction for New Screens
 
 When asked to create a new UI screen, default to dark mode, royal purple accent,
-left rail or compact top nav, graphite surfaces, Newsreader display heading,
-IBM Plex Sans UI text, JetBrains Mono labels and metadata, subtle
+left rail or compact top nav, graphite surfaces, Libre Baskerville display
+heading, Atkinson Hyperlegible UI text, Space Mono labels and metadata, subtle
 calibration marks, precise cards and panels, accessible focus states, and
 responsive layout.
 

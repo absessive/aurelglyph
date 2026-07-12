@@ -16,5 +16,8 @@ class AurelglyphRailsGemspecTest < Minitest::Test
     assert_includes @spec.files, "lib/aurelglyph/rails/engine.rb"
     assert_includes @spec.files, "lib/aurelglyph/rails/helper.rb"
     assert_includes @spec.files, "app/assets/stylesheets/aurelglyph.css"
+    assert_includes @spec.files, "app/assets/fonts/aurelglyph/libre-baskerville-400.woff2"
+    assert_includes @spec.files, "app/assets/fonts/aurelglyph/OFL-1.1.txt"
+    assert_includes @spec.files, "LICENSE.md"
   end
 end

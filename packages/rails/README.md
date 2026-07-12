@@ -26,6 +26,11 @@ Sprockets apps may also require the asset from an application stylesheet:
  */
 ```
 
+The gem packages Libre Baskerville, Atkinson Hyperlegible, and Space Mono
+WOFF2 files under `app/assets/fonts/aurelglyph`. Keep that directory on the
+same asset path as the stylesheet so its relative `@font-face` URLs resolve.
+The full OFL and upstream notices ship beside the font files.
+
 ## Use Tokens in Views
 
 ```erb

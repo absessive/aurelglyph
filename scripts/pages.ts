@@ -29,10 +29,6 @@ const componentGroups = [
     items: ["Workbench navigation", "Breadcrumb location", "Non-blocking feedback", "Loading state", "Measured values", "Data tables", "Pagination", "Command palette"]
   },
   {
-    title: "GlyphMotion",
-    items: ["Matched elements", "Bloom", "Drift", "Collapse", "Glass", "Thread", "Tilt", "Arc"]
-  },
-  {
     title: "Starter controls",
     items: ["Button", "Icon", "Text field", "Text area", "File upload", "Expandable section"]
   },
@@ -257,6 +253,14 @@ function renderMarkdown(markdown: string): string {
       continue;
     }
 
+    if (inList && /^\s{2,}\S/u.test(line)) {
+      const previous = html.at(-1);
+      if (previous?.startsWith("<li>") && previous.endsWith("</li>")) {
+        html[html.length - 1] = previous.replace("</li>", ` ${renderInlineMarkdown(line.trim())}</li>`);
+        continue;
+      }
+    }
+
     closeList();
     html.push(`<p>${renderInlineMarkdown(line)}</p>`);
   }
@@ -280,98 +284,59 @@ function pageShell(title: string, body: string, active = "index"): string {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
   <meta name="color-scheme" content="dark light">
+  <script>
+    (() => {
+      try {
+        const storedMode = localStorage.getItem("aurelglyph-mode");
+        const preferredMode = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.mode = storedMode === "light" || storedMode === "dark" ? storedMode : preferredMode;
+      } catch {}
+    })();
+  </script>
   <style>
     @font-face {
-      font-family: "Newsreader";
-      src: url("./assets/fonts/ofl/newsreader-400.woff2") format("woff2");
+      font-family: "Libre Baskerville";
+      src: url("./assets/fonts/ofl/libre-baskerville-400.woff2") format("woff2");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
 
     @font-face {
-      font-family: "Newsreader";
-      src: url("./assets/fonts/ofl/newsreader-500.woff2") format("woff2");
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: "Newsreader";
-      src: url("./assets/fonts/ofl/newsreader-700.woff2") format("woff2");
+      font-family: "Libre Baskerville";
+      src: url("./assets/fonts/ofl/libre-baskerville-700.woff2") format("woff2");
       font-weight: 700;
       font-style: normal;
       font-display: swap;
     }
 
     @font-face {
-      font-family: "IBM Plex Serif";
-      src: url("./assets/fonts/ofl/ibm-plex-serif-400.woff2") format("woff2");
+      font-family: "Atkinson Hyperlegible";
+      src: url("./assets/fonts/ofl/atkinson-hyperlegible-400.woff2") format("woff2");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
 
     @font-face {
-      font-family: "IBM Plex Serif";
-      src: url("./assets/fonts/ofl/ibm-plex-serif-500.woff2") format("woff2");
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: "IBM Plex Serif";
-      src: url("./assets/fonts/ofl/ibm-plex-serif-700.woff2") format("woff2");
+      font-family: "Atkinson Hyperlegible";
+      src: url("./assets/fonts/ofl/atkinson-hyperlegible-700.woff2") format("woff2");
       font-weight: 700;
       font-style: normal;
       font-display: swap;
     }
 
     @font-face {
-      font-family: "IBM Plex Sans";
-      src: url("./assets/fonts/ofl/ibm-plex-sans-400.woff2") format("woff2");
+      font-family: "Space Mono";
+      src: url("./assets/fonts/ofl/space-mono-400.woff2") format("woff2");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
 
     @font-face {
-      font-family: "IBM Plex Sans";
-      src: url("./assets/fonts/ofl/ibm-plex-sans-500.woff2") format("woff2");
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: "IBM Plex Sans";
-      src: url("./assets/fonts/ofl/ibm-plex-sans-700.woff2") format("woff2");
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: "JetBrains Mono";
-      src: url("./assets/fonts/ofl/jetbrains-mono-400.woff2") format("woff2");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: "JetBrains Mono";
-      src: url("./assets/fonts/ofl/jetbrains-mono-500.woff2") format("woff2");
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: "JetBrains Mono";
-      src: url("./assets/fonts/ofl/jetbrains-mono-700.woff2") format("woff2");
+      font-family: "Space Mono";
+      src: url("./assets/fonts/ofl/space-mono-700.woff2") format("woff2");
       font-weight: 700;
       font-style: normal;
       font-display: swap;
@@ -379,17 +344,22 @@ function pageShell(title: string, body: string, active = "index"): string {
 
     :root {
       color-scheme: dark light;
-      --font-display: "Newsreader", "IBM Plex Serif", Georgia, serif;
-      --font-ui: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --font-mono: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      --font-display: "Libre Baskerville", Georgia, serif;
+      --font-ui: "Atkinson Hyperlegible", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Space Mono", "SFMono-Regular", Consolas, monospace;
       --radius-sm: 8px;
+      --radius-md: 12px;
       --radius-lg: 18px;
       --radius-panel: 28px;
       --shadow-panel: 0 18px 60px var(--color-shadow);
       --shadow-inset: inset 0 1px 0 var(--color-highlight);
+      --duration-base: 220ms;
+      --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+      --color-on-accent: #e7dfd1;
     }
 
     :root[data-mode="dark"] {
+      color-scheme: dark;
       --color-bg: #0d0d0b;
       --color-bg-elevated: #12120f;
       --color-surface: #171714;
@@ -401,13 +371,44 @@ function pageShell(title: string, body: string, active = "index"): string {
       --color-text-subtle: #6e685e;
       --color-shadow: rgba(0, 0, 0, 0.55);
       --color-highlight: rgba(255, 255, 255, 0.06);
+      --color-grid-line: rgba(231, 223, 209, 0.035);
+      --color-grid-line-soft: rgba(231, 223, 209, 0.025);
+      --color-frame-line: rgba(231, 223, 209, 0.06);
+      --color-code-bg: rgba(0, 0, 0, 0.18);
+      --color-accent-ink: var(--accent-100);
+      --color-accent-ink-muted: var(--accent-200);
+      --color-focus: var(--accent-200);
+    }
+
+    :root[data-mode="light"] {
+      color-scheme: light;
+      --color-bg: #ece4d8;
+      --color-bg-elevated: #f3ecdf;
+      --color-surface: #e2d8ca;
+      --color-surface-2: #d8ccb9;
+      --color-border: #b9a993;
+      --color-border-soft: rgba(42, 36, 30, 0.14);
+      --color-text: #2a241e;
+      --color-text-muted: #64594c;
+      --color-text-subtle: #8c7e6c;
+      --color-shadow: rgba(42, 36, 30, 0.18);
+      --color-highlight: rgba(255, 255, 255, 0.45);
+      --color-grid-line: rgba(42, 36, 30, 0.055);
+      --color-grid-line-soft: rgba(42, 36, 30, 0.04);
+      --color-frame-line: rgba(42, 36, 30, 0.08);
+      --color-code-bg: rgba(42, 36, 30, 0.08);
+      --color-accent-ink: var(--accent-500);
+      --color-accent-ink-muted: var(--accent-500);
+      --color-focus: var(--accent-500);
     }
 
     :root[data-theme="royal-purple"] {
       --accent-100: #d8c0ff;
       --accent-200: #b88cff;
       --accent-300: #9358e8;
+      --accent-400: #7a3fd1;
       --accent-500: #562a93;
+      --accent-600: #2d174f;
       --accent-rgb: 147, 88, 232;
     }
 
@@ -417,8 +418,8 @@ function pageShell(title: string, body: string, active = "index"): string {
       margin: 0;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(231, 223, 209, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(231, 223, 209, 0.025) 1px, transparent 1px),
+        linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-grid-line-soft) 1px, transparent 1px),
         var(--color-bg);
       background-size: 44px 44px;
       color: var(--color-text);
@@ -426,13 +427,13 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     a {
-      color: var(--accent-100);
+      color: var(--color-accent-ink);
       text-decoration-color: rgba(var(--accent-rgb), 0.45);
       text-underline-offset: 0.22em;
     }
 
     a:focus-visible {
-      outline: 1px solid rgba(var(--accent-rgb), 0.85);
+      outline: 2px solid var(--color-focus);
       outline-offset: 4px;
       border-radius: var(--radius-sm);
     }
@@ -478,6 +479,33 @@ function pageShell(title: string, body: string, active = "index"): string {
       text-transform: uppercase;
     }
 
+    .rail-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+    }
+
+    .mode-toggle {
+      min-height: 36px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      padding: 0 11px;
+      color: var(--color-text);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-inset);
+      cursor: pointer;
+      font: 0.72rem/1 var(--font-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mode-toggle:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 3px;
+    }
+
     nav a[aria-current="page"] {
       color: var(--color-text);
       text-decoration-color: var(--accent-300);
@@ -507,13 +535,13 @@ function pageShell(title: string, body: string, active = "index"): string {
       content: "";
       position: absolute;
       inset: 16px;
-      border: 1px solid rgba(231, 223, 209, 0.06);
+      border: 1px solid var(--color-frame-line);
       border-radius: calc(var(--radius-panel) - 10px);
       pointer-events: none;
     }
 
     .eyebrow {
-      color: var(--accent-200);
+      color: var(--color-accent-ink-muted);
       font-family: var(--font-mono);
       font-size: 0.74rem;
       letter-spacing: 0.12em;
@@ -526,7 +554,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       margin: 0;
       color: var(--color-text);
       font-family: var(--font-display);
-      font-weight: 500;
+      font-weight: 400;
       line-height: 0.98;
     }
 
@@ -662,10 +690,30 @@ function pageShell(title: string, body: string, active = "index"): string {
       padding: 0.1rem 0.28rem;
       border: 1px solid var(--color-border-soft);
       border-radius: 6px;
-      background: rgba(0, 0, 0, 0.18);
-      color: var(--accent-100);
+      background: var(--color-code-bg);
+      color: var(--color-accent-ink);
       font-family: var(--font-mono);
       font-size: 0.9em;
+    }
+
+    pre {
+      max-width: 100%;
+      margin: 18px 0 0;
+      overflow-x: auto;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      background: var(--color-code-bg);
+      scrollbar-color: var(--color-border) transparent;
+    }
+
+    pre code {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      white-space: pre;
     }
 
     .preview-stack {
@@ -712,7 +760,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       display: block;
       font-family: var(--font-display);
       font-size: 1.35rem;
-      font-weight: 500;
+      font-weight: 400;
     }
 
     .ag-demo-topbar small,
@@ -800,8 +848,9 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     .ag-demo-button.primary {
-      border-color: var(--accent-200);
-      background: linear-gradient(180deg, var(--accent-300), var(--accent-500));
+      border-color: var(--accent-400);
+      background: linear-gradient(180deg, var(--accent-500), var(--accent-600));
+      color: var(--color-on-accent);
     }
 
     .ag-demo-input,
@@ -852,7 +901,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     .ag-demo-disclosure summary::after {
-      color: var(--accent-200);
+      color: var(--color-accent-ink-muted);
       content: "+";
       transition: transform var(--duration-base) var(--ease-standard);
     }
@@ -914,53 +963,6 @@ function pageShell(title: string, body: string, active = "index"): string {
       background: linear-gradient(90deg, var(--color-surface-2), var(--color-border-soft), var(--color-surface-2));
     }
 
-    .ag-demo-motion {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-      gap: 14px;
-      align-items: stretch;
-    }
-
-    .ag-demo-motion-card,
-    .ag-demo-motion-detail {
-      position: relative;
-      overflow: hidden;
-      border: 1px solid var(--color-border-soft);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      background: linear-gradient(180deg, var(--color-surface), var(--color-bg-elevated));
-      box-shadow: var(--shadow-inset);
-    }
-
-    .ag-demo-motion-visual {
-      min-height: 112px;
-      border: 1px solid rgba(var(--accent-rgb), 0.32);
-      border-radius: var(--radius-sm);
-      background:
-        radial-gradient(circle at 70% 30%, rgba(var(--accent-rgb), 0.34), transparent 38%),
-        linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), transparent),
-        var(--color-surface-2);
-      view-transition-name: event-card-image;
-    }
-
-    .ag-demo-motion-labels {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .ag-demo-motion-labels span {
-      border: 1px solid rgba(var(--accent-rgb), 0.3);
-      border-radius: var(--radius-sm);
-      padding: 5px 8px;
-      color: var(--color-text);
-      background: rgba(var(--accent-rgb), 0.1);
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-    }
-
     .ag-demo-icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -997,7 +999,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       width: 18px;
       height: 18px;
       fill: none;
-      stroke: var(--accent-100);
+      stroke: var(--color-accent-ink);
       stroke-linecap: square;
       stroke-linejoin: miter;
       stroke-width: 1.75;
@@ -1008,6 +1010,11 @@ function pageShell(title: string, body: string, active = "index"): string {
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .rail-controls {
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
@@ -1015,17 +1022,42 @@ function pageShell(title: string, body: string, active = "index"): string {
   <main class="page">
     <header class="rail">
       <a class="brand" href="index.html">Aurelglyph<span class="dot"></span></a>
-      <nav aria-label="Pages">
-        ${navItems
-          .map(
-            ([id, href, label]) =>
-              `<a href="${href}"${id === active ? ' aria-current="page"' : ""}>${label}</a>`
-          )
-          .join("\n        ")}
-      </nav>
+      <div class="rail-controls">
+        <nav aria-label="Pages">
+          ${navItems
+            .map(
+              ([id, href, label]) =>
+                `<a href="${href}"${id === active ? ' aria-current="page"' : ""}>${label}</a>`
+            )
+            .join("\n          ")}
+        </nav>
+        <button aria-label="Use light mode" aria-pressed="false" class="mode-toggle" data-mode-toggle type="button">Light mode</button>
+      </div>
     </header>
 ${body}
   </main>
+  <script>
+    (() => {
+      const toggle = document.querySelector("[data-mode-toggle]");
+      if (!(toggle instanceof HTMLButtonElement)) return;
+
+      const updateToggle = () => {
+        const light = document.documentElement.dataset.mode === "light";
+        toggle.textContent = light ? "Dark mode" : "Light mode";
+        toggle.setAttribute("aria-label", light ? "Use dark mode" : "Use light mode");
+        toggle.setAttribute("aria-pressed", String(light));
+      };
+
+      toggle.addEventListener("click", () => {
+        const nextMode = document.documentElement.dataset.mode === "light" ? "dark" : "light";
+        document.documentElement.dataset.mode = nextMode;
+        try { localStorage.setItem("aurelglyph-mode", nextMode); } catch {}
+        updateToggle();
+      });
+
+      updateToggle();
+    })();
+  </script>
 </body>
 </html>
 `;
@@ -1065,21 +1097,12 @@ function renderUsage(version: string): string {
       <pre><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
       <h2>React icons</h2>
-      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, GlyphMatch, GlyphMotionProvider, GlyphTransition, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, Toast, Toolbar, TopBar } from "@aurelglyph/react";
+      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, FileUpload, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
 &lt;Icon decorative name="sync" /&gt;
 &lt;Button icon="external-link"&gt;Open&lt;/Button&gt;</code></pre>
-      <h2>React GlyphMotion</h2>
-      <pre><code>&lt;GlyphMotionProvider spring="standard"&gt;
-  &lt;GlyphTransition name="bloom" direction="forward" spring="expressive"&gt;
-    &lt;GlyphMatch id="event-card-image" snapshot="optimized"&gt;
-      Shared element content
-    &lt;/GlyphMatch&gt;
-  &lt;/GlyphTransition&gt;
-  &lt;GlyphTransition name="thread" threadIndex={1}&gt;Details&lt;/GlyphTransition&gt;
-&lt;/GlyphMotionProvider&gt;</code></pre>
       <h2>React components</h2>
       <pre><code>&lt;Button icon="save" type="submit"&gt;Save&lt;/Button&gt;
 &lt;Button icon="delete" variant="danger"&gt;Delete&lt;/Button&gt;
@@ -1107,7 +1130,7 @@ function renderUsage(version: string): string {
     &lt;NavigationPage actions={&lt;Toolbar&gt;&lt;Button icon="save"&gt;Save&lt;/Button&gt;&lt;/Toolbar&gt;} title="Systems"&gt;
       &lt;SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} /&gt;
       &lt;Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} /&gt;
-      &lt;Alert title="Build complete" tone="success"&gt;Tokens and component styles compiled without errors.&lt;/Alert&gt;
+      &lt;Alert title="Package ready" tone="success"&gt;Design tokens and native controls are ready to use.&lt;/Alert&gt;
       &lt;Avatar name="Ajit Chakrapani" /&gt;
       &lt;Badge tone="accent"&gt;Live&lt;/Badge&gt;
       &lt;EmptyState title="No archived releases"&gt;Use this state when a filtered list has no records.&lt;/EmptyState&gt;
@@ -1125,11 +1148,22 @@ function renderUsage(version: string): string {
   &lt;Toast title="Settings saved" tone="success"&gt;The toast reports a non-blocking outcome.&lt;/Toast&gt;
   &lt;CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} /&gt;
 &lt;/AppShell&gt;</code></pre>
+      <h2>React Native typography</h2>
+      <pre><code>import { aurelglyphTheme } from "@aurelglyph/react-native";
+import { aurelglyphFontAssets, aurelglyphFontFamilies } from "@aurelglyph/react-native/fonts";
+
+const bodyStyle = {
+  fontFamily: aurelglyphTheme["font.family.body"]
+};
+
+// Register aurelglyphFontAssets with Expo Font or link the packaged TTF files.
+const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></pre>
       <h2>Rails Git tag</h2>
       <pre><code>gem "aurelglyph-rails",
   git: "https://github.com/absessive/aurelglyph",
   glob: "packages/rails/aurelglyph-rails.gemspec",
   tag: "v${escapeHtml(version)}"</code></pre>
+      <p>The Rails gem includes the same six WOFF2 files and <code>@font-face</code> declarations as the CSS adapter. Keep the packaged <code>app/assets/fonts/aurelglyph</code> directory with the stylesheet.</p>
       <h2>Rails icons</h2>
       <pre><code>&lt;%= aurelglyph_icon("dashboard", title: "Dashboard") %&gt;
 &lt;%= aurelglyph_icon("sync", decorative: true, class: "toolbar-icon") %&gt;</code></pre>
@@ -1137,10 +1171,6 @@ function renderUsage(version: string): string {
       <pre><code>&lt;%= aurelglyph_expandable_section("Advanced settings", eyebrow: "System", open: true) do %&gt;
   &lt;p&gt;Server-rendered disclosure content.&lt;/p&gt;
 &lt;% end %&gt;</code></pre>
-      <h2>Rails and CSS motion classes</h2>
-      <pre><code>&lt;div class="ag-glyph-transition ag-glyph-transition--bloom" data-glyph-transition="bloom"&gt;
-  &lt;div class="ag-glyph-match" data-glyph-match="event-card-image"&gt;Shared element content&lt;/div&gt;
-&lt;/div&gt;</code></pre>
       <h2>Rails Phase 1 helpers</h2>
       <pre><code>&lt;%= aurelglyph_search_field(name: "query", label: "Search systems") %&gt;
 &lt;%= aurelglyph_card(title: "Status", eyebrow: "Live") { "Systems operational" } %&gt;
@@ -1148,7 +1178,7 @@ function renderUsage(version: string): string {
   &lt;%= aurelglyph_list_row("Quiet mode", description: "Enabled", icon: "bell", selected: true, trailing: "On") %&gt;
 &lt;% end %&gt;
 &lt;%= aurelglyph_switch(name: "quiet", label: "Quiet mode", checked: true) %&gt;
-&lt;%= aurelglyph_alert("Build complete", tone: "success") { "Tokens and component styles compiled without errors." } %&gt;
+&lt;%= aurelglyph_alert("Package ready", tone: "success") { "Design tokens and native controls are ready to use." } %&gt;
 &lt;%= aurelglyph_segmented_control([{ id: "grid", label: "Grid" }, { id: "list", label: "List" }], active: "grid") %&gt;
 &lt;%= aurelglyph_badge("Live", tone: "accent") %&gt;
 &lt;%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %&gt;
@@ -1158,6 +1188,8 @@ function renderUsage(version: string): string {
       <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "${escapeHtml(version)}")</code></pre>
       <h2>SwiftUI compatible version</h2>
       <pre><code>.package(url: "https://github.com/absessive/aurelglyph", from: "${escapeHtml(version)}")</code></pre>
+      <h2>SwiftUI product dependency</h2>
+      <pre><code>.product(name: "AurelglyphUI", package: "aurelglyph")</code></pre>
       <h2>Swift icons</h2>
       <pre><code>let icon = AurelglyphIcon.creditCard
 let assetName = icon.rawValue
@@ -1172,24 +1204,17 @@ Text("System status")
   .font(AurelglyphTypography.body)
 
 Text("color.accent.royal-purple.300")
-  .font(AurelglyphTypography.monoLabel)</code></pre>
-      <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. It bundles iOS-compatible TTF files for Newsreader, IBM Plex Sans, IBM Plex Serif, and JetBrains Mono. <code>AurelglyphTypography</code> registers and uses those fonts when available, with native SwiftUI fallbacks.</p>
+  .font(AurelglyphTypography.monoLabel)
+
+Text("Calibrated systems")
+  .font(AurelglyphTypography.display(size: 48, relativeTo: .largeTitle))</code></pre>
+      <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. It bundles Apple-platform TTF files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono. Custom methods preserve their requested baseline and scale relative to the supplied Dynamic Type role; the generic role factory uses role-specific defaults. <code>AurelglyphTypography</code> registers and uses each available face independently, with native SwiftUI fallbacks.</p>
       <h2>SwiftUI expandable section</h2>
       <pre><code>@State private var expanded = true
 
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
-  Text("Animated SwiftUI content")
+  Text("Advanced settings stay visible while details expand.")
 }</code></pre>
-      <h2>SwiftUI GlyphMotion</h2>
-      <pre><code>@Namespace private var glyphNamespace
-
-Image("event")
-  .glyphMatch("event-card-image", in: glyphNamespace)
-  .glyphTransition(.bloom)
-  .glyphSpring(.standard)
-
-Text("Details")
-  .glyphTransition(.thread, direction: .forward)</code></pre>
       <h2>SwiftUI Phase 1 components</h2>
       <pre><code>AurelglyphAppShell {
   AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }
@@ -1206,14 +1231,14 @@ Text("Details")
 
 AurelglyphNavigationStack("Workbench") {
   AurelglyphSegmentedControl(items: [AurelglyphSegmentedItem(id: "grid", title: "Grid")], selection: $viewMode)
-  AurelglyphAlert("Build complete") { Text("Tokens and component styles compiled without errors.") }
+  AurelglyphAlert("Package ready") { Text("Design tokens and native controls are ready to use.") }
   AurelglyphBadge("Live")
   AurelglyphMetric(label: "Latency", value: "42ms", delta: "Stable")
   AurelglyphProgress(value: 72)
   AurelglyphCommandPalette(items: [AurelglyphCommandItem(id: "search", title: "Search", systemImage: "magnifyingglass", shortcut: "Cmd-K")])
 }</code></pre>
       <h2>Packaged fonts</h2>
-      <p>The CSS package bundles OFL WOFF2 files for Newsreader, IBM Plex Serif, IBM Plex Sans, and JetBrains Mono. System UI fonts remain fallbacks.</p>
+      <p>The CSS package bundles OFL WOFF2 files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono. System UI fonts remain fallbacks.</p>
       <h2>Theme</h2>
       <pre><code>&lt;html data-mode="dark" data-theme="royal-purple"&gt;</code></pre>
     </article>`,
@@ -1243,11 +1268,11 @@ function renderComponents(glyphs: IconGlyphs): string {
           <div class="ag-demo-mobile">
             <div class="ag-demo-topbar">
               <span><strong>Workbench</strong><small>Systems online</small></span>
-              <button class="ag-demo-button">Edit</button>
+              <button class="ag-demo-button" type="button">Edit</button>
             </div>
             <div class="ag-demo-mobile-body">
               <div class="ag-demo-search">Search systems</div>
-              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>Shared component classes are loaded from the CSS package.</p></div>
+              <div class="ag-demo-card"><span class="ag-demo-badge">Live</span><p>The same component language carries from web previews into native apps.</p></div>
               <div class="ag-demo-list">
                 <div class="ag-demo-row"><span><strong>Quiet mode</strong><br><small>Reduce notification noise</small></span><span class="ag-demo-switch"></span></div>
                 <div class="ag-demo-row"><span><strong>Sync</strong><br><small>All generated packages aligned</small></span><small>Now</small></div>
@@ -1262,11 +1287,11 @@ function renderComponents(glyphs: IconGlyphs): string {
           <div class="preview-row">
             <span class="ag-badge ag-badge--accent">Live</span>
             <span class="ag-avatar" role="img" aria-label="Ajit Chakrapani"><span class="ag-avatar__initials">AC</span></span>
-            <span class="ag-alert ag-alert--success"><span class="ag-alert__dot" aria-hidden="true"></span><span class="ag-alert__content"><strong class="ag-alert__title">Build complete</strong><span class="ag-alert__body">Component styles compiled.</span></span></span>
+            <span class="ag-alert ag-alert--success"><span class="ag-alert__dot" aria-hidden="true"></span><span class="ag-alert__content"><strong class="ag-alert__title">Package ready</strong><span class="ag-alert__body">Design tokens are ready.</span></span></span>
           </div>
           <div class="ag-segmented" role="radiogroup" aria-label="View">
-            <button class="ag-segmented__item is-active" role="radio" aria-checked="true">Grid</button>
-            <button class="ag-segmented__item" role="radio" aria-checked="false">List</button>
+            <button class="ag-segmented__item is-active" role="radio" aria-checked="true" type="button">Grid</button>
+            <button class="ag-segmented__item" role="radio" aria-checked="false" type="button">List</button>
           </div>
         </section>
         <section class="preview-card">
@@ -1280,33 +1305,18 @@ function renderComponents(glyphs: IconGlyphs): string {
           </div>
         </section>
         <section class="preview-card">
-          <h3>GlyphMotion</h3>
-          <p>Matched elements, bloom, drift, collapse, glass, thread, tilt, and arc share one motion language across React, CSS/Rails, and SwiftUI.</p>
-          <div class="ag-demo-motion">
-            <div class="ag-demo-motion-card">
-              <div class="ag-demo-motion-visual" data-glyph-match="event-card-image"></div>
-              <div class="ag-demo-motion-labels"><span>bloom</span><span>drift</span><span>glass</span></div>
-            </div>
-            <div class="ag-demo-motion-detail">
-              <span class="ag-demo-badge">GlyphMotion</span>
-              <p>Use <code>GlyphMatch</code> and <code>GlyphTransition</code> on web, and <code>.glyphMatch</code> plus <code>.glyphTransition</code> in SwiftUI.</p>
-              <div class="ag-demo-motion-labels"><span>collapse</span><span>thread</span><span>arc</span></div>
-            </div>
-          </div>
-        </section>
-        <section class="preview-card">
           <h3>Buttons</h3>
           <div class="preview-row">
-            <button class="ag-demo-button primary">Primary action</button>
-            <button class="ag-demo-button">Secondary</button>
-            <button class="ag-demo-button">Ghost</button>
+            <button class="ag-demo-button primary" type="button">Primary action</button>
+            <button class="ag-demo-button" type="button">Secondary</button>
+            <button class="ag-demo-button" type="button">Ghost</button>
           </div>
         </section>
         <section class="preview-card">
           <h3>Forms</h3>
           <div class="preview-row">
-            <input class="ag-demo-input" placeholder="Project name" />
-            <textarea class="ag-demo-textarea" placeholder="Notes"></textarea>
+            <input aria-label="Project name" class="ag-demo-input" placeholder="Project name" />
+            <textarea aria-label="Notes" class="ag-demo-textarea" placeholder="Notes"></textarea>
             <div class="ag-demo-upload">Generated outputs · .json .css .swift .rb</div>
           </div>
         </section>

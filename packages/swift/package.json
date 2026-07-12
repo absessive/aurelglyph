@@ -1,7 +1,14 @@
 {
   "name": "@aurelglyph/swift",
   "version": "0.4.0",
+  "private": true,
   "license": "MIT",
+  "files": [
+    "Package.swift",
+    "Sources",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "build": "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs",
     "prepare": "npm run build"

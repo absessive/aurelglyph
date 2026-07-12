@@ -27,33 +27,39 @@ SOFTWARE.
 ## Packaged Fonts
 
 The `@aurelglyph/css` package includes locally packaged WOFF2 files for these
-font families. The `AurelglyphUI` Swift package includes iOS-compatible TTF
+font families. The `AurelglyphUI` Swift package includes Apple-platform TTF
 files for the same families:
 
-- Newsreader: display/editorial face
-- IBM Plex Serif: editorial serif fallback
-- IBM Plex Sans: UI and body face
-- JetBrains Mono: code, token names, technical labels, and metadata
+- Libre Baskerville: display/editorial face
+- Atkinson Hyperlegible: UI and body face
+- Space Mono: code, token names, technical labels, and metadata
 
 These font files are available under the SIL Open Font License 1.1. They are not
 relicensed under the Aurelglyph MIT license. Keep the font names, license
 notices, and source attribution with redistributed package artifacts.
 
+The packaged font directories contain `OFL-1.1.txt` with the complete license
+and these upstream notices:
+
+- Copyright 2012 The Libre Baskerville Project Authors, with Reserved Font Name
+  Libre Baskerville.
+- Copyright 2020 Braille Institute of America, Inc.
+- Copyright 2016 The Space Mono Project Authors.
+
 Sources:
 
-- https://github.com/productiontype/Newsreader
-- https://github.com/IBM/plex
-- https://github.com/JetBrains/JetBrainsMono
+- https://github.com/google/fonts/tree/main/ofl/librebaskerville
+- https://github.com/google/fonts/tree/main/ofl/atkinsonhyperlegible
+- https://github.com/google/fonts/tree/main/ofl/spacemono
 
 Packaged WOFF2 files were copied from Fontsource packages:
 
-- https://www.npmjs.com/package/@fontsource/newsreader
-- https://www.npmjs.com/package/@fontsource/ibm-plex-serif
-- https://www.npmjs.com/package/@fontsource/ibm-plex-sans
-- https://www.npmjs.com/package/@fontsource/jetbrains-mono
+- https://www.npmjs.com/package/@fontsource/libre-baskerville
+- https://www.npmjs.com/package/@fontsource/atkinson-hyperlegible
+- https://www.npmjs.com/package/@fontsource/space-mono
 
-Packaged Swift TTF files were copied from the upstream font repositories:
+Packaged Swift TTF files were copied from the upstream Google Fonts repository:
 
-- Newsreader static TTF files from `productiontype/Newsreader`
-- IBM Plex Sans and IBM Plex Serif complete TTF files from `IBM/plex`
-- JetBrains Mono TTF files from `JetBrains/JetBrainsMono`
+- Libre Baskerville TTF files from `google/fonts/ofl/librebaskerville`
+- Atkinson Hyperlegible TTF files from `google/fonts/ofl/atkinsonhyperlegible`
+- Space Mono TTF files from `google/fonts/ofl/spacemono`
