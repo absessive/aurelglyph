@@ -19,13 +19,15 @@ import SwiftUI
   #expect(AurelglyphIcon.compass.accessibilityLabel == "Compass")
 }
 
-@Test func exposesAnimatedExpandableSection() {
+@Test func exposesReducedMotionAwareExpandableSection() {
   let expanded = Binding.constant(true)
   let section = AurelglyphExpandableSection("Advanced settings", eyebrow: "React and Swift", isExpanded: expanded) {
     Text("Animated content")
   }
 
   #expect(String(describing: type(of: section)).contains("AurelglyphExpandableSection"))
+  #expect(AurelglyphExpandableSection<EmptyView>.animation(reduceMotion: true) == nil)
+  #expect(AurelglyphExpandableSection<EmptyView>.animation(reduceMotion: false) != nil)
 }
 
 @Test func exposesNativeTypographyAdapterWithBundledNativeFonts() {

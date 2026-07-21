@@ -11,10 +11,11 @@ async function read(path: string): Promise<string> {
 describe("React package contract", () => {
   it("exports built JavaScript, declarations, and component styles", async () => {
     const packageJson = JSON.parse(await read("package.json")) as Record<string, unknown>;
+    const workspaceVersion = (JSON.parse(await read("../../package.json")) as { version: string }).version;
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react",
-      version: "0.4.0",
+      version: workspaceVersion,
       license: "MIT",
       type: "module",
       main: "dist/index.js",
@@ -38,7 +39,7 @@ describe("React package contract", () => {
         react: "^19.1.0"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.4.0"
+        "@aurelglyph/tokens": workspaceVersion
       }
     });
   });

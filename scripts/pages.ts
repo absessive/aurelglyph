@@ -924,6 +924,16 @@ function pageShell(title: string, body: string, active = "index"): string {
       to { opacity: 1; transform: translateY(0); }
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      .ag-demo-disclosure summary::after {
+        transition: none;
+      }
+
+      .ag-demo-disclosure p {
+        animation: none;
+      }
+    }
+
     .ag-demo-badge {
       border: 1px solid rgba(var(--accent-rgb), 0.34);
       border-radius: 999px;
@@ -1135,7 +1145,7 @@ function renderUsage(version: string): string {
       &lt;Badge tone="accent"&gt;Live&lt;/Badge&gt;
       &lt;EmptyState title="No archived releases"&gt;Use this state when a filtered list has no records.&lt;/EmptyState&gt;
       &lt;Button onClick={() =&gt; setDetailsOpen(true)} variant="secondary"&gt;Open sheet&lt;/Button&gt;
-      &lt;Sheet open={detailsOpen} title="Details"&gt;Use sheets for focused edits without leaving the current page.&lt;/Sheet&gt;
+      &lt;Sheet onOpenChange={setDetailsOpen} open={detailsOpen} title="Details"&gt;Use sheets for focused edits without leaving the current page.&lt;/Sheet&gt;
     &lt;/NavigationPage&gt;
   &lt;/NavigationStack&gt;
   &lt;Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} /&gt;
@@ -1164,6 +1174,13 @@ const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></
   glob: "packages/rails/aurelglyph-rails.gemspec",
   tag: "v${escapeHtml(version)}"</code></pre>
       <p>The Rails gem includes the same six WOFF2 files and <code>@font-face</code> declarations as the CSS adapter. Keep the packaged <code>app/assets/fonts/aurelglyph</code> directory with the stylesheet.</p>
+      <h2>Rails interactive sheets</h2>
+      <p>Load the packaged <code>aurelglyph.js</code> controller when using sheets. It synchronizes server intent with the native modal lifecycle, dismissal, and focus restoration.</p>
+      <pre><code>&lt;%= javascript_include_tag "aurelglyph", defer: true, data: { turbo_track: "reload" } %&gt;
+&lt;%= button_tag "Open details", type: "button", data: { aurelglyph_sheet_trigger: "details" } %&gt;
+&lt;%= aurelglyph_sheet("Details", id: "details") do %&gt;
+  Systems operational.
+&lt;% end %&gt;</code></pre>
       <h2>Rails icons</h2>
       <pre><code>&lt;%= aurelglyph_icon("dashboard", title: "Dashboard") %&gt;
 &lt;%= aurelglyph_icon("sync", decorative: true, class: "toolbar-icon") %&gt;</code></pre>

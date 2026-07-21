@@ -7,13 +7,18 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.4.0`
+Current version: `0.4.1`
 
 ## Status
 
 This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
 local workspace paths.
+
+Version 0.4.1 is a correctness release: React and Rails sheets now use a real
+modal lifecycle with controlled dismissal and focus restoration, Rails helpers
+emit ActionView-safe markup and real SVG icons, and focus, status, chart, and
+reduced-motion contracts are explicit across platform adapters.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -124,7 +129,7 @@ export function DesignSystemSetup() {
           <Badge tone="accent">Live</Badge>
           <EmptyState title="No archived releases">Use this state when a filtered list has no records.</EmptyState>
           <Button onClick={() => setDetailsOpen(true)} variant="secondary">Open sheet</Button>
-          <Sheet open={detailsOpen} title="Details">Use sheets for focused edits without leaving the current page.</Sheet>
+          <Sheet onOpenChange={setDetailsOpen} open={detailsOpen} title="Details">Use sheets for focused edits without leaving the current page.</Sheet>
         </NavigationPage>
       </NavigationStack>
       <Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} />
@@ -235,6 +240,10 @@ holds page actions, `Sheet` handles focused secondary tasks, and
 `EmptyState`, `Avatar`, and `Badge` cover status, identity, and compact state
 labels without requiring custom markup.
 
+`Sheet` is controlled. Pass `onOpenChange` so Escape, backdrop clicks, and
+native dialog close requests can update application state. Opening moves focus
+into the modal; closing restores focus to the invoking control.
+
 ```tsx
 <NavigationStack title="Workbench">
   <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
@@ -245,7 +254,7 @@ labels without requiring custom markup.
     <Badge tone="accent">Live</Badge>
     <EmptyState title="No archived releases">Use this state when a filtered list has no records.</EmptyState>
     <Button onClick={() => setDetailsOpen(true)} variant="secondary">Open sheet</Button>
-    <Sheet open={detailsOpen} title="Details">Use sheets for focused edits without leaving the current page.</Sheet>
+    <Sheet onOpenChange={setDetailsOpen} open={detailsOpen} title="Details">Use sheets for focused edits without leaving the current page.</Sheet>
   </NavigationPage>
 </NavigationStack>
 ```
@@ -496,7 +505,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.1")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
@@ -546,12 +555,13 @@ Rails apps can consume the `aurelglyph-rails` gem from a local path, from this
 Git repository, or from RubyGems once published. The package ships a Rails
 engine, generated CSS with tokens plus shared component classes, generated token
 helpers, and view helpers for tokens, icons, disclosure, cards, lists, tabs,
-search, and switches. It also packages the same WOFF2 font set and
-`@font-face` declarations as the CSS adapter.
+search, and switches. It also packages a framework-neutral sheet controller,
+the same WOFF2 font set, and `@font-face` declarations as the CSS adapter.
 
 After `npm run build -w aurelglyph-rails`, the generated Rails-facing files are:
 
 - `packages/rails/app/assets/stylesheets/aurelglyph.css`
+- `packages/rails/app/assets/javascripts/aurelglyph.js`
 - `packages/rails/app/assets/fonts/aurelglyph/`
 - `packages/rails/lib/aurelglyph/tokens.rb`
 
@@ -572,6 +582,11 @@ font URLs resolve:
  *= require aurelglyph
  */
 ```
+
+Load `aurelglyph.js` through the asset pipeline when using `aurelglyph_sheet`.
+The controller converts server-rendered `data-open` intent into a native modal,
+handles trigger/dismiss controls, Escape and backdrop dismissal, and restores
+focus. See `packages/rails/README.md` for the complete markup contract.
 
 Use Ruby token values where server-rendered components need shared constants:
 
@@ -597,6 +612,10 @@ Components should use semantic variables like
 `--ag-color-semantic-background`, `--ag-color-semantic-surface`,
 `--ag-color-semantic-foreground`, `--ag-color-semantic-border`, and
 `--ag-color-semantic-accent` instead of hardcoded color values.
+
+Focus indicators use `--ag-color-semantic-focus`; status text uses the
+mode-aware success, warning, danger, and info semantic tokens. Shared component
+motion becomes static when `prefers-reduced-motion: reduce` is active.
 
 ## Package Map
 

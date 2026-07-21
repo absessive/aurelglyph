@@ -41,7 +41,7 @@ export type { SegmentedControlItem, SegmentedControlProps } from "./components/S
 export { Select } from "./components/Select.js";
 export type { SelectOption, SelectProps } from "./components/Select.js";
 export { Sheet } from "./components/Sheet.js";
-export type { SheetProps } from "./components/Sheet.js";
+export type { SheetDismissReason, SheetOpenChangeDetails, SheetProps } from "./components/Sheet.js";
 export { Skeleton } from "./components/Skeleton.js";
 export type { SkeletonProps } from "./components/Skeleton.js";
 export { Switch } from "./components/Switch.js";

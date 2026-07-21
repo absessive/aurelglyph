@@ -96,6 +96,8 @@ describe("GitHub Pages generator", () => {
     expect(usage).toContain("aurelglyphFontAssets");
     expect(usage).toContain('.product(name: "AurelglyphUI", package: "aurelglyph")');
     expect(usage).toContain("app/assets/fonts/aurelglyph");
+    expect(usage).toContain("javascript_include_tag");
+    expect(usage).toContain("aurelglyph_sheet_trigger");
     expect(usage).toContain('url("./assets/fonts/ofl/libre-baskerville-400.woff2")');
     expect(usage).toContain('url("./assets/fonts/ofl/atkinson-hyperlegible-400.woff2")');
     expect(usage).toContain('url("./assets/fonts/ofl/space-mono-400.woff2")');
@@ -138,6 +140,9 @@ describe("GitHub Pages generator", () => {
     expect(components).toContain("expand");
     expect(components).toContain("contract");
     expect(components).toContain("Alert: generated package outputs are in sync.");
+    expect(components).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(components).toContain(".ag-demo-disclosure summary::after {\n        transition: none;");
+    expect(components).toContain(".ag-demo-disclosure p {\n        animation: none;");
 
     expect(changelog).toContain("<title>Aurelglyph Changelog</title>");
     expect(changelog).toContain("<h1>Changelog</h1>");

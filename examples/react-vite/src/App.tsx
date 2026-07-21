@@ -53,7 +53,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.4.0";
+const packageVersion = "0.4.1";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -519,6 +519,7 @@ function ComponentsPage() {
                       Close
                     </Button>
                   }
+                  onOpenChange={setDetailsOpen}
                   open={detailsOpen}
                   title="Details"
                 >
@@ -679,11 +680,11 @@ function ChangelogPage() {
     <section className="example-panel" aria-labelledby="changelog-title">
       <div className="example-panel__header">
         <p className="example-kicker">CHANGELOG</p>
-        <h2 id="changelog-title">0.4.0</h2>
+        <h2 id="changelog-title">{packageVersion}</h2>
       </div>
       <p className="example-copy">
-        Replaces the packaged typography stack, carries font assets into every
-        platform adapter, and hardens licensing, accessibility, and release checks.
+        Hardens real modal behavior, Rails rendering safety, cross-adapter SVG
+        icons, contrast, focus indicators, and reduced-motion behavior.
       </p>
     </section>
   );

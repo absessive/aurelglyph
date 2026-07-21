@@ -77,6 +77,16 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
   --ag-color-semantic-highlight: var(--ag-color-mode-dark-highlight);
   --ag-color-semantic-shadow: var(--ag-color-mode-dark-shadow);
   --ag-color-semantic-overlay: rgba(13, 13, 11, 0.72);
+  --ag-color-semantic-success: var(--ag-color-status-success);
+  --ag-color-semantic-warning: var(--ag-color-status-warning);
+  --ag-color-semantic-danger: var(--ag-color-status-danger);
+  --ag-color-semantic-info: var(--ag-color-status-info);
+  --ag-color-chart-primary: var(--ag-color-chart-dark-primary);
+  --ag-color-chart-secondary: var(--ag-color-chart-dark-secondary);
+  --ag-color-chart-grid: var(--ag-color-chart-dark-grid);
+  --ag-color-chart-positive: var(--ag-color-chart-dark-positive);
+  --ag-color-chart-warning: var(--ag-color-chart-dark-warning);
+  --ag-color-chart-danger: var(--ag-color-chart-dark-danger);
 }
 
 :root[data-mode="light"] {
@@ -94,6 +104,16 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
   --ag-color-semantic-highlight: var(--ag-color-mode-light-highlight);
   --ag-color-semantic-shadow: var(--ag-color-mode-light-shadow);
   --ag-color-semantic-overlay: rgba(42, 36, 30, 0.42);
+  --ag-color-semantic-success: var(--ag-color-status-success-on-light);
+  --ag-color-semantic-warning: var(--ag-color-status-warning-on-light);
+  --ag-color-semantic-danger: var(--ag-color-status-danger-on-light);
+  --ag-color-semantic-info: var(--ag-color-status-info-on-light);
+  --ag-color-chart-primary: var(--ag-color-chart-light-primary);
+  --ag-color-chart-secondary: var(--ag-color-chart-light-secondary);
+  --ag-color-chart-grid: var(--ag-color-chart-light-grid);
+  --ag-color-chart-positive: var(--ag-color-chart-light-positive);
+  --ag-color-chart-warning: var(--ag-color-chart-light-warning);
+  --ag-color-chart-danger: var(--ag-color-chart-light-danger);
 }
 
 :root[data-theme="amber"] {
@@ -162,13 +182,19 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
   --ag-accent-rgb: var(--ag-color-accent-steel-rgb);
 }
 
-:root {
-  --ag-color-semantic-accent: var(--ag-accent-300);
+:root,
+:root[data-mode="dark"] {
+  --ag-color-semantic-accent: var(--ag-accent-200);
   --ag-color-semantic-accent-foreground: var(--ag-color-mode-dark-text);
   --ag-color-semantic-accent-control: var(--ag-accent-500);
   --ag-color-semantic-accent-control-strong: var(--ag-accent-600);
   --ag-color-semantic-accent-muted: rgba(var(--ag-accent-rgb), 0.14);
   --ag-color-semantic-focus: var(--ag-accent-300);
+}
+
+:root[data-mode="light"] {
+  --ag-color-semantic-accent: var(--ag-accent-600);
+  --ag-color-semantic-focus: var(--ag-accent-500);
 }
 `;
 }

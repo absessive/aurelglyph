@@ -35,10 +35,13 @@ async function createWorkspace(): Promise<string> {
   }
 
   const artifactContents: Record<string, string> = {
+    "README.md": 'Current version: `0.0.1`\n.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
     "preview/index.html": "<p>Aurelglyph Static Preview · v0.0.1</p>",
     "examples/react-vite/index.html": "<p>Aurelglyph React · v0.0.1</p>",
     "examples/react-vite/src/App.tsx": 'const packageVersion = "0.0.1";',
-    "packages/rails/lib/aurelglyph/rails/version.rb": 'VERSION = "0.0.1"'
+    "packages/rails/lib/aurelglyph/rails/version.rb": 'VERSION = "0.0.1"',
+    "packages/swift/README.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
+    "docs/consuming.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")'
   };
 
   for (const [path, contents] of Object.entries(artifactContents)) {
@@ -83,6 +86,8 @@ describe("workspace versioning", () => {
     expect(packageLock.packages[""].version).toBe("1.2.3");
     await expect(readFile(join(root, "preview/index.html"), "utf8")).resolves.toContain("v1.2.3");
     await expect(readFile(join(root, "examples/react-vite/src/App.tsx"), "utf8")).resolves.toContain('"1.2.3"');
+    await expect(readFile(join(root, "README.md"), "utf8")).resolves.toContain("`1.2.3`");
+    await expect(readFile(join(root, "docs/consuming.md"), "utf8")).resolves.toContain('from: "1.2.3"');
   });
 
   it("requires a changelog section for the shared version", async () => {

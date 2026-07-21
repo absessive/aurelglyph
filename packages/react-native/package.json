@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/react-native",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "type": "module",
   "main": "src/index.ts",
@@ -26,6 +26,6 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.4.0"
+    "@aurelglyph/tokens": "0.4.1"
   }
 }

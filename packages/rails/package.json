@@ -1,6 +1,6 @@
 {
   "name": "aurelglyph-rails",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "license": "MIT",
   "files": [
@@ -11,10 +11,10 @@
   ],
   "scripts": {
     "build": "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs",
-    "test": "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb",
+    "test": "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb && vitest run --root ../.. packages/rails/test/sheet_controller.test.ts",
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.4.0"
+    "@aurelglyph/tokens": "0.4.1"
   }
 }

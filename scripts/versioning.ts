@@ -40,6 +40,16 @@ export const workspacePackagePaths = [
 
 const versionedArtifacts = [
   {
+    path: "README.md",
+    pattern: /Current version: `([^`]+)`/u,
+    replacement: (version: string) => `Current version: \`${version}\``
+  },
+  {
+    path: "README.md",
+    pattern: /\.package\(url: "https:\/\/github\.com\/absessive\/aurelglyph\.git", from: "([^"]+)"\)/u,
+    replacement: (version: string) => `.package(url: "https://github.com/absessive/aurelglyph.git", from: "${version}")`
+  },
+  {
     path: "preview/index.html",
     pattern: /Aurelglyph Static Preview · v([^<]+)/u,
     replacement: (version: string) => `Aurelglyph Static Preview · v${version}`
@@ -58,6 +68,16 @@ const versionedArtifacts = [
     path: "packages/rails/lib/aurelglyph/rails/version.rb",
     pattern: /VERSION = "([^"]+)"/u,
     replacement: (version: string) => `VERSION = "${version}"`
+  },
+  {
+    path: "packages/swift/README.md",
+    pattern: /\.package\(url: "https:\/\/github\.com\/absessive\/aurelglyph\.git", from: "([^"]+)"\)/u,
+    replacement: (version: string) => `.package(url: "https://github.com/absessive/aurelglyph.git", from: "${version}")`
+  },
+  {
+    path: "docs/consuming.md",
+    pattern: /\.package\(url: "https:\/\/github\.com\/absessive\/aurelglyph\.git", from: "([^"]+)"\)/u,
+    replacement: (version: string) => `.package(url: "https://github.com/absessive/aurelglyph.git", from: "${version}")`
   }
 ] as const;
 

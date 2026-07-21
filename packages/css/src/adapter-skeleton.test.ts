@@ -8,14 +8,19 @@ async function read(path: string): Promise<string> {
   return readFile(join(repoRoot, path), "utf8");
 }
 
+async function currentVersion(): Promise<string> {
+  return (JSON.parse(await read("package.json")) as { version: string }).version;
+}
+
 describe("platform adapter skeletons", () => {
   it("defines the CSS package contract and base stylesheet", async () => {
     const packageJson = JSON.parse(await read("packages/css/package.json")) as Record<string, unknown>;
     const css = await read("packages/css/src/index.css");
+    const version = await currentVersion();
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/css",
-      version: "0.4.0",
+      version,
       license: "MIT",
       type: "module",
       style: "dist/index.css",
@@ -29,7 +34,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.4.0"
+        "@aurelglyph/tokens": version
       }
     });
     expect(css).toContain('font-family: "Libre Baskerville";');
@@ -66,6 +71,13 @@ describe("platform adapter skeletons", () => {
     expect(built).toContain(".ag-segmented");
     expect(built).toContain(".ag-command-palette");
     expect(built).toContain(".ag-table");
+    expect(built).toContain('.ag-disclosure[open] .ag-disclosure__panel');
+    expect(built).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(built).toContain("animation: none;");
+    expect(built).toContain("outline: 2px solid var(--ag-color-semantic-focus);");
+    expect(built).toMatch(
+      /\.ag-badge--accent\s*\{[^}]*color: var\(--ag-color-semantic-accent\);[^}]*background: var\(--ag-color-semantic-accent-muted\);/u
+    );
     for (const fontFile of fontFiles) {
       await expect(read(`packages/css/dist/fonts/ofl/${fontFile}`)).resolves.not.toHaveLength(0);
     }
@@ -75,10 +87,11 @@ describe("platform adapter skeletons", () => {
   it("defines the React Native package contract and generated theme export", async () => {
     const packageJson = JSON.parse(await read("packages/react-native/package.json")) as Record<string, unknown>;
     const source = await read("packages/react-native/src/index.ts");
+    const version = await currentVersion();
 
     expect(packageJson).toEqual({
       name: "@aurelglyph/react-native",
-      version: "0.4.0",
+      version,
       license: "MIT",
       type: "module",
       main: "src/index.ts",
@@ -99,7 +112,7 @@ describe("platform adapter skeletons", () => {
         prepare: "npm run build"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.4.0"
+        "@aurelglyph/tokens": version
       }
     });
     expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
@@ -117,17 +130,18 @@ describe("platform adapter skeletons", () => {
     const copied = await read("packages/swift/Sources/AurelglyphUI/AurelglyphTokens.swift");
     const fontRegistry = await read("packages/swift/Sources/AurelglyphUI/AurelglyphFontRegistry.swift");
     const font = await read("packages/swift/Sources/AurelglyphUI/Resources/Fonts/LibreBaskerville-Regular.ttf");
+    const version = await currentVersion();
 
     expect(packageJson).toMatchObject({
       name: "@aurelglyph/swift",
-      version: "0.4.0",
+      version,
       private: true,
       files: ["Package.swift", "Sources", "README.md", "LICENSE.md"],
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.4.0"
+        "@aurelglyph/tokens": version
       }
     });
     expect(packageSwift).toContain('name: "AurelglyphUI"');
@@ -147,20 +161,23 @@ describe("platform adapter skeletons", () => {
     const copiedCss = await read("packages/rails/app/assets/stylesheets/aurelglyph.css");
     const generatedRuby = await read("packages/tokens/dist/generated/aurelglyph_tokens.rb");
     const copiedRuby = await read("packages/rails/lib/aurelglyph/tokens.rb");
+    const sheetController = await read("packages/rails/app/assets/javascripts/aurelglyph.js");
+    const version = await currentVersion();
 
     expect(packageJson).toEqual({
       name: "aurelglyph-rails",
-      version: "0.4.0",
+      version,
       private: true,
       license: "MIT",
       files: ["app", "lib", "*.gemspec", "README.md"],
       scripts: {
         build: "npm run build -w @aurelglyph/tokens && node scripts/sync-generated.mjs",
         prepare: "npm run build",
-        test: "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb"
+        test:
+          "ruby -I lib test/aurelglyph_rails_test.rb && ruby test/gemspec_test.rb && vitest run --root ../.. packages/rails/test/sheet_controller.test.ts"
       },
       dependencies: {
-        "@aurelglyph/tokens": "0.4.0"
+        "@aurelglyph/tokens": version
       }
     });
     expect(copiedCss).toContain(generatedCss.trim());
@@ -177,6 +194,8 @@ describe("platform adapter skeletons", () => {
     expect(copiedCss).toContain(".ag-command-palette");
     expect(copiedCss).toContain(".ag-table");
     expect(copiedRuby).toBe(generatedRuby);
+    expect(sheetController).toContain('const sheetSelector = "dialog[data-aurelglyph-sheet]";');
+    expect(sheetController).toContain("dialog.showModal();");
     await expect(read("packages/rails/app/assets/fonts/aurelglyph/space-mono-700.woff2")).resolves.not.toHaveLength(0);
     await expect(read("packages/rails/app/assets/fonts/aurelglyph/OFL-1.1.txt")).resolves.toContain("Space Mono Project Authors");
   });

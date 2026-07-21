@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/react",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -33,6 +33,6 @@
     "react": "^19.1.0"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.4.0"
+    "@aurelglyph/tokens": "0.4.1"
   }
 }

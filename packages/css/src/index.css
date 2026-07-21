@@ -67,7 +67,7 @@ body {
 }
 
 .ag-focus-ring:focus-visible {
-  outline: 1px solid rgba(var(--ag-accent-rgb), 0.75);
+  outline: 2px solid var(--ag-color-semantic-focus);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(var(--ag-accent-rgb), 0.12);
 }

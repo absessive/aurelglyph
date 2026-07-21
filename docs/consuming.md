@@ -296,7 +296,8 @@ The full OFL text and upstream copyright notices ship beside those files.
 The current Rails-facing package is a gem skeleton named `aurelglyph-rails`.
 It ships the generated stylesheet with tokens plus shared component classes,
 the token helper, a Rails engine, WOFF2 font assets, and view helpers for tokens,
-icons, disclosure, cards, lists, tabs, search, and switches.
+icons, disclosure, cards, lists, tabs, search, and switches. It also includes a
+framework-neutral native-dialog controller for interactive sheets.
 
 From this workspace, generate the Rails-facing files:
 
@@ -307,6 +308,7 @@ npm run build -w aurelglyph-rails
 That creates or refreshes:
 
 - `packages/rails/app/assets/stylesheets/aurelglyph.css`
+- `packages/rails/app/assets/javascripts/aurelglyph.js`
 - `packages/rails/app/assets/fonts/aurelglyph/`
 - `packages/rails/lib/aurelglyph/tokens.rb`
 
@@ -337,13 +339,17 @@ Minimum Rails asset-pipeline setup after the gem is installed:
  */
 ```
 
-3. Set `data-mode` and `data-theme` on the HTML root in your layout:
+3. Link and load `aurelglyph.js` when using `aurelglyph_sheet`; it synchronizes
+   `data-open` with `showModal()`/`close()`, handles dismissals, and restores
+   focus. The Rails package README documents trigger and dismiss attributes.
+
+4. Set `data-mode` and `data-theme` on the HTML root in your layout:
 
 ```erb
 <html data-mode="dark" data-theme="royal-purple">
 ```
 
-4. Use semantic CSS variables in server-rendered views and components.
+5. Use semantic CSS variables in server-rendered views and components.
 
 Minimum token-helper usage:
 
@@ -477,5 +483,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.1")
 ```

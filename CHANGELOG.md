@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.4.1
+
+- Make React `Sheet` a genuinely modal controlled component with native
+  `showModal()`/`close()` lifecycle, accessible title association, focus entry
+  and restoration, Escape/backdrop/native-close reasons, and a tested fallback
+  that also isolates background content and locks scrolling.
+- Give Rails sheets the same accessible modal lifecycle through a packaged,
+  framework-neutral controller with trigger/dismiss attributes, Turbo-aware
+  initialization, controlled server intent, focus restoration, and fallback
+  isolation; connect generated titles with `aria-labelledby`.
+- Rebuild Rails helpers with ActionView tag builders so ordinary ERB output is
+  safe markup, untrusted values remain escaped, and all 105 curated icons emit
+  SVG paths identical to the React adapter, including a visible disclosure
+  affordance.
+- Add native Rails `<details open>` styling, mode-aware status and accent inks,
+  WCAG-conformant focus indicators across every accent theme, and reduced-motion
+  fallbacks for shared CSS, generated Pages disclosures, and SwiftUI animation.
+- Add explicit dark/light chart roles for CSS, React Native, SwiftUI, and Rails,
+  with executable contrast coverage for every semantic mark and surface.
+- Add rendered jsdom modal tests, real ActionView integration and injection
+  tests, cross-adapter icon parity assertions, and executable contrast checks.
+- Extend version synchronization to consumer-facing root, Swift, and consuming
+  guides so install examples cannot silently lag behind the package release.
+
 ## 0.4.0
 
 - Replace the packaged typography set with a more distinct OFL stack:

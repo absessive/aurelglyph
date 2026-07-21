@@ -645,6 +645,16 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      .ag-demo-disclosure summary::after {
+        transition: none;
+      }
+
+      .ag-demo-disclosure p {
+        animation: none;
+      }
+    }
+
     .ag-demo-badge {
       border: 1px solid rgba(var(--accent-rgb), 0.34);
       border-radius: 999px;
@@ -755,6 +765,16 @@
     </header>
     <article class="panel markdown">
 <h1>Changelog</h1>
+<h2>0.4.1</h2>
+<ul>
+<li>Make React <code>Sheet</code> a genuinely modal controlled component with native <code>showModal()</code>/<code>close()</code> lifecycle, accessible title association, focus entry and restoration, Escape/backdrop/native-close reasons, and a tested fallback that also isolates background content and locks scrolling.</li>
+<li>Give Rails sheets the same accessible modal lifecycle through a packaged, framework-neutral controller with trigger/dismiss attributes, Turbo-aware initialization, controlled server intent, focus restoration, and fallback isolation; connect generated titles with <code>aria-labelledby</code>.</li>
+<li>Rebuild Rails helpers with ActionView tag builders so ordinary ERB output is safe markup, untrusted values remain escaped, and all 105 curated icons emit SVG paths identical to the React adapter, including a visible disclosure affordance.</li>
+<li>Add native Rails <code>&lt;details open&gt;</code> styling, mode-aware status and accent inks, WCAG-conformant focus indicators across every accent theme, and reduced-motion fallbacks for shared CSS, generated Pages disclosures, and SwiftUI animation.</li>
+<li>Add explicit dark/light chart roles for CSS, React Native, SwiftUI, and Rails, with executable contrast coverage for every semantic mark and surface.</li>
+<li>Add rendered jsdom modal tests, real ActionView integration and injection tests, cross-adapter icon parity assertions, and executable contrast checks.</li>
+<li>Extend version synchronization to consumer-facing root, Swift, and consuming guides so install examples cannot silently lag behind the package release.</li>
+</ul>
 <h2>0.4.0</h2>
 <ul>
 <li>Replace the packaged typography set with a more distinct OFL stack: Libre Baskerville for display/editorial text, Atkinson Hyperlegible for UI/body copy, and Space Mono for technical labels and code.</li>

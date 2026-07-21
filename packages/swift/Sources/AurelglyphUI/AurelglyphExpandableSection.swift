@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct AurelglyphExpandableSection<Content: View>: View {
+  @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
   @Binding private var isExpanded: Bool
   private let title: String
   private let eyebrow: String?
@@ -21,7 +22,7 @@ public struct AurelglyphExpandableSection<Content: View>: View {
   public var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       Button {
-        withAnimation(.easeInOut(duration: 0.22)) {
+        withAnimation(Self.animation(reduceMotion: accessibilityReduceMotion)) {
           isExpanded.toggle()
         }
       } label: {
@@ -65,5 +66,9 @@ public struct AurelglyphExpandableSection<Content: View>: View {
       RoundedRectangle(cornerRadius: 18, style: .continuous)
         .stroke(.quaternary, lineWidth: 1)
     }
+  }
+
+  static func animation(reduceMotion: Bool) -> Animation? {
+    reduceMotion ? nil : .easeInOut(duration: 0.22)
   }
 }
