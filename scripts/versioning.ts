@@ -40,6 +40,11 @@ export const workspacePackagePaths = [
 
 const versionedArtifacts = [
   {
+    path: "component-manifest.json",
+    pattern: /"release": "([^"]+)"/u,
+    replacement: (version: string) => `"release": "${version}"`
+  },
+  {
     path: "README.md",
     pattern: /Current version: `([^`]+)`/u,
     replacement: (version: string) => `Current version: \`${version}\``

@@ -1,0 +1,249 @@
+{
+  "$schema": "./schemas/component-manifest.schema.json",
+  "schemaVersion": 1,
+  "release": "0.5.0",
+  "scope": "Interaction foundations",
+  "platforms": [
+    { "id": "css", "label": "CSS/Web" },
+    { "id": "react", "label": "React" },
+    { "id": "reactNative", "label": "React Native" },
+    { "id": "swiftUI", "label": "SwiftUI" },
+    { "id": "rails", "label": "Rails" }
+  ],
+  "components": [
+    {
+      "id": "dialog",
+      "name": "Dialog",
+      "category": "Overlays",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-dialog",
+        "react": "export { Dialog }",
+        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "swiftUI": "struct AurelglyphDialog",
+        "rails": "def aurelglyph_dialog"
+      }
+    },
+    {
+      "id": "drawer",
+      "name": "Drawer",
+      "category": "Overlays",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-drawer",
+        "react": "export { Drawer }",
+        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "swiftUI": "struct AurelglyphDrawer",
+        "rails": "def aurelglyph_drawer"
+      }
+    },
+    {
+      "id": "menu",
+      "name": "Menu / Dropdown",
+      "category": "Overlays",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-menu",
+        "react": "export { Menu, Dropdown }",
+        "reactNative": "export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }",
+        "swiftUI": "struct AurelglyphMenu",
+        "rails": "def aurelglyph_menu"
+      }
+    },
+    {
+      "id": "popover",
+      "name": "Popover",
+      "category": "Overlays",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-popover",
+        "react": "export { Popover }",
+        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "swiftUI": "struct AurelglyphPopover",
+        "rails": "def aurelglyph_popover"
+      }
+    },
+    {
+      "id": "tooltip",
+      "name": "Tooltip",
+      "category": "Overlays",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-tooltip",
+        "react": "export { Tooltip }",
+        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "swiftUI": "struct AurelglyphTooltip",
+        "rails": "def aurelglyph_tooltip"
+      }
+    },
+    {
+      "id": "icon-button",
+      "name": "Icon button",
+      "category": "Actions",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-icon-button",
+        "react": "export { IconButton }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphIconButton",
+        "rails": "def aurelglyph_icon_button"
+      }
+    },
+    {
+      "id": "button-group",
+      "name": "Button group",
+      "category": "Actions",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-button-group",
+        "react": "export { ButtonGroup }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphButtonGroup",
+        "rails": "def aurelglyph_button_group"
+      }
+    },
+    {
+      "id": "checkbox",
+      "name": "Checkbox",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-checkbox",
+        "react": "export { Checkbox }",
+        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "swiftUI": "struct AurelglyphCheckbox",
+        "rails": "def aurelglyph_checkbox"
+      }
+    },
+    {
+      "id": "radio-group",
+      "name": "Radio group",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-radio-group",
+        "react": "export { RadioGroup }",
+        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "swiftUI": "struct AurelglyphRadioGroup",
+        "rails": "def aurelglyph_radio_group"
+      }
+    },
+    {
+      "id": "slider",
+      "name": "Slider",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-slider",
+        "react": "export { Slider }",
+        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "swiftUI": "struct AurelglyphSlider",
+        "rails": "def aurelglyph_slider"
+      }
+    },
+    {
+      "id": "number-field",
+      "name": "Number field",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-number-field",
+        "react": "export { NumberField }",
+        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "swiftUI": "struct AurelglyphNumberField",
+        "rails": "def aurelglyph_number_field"
+      }
+    },
+    {
+      "id": "combobox",
+      "name": "Combobox / Autocomplete",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-combobox",
+        "react": "export { Combobox, Autocomplete }",
+        "reactNative": "export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }",
+        "swiftUI": "struct AurelglyphCombobox",
+        "rails": "def aurelglyph_combobox"
+      }
+    },
+    {
+      "id": "spinner",
+      "name": "Spinner",
+      "category": "Feedback",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-spinner",
+        "react": "export { Spinner }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphSpinner",
+        "rails": "def aurelglyph_spinner"
+      }
+    },
+    {
+      "id": "divider",
+      "name": "Divider",
+      "category": "Layout",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-divider",
+        "react": "export { Divider }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphDivider",
+        "rails": "def aurelglyph_divider"
+      }
+    },
+    {
+      "id": "surface",
+      "name": "Surface / Box",
+      "category": "Layout",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-surface",
+        "react": "export { Box, Container, Grid, Stack, Surface }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphSurface",
+        "rails": "def aurelglyph_surface"
+      }
+    },
+    {
+      "id": "stack",
+      "name": "Stack",
+      "category": "Layout",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-stack",
+        "react": "export { Box, Container, Grid, Stack, Surface }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphStack",
+        "rails": "def aurelglyph_stack"
+      }
+    },
+    {
+      "id": "container",
+      "name": "Container",
+      "category": "Layout",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-container",
+        "react": "export { Box, Container, Grid, Stack, Surface }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphContainer",
+        "rails": "def aurelglyph_container"
+      }
+    },
+    {
+      "id": "grid",
+      "name": "Responsive grid",
+      "category": "Layout",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-grid",
+        "react": "export { Box, Container, Grid, Stack, Surface }",
+        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "swiftUI": "struct AurelglyphGrid",
+        "rails": "def aurelglyph_grid"
+      }
+    }
+  ]
+}

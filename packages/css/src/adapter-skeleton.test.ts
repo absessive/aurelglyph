@@ -70,6 +70,10 @@ describe("platform adapter skeletons", () => {
     expect(built).toContain(".ag-sheet");
     expect(built).toContain(".ag-segmented");
     expect(built).toContain(".ag-command-palette");
+    expect(built).toContain('.ag-command-palette__item[aria-disabled="true"]');
+    expect(built).toContain('.ag-command-palette__empty');
+    expect(built).toContain('.ag-sheet[aria-modal="true"] > .ag-sheet__fallback-scrim');
+    expect(built).toContain('.ag-checkbox__input[data-indeterminate="true"] + .ag-checkbox__box');
     expect(built).toContain(".ag-table");
     expect(built).toContain('.ag-disclosure[open] .ag-disclosure__panel');
     expect(built).toContain("@media (prefers-reduced-motion: reduce)");
@@ -84,38 +88,50 @@ describe("platform adapter skeletons", () => {
     await expect(read("packages/css/dist/fonts/ofl/OFL-1.1.txt")).resolves.toContain("SIL OPEN FONT LICENSE Version 1.1");
   });
 
-  it("defines the React Native package contract and generated theme export", async () => {
+  it("defines the React Native component package and generated theme contract", async () => {
     const packageJson = JSON.parse(await read("packages/react-native/package.json")) as Record<string, unknown>;
     const source = await read("packages/react-native/src/index.ts");
     const version = await currentVersion();
 
-    expect(packageJson).toEqual({
+    expect(packageJson).toMatchObject({
       name: "@aurelglyph/react-native",
       version,
       license: "MIT",
       type: "module",
-      main: "src/index.ts",
-      types: "src/index.ts",
+      main: "dist/index.js",
+      types: "dist/index.d.ts",
       exports: {
         ".": {
-          types: "./src/index.ts",
-          default: "./src/index.ts"
+          types: "./dist/index.d.ts",
+          "react-native": "./dist/index.js",
+          default: "./dist/index.js"
         },
         "./fonts": {
-          types: "./src/fonts.ts",
-          default: "./src/fonts.ts"
+          types: "./dist/fonts.d.ts",
+          "react-native": "./dist/fonts.js",
+          default: "./dist/fonts.js"
         }
       },
-      files: ["src", "assets/fonts", "README.md", "LICENSE.md"],
+      files: ["dist", "assets/fonts", "README.md", "LICENSE.md"],
       scripts: {
-        build: "npm run build -w @aurelglyph/tokens && node --experimental-strip-types ../../scripts/font-assets.ts",
+        build:
+          "npm run build -w @aurelglyph/tokens && node --experimental-strip-types ../../scripts/font-assets.ts && tsc -p tsconfig.json",
+        test: "vitest run --root ../.. packages/react-native/src",
         prepare: "npm run build"
       },
       dependencies: {
         "@aurelglyph/tokens": version
+      },
+      peerDependencies: {
+        react: ">=19.2.3 <20",
+        "react-native": "^0.86.0"
       }
     });
-    expect(source.trim()).toBe('export { aurelglyphTheme } from "@aurelglyph/tokens/react-native";');
+    expect(source).toContain("AurelglyphProvider");
+    expect(source).toContain("export { Dialog, Drawer, Popover, Tooltip }");
+    expect(source).toContain("export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }");
+    expect(source).toContain("export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }");
+    expect(source).toContain("export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }");
     const fontAdapter = await read("packages/react-native/src/fonts.ts");
     expect(fontAdapter).toContain("aurelglyphFontAssets");
     expect(fontAdapter).toContain("AurelglyphDisplay");

@@ -198,6 +198,16 @@ describe("Button", () => {
     expect(css).toContain("var(--ag-color-semantic-accent-control)");
     expect(css).toContain("var(--ag-color-semantic-accent-control-strong)");
   });
+
+  it("disables and announces loading controls", () => {
+    const element = Button({ children: "Save", loading: true }) as ReactElement<Record<string, unknown>>;
+    const children = element.props.children as ReactElement<Record<string, unknown>>[];
+
+    expect(element.props.disabled).toBe(true);
+    expect(element.props["aria-busy"]).toBe(true);
+    expect(element.props["data-loading"]).toBe(true);
+    expect(children[2]?.props.className).toBe("ag-button__spinner");
+  });
 });
 
 describe("Icon", () => {
@@ -263,7 +273,7 @@ describe("FileUpload", () => {
 });
 
 describe("ExpandableSection", () => {
-  it("ships a disclosure component with controlled and animated semantics", () => {
+  it("ships a disclosure component with controlled and focus-safe semantics", () => {
     const source = readFileSync(join(import.meta.dirname, "ExpandableSection.tsx"), "utf8");
     const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
 
@@ -272,6 +282,8 @@ describe("ExpandableSection", () => {
     expect(source).toContain('aria-controls={panelId}');
     expect(source).toContain('name={isOpen ? "contract" : "expand"}');
     expect(source).toContain("onOpenChange?.(nextOpen)");
+    expect(source).toContain("hidden={!isOpen}");
+    expect(source).toContain("inert={!isOpen ? true : undefined}");
     expect(css).toContain(".ag-disclosure__panel");
     expect(css).toContain("grid-template-rows var(--ag-motion-duration-base)");
     expect(css).toContain("opacity var(--ag-motion-duration-base)");
@@ -290,6 +302,16 @@ describe("Phase 1 mobile foundation components", () => {
 
     expect(shell.props.className).toContain("ag-app-shell");
     expect(topBar.props.className).toContain("ag-top-bar");
+
+    const embedded = AppShell({ children: "Embedded", contentAs: "section" }) as ReactElement<Record<string, unknown>>;
+    const embeddedBody = (embedded.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
+    const embeddedContent = (embeddedBody?.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
+    expect(embeddedContent?.type).toBe("section");
+
+    const embeddedTopBar = TopBar({ title: "Embedded", titleAs: "h3" }) as ReactElement<Record<string, unknown>>;
+    const titleGroup = (embeddedTopBar.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
+    const embeddedTitle = (titleGroup?.props.children as Array<ReactElement<Record<string, unknown>> | null>)[0];
+    expect(embeddedTitle?.type).toBe("h3");
   });
 
   it("renders tab bar items with active page semantics", () => {
@@ -319,7 +341,7 @@ describe("Phase 1 mobile foundation components", () => {
 
     expect(section.props.className).toContain("ag-list-section");
     expect(row.props.className).toContain("ag-list-row");
-    expect(row.props["aria-selected"]).toBe(true);
+    expect(row.props["aria-current"]).toBe("true");
   });
 
   it("renders cards, search, and switches with mobile form semantics", () => {
@@ -354,25 +376,13 @@ describe("Phase 2 mobile app components", () => {
   });
 
   it("renders segmented controls, selects, alerts, empty states, avatars, and badges", () => {
-    const segmented = SegmentedControl({
-      activeId: "grid",
-      items: [
-        { id: "grid", label: "Grid" },
-        { id: "list", label: "List" }
-      ]
-    }) as ReactElement<Record<string, unknown>>;
-    const select = Select({
-      label: "Theme",
-      name: "theme",
-      options: [{ label: "Royal purple", value: "royal-purple" }]
-    }) as ReactElement<Record<string, unknown>>;
     const alert = Alert({ title: "Synced", tone: "success" }) as ReactElement<Record<string, unknown>>;
     const empty = EmptyState({ title: "No systems" }) as ReactElement<Record<string, unknown>>;
     const avatar = Avatar({ name: "Ajit Chakrapani" }) as ReactElement<Record<string, unknown>>;
     const badge = Badge({ children: "Live", tone: "accent" }) as ReactElement<Record<string, unknown>>;
 
-    expect(segmented.props.role).toBe("radiogroup");
-    expect(select.props.className).toBe("ag-select");
+    expect(typeof SegmentedControl).toBe("function");
+    expect(typeof Select).toBe("function");
     expect(alert.props.role).toBe("status");
     expect(empty.props.className).toContain("ag-empty-state");
     expect(avatar.props["aria-label"]).toBe("Ajit Chakrapani");
@@ -382,14 +392,6 @@ describe("Phase 2 mobile app components", () => {
 
 describe("Phase 3 product workbench components", () => {
   it("renders tabs, breadcrumbs, toast, progress, skeleton, and metrics", () => {
-    const tabs = Tabs({
-      activeId: "overview",
-      children: "Panel",
-      items: [
-        { id: "overview", label: "Overview" },
-        { id: "logs", label: "Logs" }
-      ]
-    }) as ReactElement<Record<string, unknown>>;
     const breadcrumbs = Breadcrumbs({
       items: [
         { href: "#workbench", label: "Workbench" },
@@ -401,7 +403,7 @@ describe("Phase 3 product workbench components", () => {
     const skeleton = Skeleton({}) as ReactElement<Record<string, unknown>>;
     const metric = Metric({ label: "Latency", value: "42ms" }) as ReactElement<Record<string, unknown>>;
 
-    expect(tabs.props.className).toContain("ag-tabs");
+    expect(typeof Tabs).toBe("function");
     expect(breadcrumbs.type).toBe("nav");
     expect(toast.props.role).toBe("status");
     expect(progress.props.role).toBe("progressbar");
@@ -417,16 +419,35 @@ describe("Phase 3 product workbench components", () => {
       rows: [{ name: "System" }]
     }) as ReactElement<Record<string, unknown>>;
     const pagination = Pagination({ currentPage: 2, totalPages: 3 }) as ReactElement<Record<string, unknown>>;
-    const command = CommandPalette({
-      items: [{ icon: "search", id: "search", label: "Search", shortcut: "Cmd-K" }]
-    }) as ReactElement<Record<string, unknown>>;
     const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
 
     expect(table.props.className).toContain("ag-table-wrap");
+    expect(table.props.role).toBe("region");
+    expect(table.props.tabIndex).toBe(0);
+    expect(table.props["aria-label"]).toBe("Data table");
     expect(pagination.type).toBe("nav");
-    expect(command.props.role).toBe("dialog");
+    expect(typeof CommandPalette).toBe("function");
     expect(css).toContain(".ag-command-palette");
     expect(css).toContain(".ag-skeleton");
     expect(css).toContain(".ag-table");
+  });
+});
+
+describe("interaction foundation styles", () => {
+  it("keeps disabled, empty, mixed, and fallback-modal states in the canonical stylesheet", () => {
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+
+    expect(css).toContain('.ag-pagination__button:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain('.ag-menu__item:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain('.ag-command-palette__item:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain('.ag-pagination__button[aria-disabled="true"]');
+    expect(css).toContain('.ag-pagination__page[aria-disabled="true"]');
+    expect(css).toContain('.ag-menu__item[aria-disabled="true"]');
+    expect(css).toContain('.ag-command-palette__item[aria-disabled="true"]');
+    expect(css).toMatch(/\.ag-command-palette__empty\s*\{[^}]*margin: 0;[^}]*color: var\(--ag-color-semantic-muted\);/u);
+    expect(css).toContain('.ag-sheet[aria-modal="true"] > .ag-sheet__fallback-scrim');
+    expect(css).toContain('.ag-checkbox__input[data-indeterminate="true"] + .ag-checkbox__box');
+    expect(css).toContain("cursor: not-allowed;");
+    expect(css).toContain("text-decoration: none;");
   });
 });

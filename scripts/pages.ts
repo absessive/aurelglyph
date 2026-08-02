@@ -7,6 +7,20 @@ type PackageJson = {
   version?: string;
 };
 
+type ComponentManifest = {
+  schemaVersion: number;
+  release: string;
+  scope: string;
+  platforms: Array<{ id: string; label: string }>;
+  components: Array<{
+    id: string;
+    name: string;
+    category: string;
+    introduced: string;
+    evidence: Record<string, string>;
+  }>;
+};
+
 export type PagesBuildResult = {
   files: string[];
 };
@@ -15,42 +29,6 @@ type IconGlyphs = Record<string, string>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const githubPagesCustomDomain = "aurelglyph.absessive.com";
-const componentGroups = [
-  {
-    title: "Phase 1 mobile foundations",
-    items: ["App shell", "Top bar", "Tab bar", "List section", "List row", "Card", "Search field", "Switch"]
-  },
-  {
-    title: "Phase 2 app controls",
-    items: ["Nested app surfaces", "Page actions", "Focused sheets", "Bounded choices", "Alerts", "Empty states", "Identity", "Compact status"]
-  },
-  {
-    title: "Phase 3 workbench controls",
-    items: ["Workbench navigation", "Breadcrumb location", "Non-blocking feedback", "Loading state", "Measured values", "Data tables", "Pagination", "Command palette"]
-  },
-  {
-    title: "Starter controls",
-    items: ["Button", "Icon", "Text field", "Text area", "File upload", "Expandable section"]
-  },
-  {
-    title: "Navigation",
-    items: ["Navbar", "Sidebar", "Navs", "Tabs", "Breadcrumbs", "Pagination", "Menu"]
-  },
-  {
-    title: "Content and layout",
-    items: ["Card", "Panel", "List group", "Accordion", "Toolbar", "App shell", "Modal", "Drawer"]
-  },
-  {
-    title: "Feedback",
-    items: ["Alert", "Badge", "Toast", "Progress", "Spinner", "Skeleton", "Tooltip"]
-  },
-  {
-    title: "Forms",
-    items: ["Input group", "Validation", "Field help", "File states", "Upload progress", "Error state"]
-  }
-];
-
-const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"];
 const iconCatalog = [
   "home",
   "dashboard",
@@ -676,6 +654,62 @@ function pageShell(title: string, body: string, active = "index"): string {
       line-height: 1.4;
     }
 
+    .support-matrix-wrap {
+      max-width: 100%;
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .support-matrix {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .support-matrix th,
+    .support-matrix td {
+      border-bottom: 1px solid var(--color-border-soft);
+      padding: 12px 14px;
+      text-align: start;
+      vertical-align: middle;
+    }
+
+    .support-matrix th {
+      color: var(--color-text-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .support-matrix td {
+      color: var(--color-text);
+      font-size: 0.9rem;
+    }
+
+    .support-matrix td:not(:first-child) {
+      color: var(--color-accent-ink-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix__category {
+      display: block;
+      margin-top: 3px;
+      color: var(--color-text-subtle);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .markdown h1:first-child {
       margin-top: 0;
       font-size: clamp(2.6rem, 7vw, 5rem);
@@ -1079,7 +1113,7 @@ function renderIndex(version: string, description: string): string {
     `    <section class="hero">
       <div class="eyebrow">Systems operational</div>
       <h1>Aurelglyph</h1>
-      <p class="lead">Shared design tokens and starter components for apps across web, Rails, and SwiftUI.</p>
+      <p class="lead">Shared design tokens and components for apps across web, React Native, Rails, and SwiftUI.</p>
       <p>${escapeHtml(description)}</p>
       <div class="actions">
         <a class="button" href="components.html">View components</a>
@@ -1107,7 +1141,7 @@ function renderUsage(version: string): string {
       <pre><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
       <h2>React icons</h2>
-      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, FileUpload, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, TopBar } from "@aurelglyph/react";
+      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, ButtonGroup, Card, Checkbox, Combobox, CommandPalette, Container, DataTable, Dialog, Divider, Drawer, EmptyState, ExpandableSection, FileUpload, Grid, Icon, IconButton, ListRow, ListSection, Menu, Metric, NavigationPage, NavigationStack, NumberField, Pagination, Popover, Progress, RadioGroup, SearchField, SegmentedControl, Select, Sheet, Skeleton, Slider, Spinner, Stack, Surface, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, Tooltip, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
@@ -1157,7 +1191,28 @@ function renderUsage(version: string): string {
   &lt;Pagination currentPage={2} totalPages={3} /&gt;
   &lt;Toast title="Settings saved" tone="success"&gt;The toast reports a non-blocking outcome.&lt;/Toast&gt;
   &lt;CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} /&gt;
+  &lt;Dialog open={dialogOpen} onOpenChange={setDialogOpen} title="Publish release?"&gt;Run the verified package gate.&lt;/Dialog&gt;
+  &lt;Menu label="Actions" items={[{ id: "archive", label: "Archive", icon: "archive" }]} /&gt;
+  &lt;Combobox label="Accent" options={themes} value={theme} onValueChange={setTheme} /&gt;
+  &lt;Checkbox label="Automated verification" checked={verify} onChange={handleVerify} /&gt;
+  &lt;Grid columns={{ base: 1, md: 2, lg: 3 }} minItemWidth="12rem"&gt;
+    &lt;Surface&gt;Primary system&lt;/Surface&gt;
+    &lt;Surface elevation="floating"&gt;Live inspection&lt;/Surface&gt;
+  &lt;/Grid&gt;
 &lt;/AppShell&gt;</code></pre>
+      <h2>React Native components</h2>
+      <pre><code>import { AurelglyphProvider, Button, Checkbox, Combobox, Stack, Surface } from "@aurelglyph/react-native";
+
+&lt;AurelglyphProvider accent="royal-purple" mode="system"&gt;
+  &lt;Surface elevation="raised"&gt;
+    &lt;Stack gap={4}&gt;
+      &lt;Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} /&gt;
+      &lt;Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} /&gt;
+      &lt;Button onPress={save}&gt;Save changes&lt;/Button&gt;
+    &lt;/Stack&gt;
+  &lt;/Surface&gt;
+&lt;/AurelglyphProvider&gt;</code></pre>
+      <p>The native adapter targets React Native 0.86 and React 19.2.3 or newer. It uses native modal and accessibility behavior, has no runtime UI dependency, and accepts a host document-picker callback for file uploads.</p>
       <h2>React Native typography</h2>
       <pre><code>import { aurelglyphTheme } from "@aurelglyph/react-native";
 import { aurelglyphFontAssets, aurelglyphFontFamilies } from "@aurelglyph/react-native/fonts";
@@ -1200,7 +1255,12 @@ const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></
 &lt;%= aurelglyph_badge("Live", tone: "accent") %&gt;
 &lt;%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %&gt;
 &lt;%= aurelglyph_progress(value: 72) %&gt;
-&lt;%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %&gt;</code></pre>
+&lt;%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %&gt;
+&lt;%= aurelglyph_menu(label: "System actions", items: [{ label: "Archive", value: "archive" }]) %&gt;
+&lt;%= aurelglyph_combobox(name: "system_id", label: "System", options: systems) %&gt;
+&lt;%= aurelglyph_grid(columns: { base: 1, md: 2, lg: 3 }, min_item_width: "16rem") do %&gt;
+  &lt;%= render @systems %&gt;
+&lt;% end %&gt;</code></pre>
       <h2>SwiftUI exact version</h2>
       <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "${escapeHtml(version)}")</code></pre>
       <h2>SwiftUI compatible version</h2>
@@ -1226,6 +1286,23 @@ Text("color.accent.royal-purple.300")
 Text("Calibrated systems")
   .font(AurelglyphTypography.display(size: 48, relativeTo: .largeTitle))</code></pre>
       <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. It bundles Apple-platform TTF files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono. Custom methods preserve their requested baseline and scale relative to the supplied Dynamic Type role; the generic role factory uses role-specific defaults. <code>AurelglyphTypography</code> registers and uses each available face independently, with native SwiftUI fallbacks.</p>
+      <h2>SwiftUI interaction foundations</h2>
+      <pre><code>WorkbenchView()
+  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple))
+
+AurelglyphContainer {
+  AurelglyphStack(spacing: 16) {
+    AurelglyphNumberField("Retries", value: $retries, in: 0...10, step: 1)
+    AurelglyphCombobox("Destination", options: destinations, query: $query, selection: $destination)
+    AurelglyphCheckbox("Automated verification", isChecked: $verify)
+  }
+}
+.aurelglyphDialog(isPresented: $showingArchive, title: "Archive system") {
+  Text("The current system will move to Archive.")
+} actions: {
+  Button("Cancel", role: .cancel) { showingArchive = false }
+  Button("Archive", role: .destructive) { archive() }
+}</code></pre>
       <h2>SwiftUI expandable section</h2>
       <pre><code>@State private var expanded = true
 
@@ -1263,20 +1340,46 @@ AurelglyphNavigationStack("Workbench") {
   );
 }
 
-function renderComponents(glyphs: IconGlyphs): string {
+function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): string {
   return pageShell(
     "Aurelglyph Components",
     `    <article class="panel markdown">
       <h1>Components</h1>
-      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Phase 2 covers app structure, controls, and feedback. Phase 3 covers workbench navigation, loading state, measured values, tables, pagination, and command execution.</p>
+      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Version ${escapeHtml(manifest.release)} declares ${manifest.components.length} interaction-foundation families without replacing each platform's native behavior.</p>
       <h2>Platform targets</h2>
       <div class="catalog">
         <section class="catalog-card">
           <h3>Supported surfaces</h3>
           <ul>
-            ${platformTargets.map((target) => `<li>${escapeHtml(target)}</li>`).join("\n            ")}
+            ${manifest.platforms.map((platform) => `<li>${escapeHtml(platform.label)}</li>`).join("\n            ")}
           </ul>
         </section>
+      </div>
+      <h2>${escapeHtml(manifest.scope)}</h2>
+      <p>Every stable cell is checked for shipped implementation evidence during <code>npm test</code>. Adapter and browser suites exercise applicable behavior and accessibility separately. The schema-validated, machine-readable source of truth is <a href="component-manifest.json">component-manifest.json</a>.</p>
+      <div class="support-matrix-wrap" tabindex="0" role="region" aria-label="Cross-platform interaction foundation support">
+        <table class="support-matrix">
+          <thead>
+            <tr>
+              <th scope="col">Component</th>
+              ${manifest.platforms.map((platform) => `<th scope="col">${escapeHtml(platform.label)}</th>`).join("\n              ")}
+            </tr>
+          </thead>
+          <tbody>
+            ${manifest.components
+              .map(
+                (component) => `<tr>
+              <td><strong>${escapeHtml(component.name)}</strong><span class="support-matrix__category">${escapeHtml(component.category)}</span></td>
+              ${manifest.platforms
+                .map(
+                  (platform) => `<td aria-label="${escapeHtml(component.name)} is stable on ${escapeHtml(platform.label)}">Stable</td>`
+                )
+                .join("\n              ")}
+            </tr>`
+              )
+              .join("\n            ")}
+          </tbody>
+        </table>
       </div>
       <h2>Preview</h2>
       <div class="preview-stack">
@@ -1390,21 +1493,42 @@ export async function buildGithubPages(root = repoRoot): Promise<PagesBuildResul
   const version = packageJson.version ?? "0.0.0";
   const description = packageJson.description ?? "Aurelglyph is a token-first design-system workspace.";
   const changelog = await readFile(join(root, "CHANGELOG.md"), "utf8");
+  const componentManifestSource = await readFile(join(root, "component-manifest.json"), "utf8");
+  const componentManifest = JSON.parse(componentManifestSource) as ComponentManifest;
+  const componentSchemaSource = await readFile(join(root, "schemas", "component-manifest.schema.json"), "utf8");
   const iconGlyphs = await loadIconGlyphs(root);
   const docsRoot = join(root, "docs");
+  const docsSchemaRoot = join(docsRoot, "schemas");
   const fontSourceRoot = join(root, "packages", "css", "src", "fonts", "ofl");
   const fontDocsRoot = join(docsRoot, "assets", "fonts", "ofl");
 
+  if (componentManifest.release !== version) {
+    throw new Error(`component-manifest.json release ${componentManifest.release} does not match workspace ${version}.`);
+  }
+
   await mkdir(docsRoot, { recursive: true });
+  await mkdir(docsSchemaRoot, { recursive: true });
   await rm(fontDocsRoot, { recursive: true, force: true });
   await cp(fontSourceRoot, fontDocsRoot, { recursive: true });
   await writeFile(join(docsRoot, "index.html"), renderIndex(version, description));
   await writeFile(join(docsRoot, "usage.html"), renderUsage(version));
-  await writeFile(join(docsRoot, "components.html"), renderComponents(iconGlyphs));
+  await writeFile(join(docsRoot, "components.html"), renderComponents(iconGlyphs, componentManifest));
+  await writeFile(join(docsRoot, "component-manifest.json"), componentManifestSource);
+  await writeFile(join(docsSchemaRoot, "component-manifest.schema.json"), componentSchemaSource);
   await writeFile(join(docsRoot, "changelog.html"), renderChangelog(changelog));
   await writeFile(join(docsRoot, "CNAME"), `${githubPagesCustomDomain}\n`);
 
-  return { files: ["docs/index.html", "docs/usage.html", "docs/components.html", "docs/changelog.html", "docs/CNAME"] };
+  return {
+    files: [
+      "docs/index.html",
+      "docs/usage.html",
+      "docs/components.html",
+      "docs/component-manifest.json",
+      "docs/schemas/component-manifest.schema.json",
+      "docs/changelog.html",
+      "docs/CNAME"
+    ]
+  };
 }
 
 async function main(): Promise<void> {

@@ -48,6 +48,7 @@ function focusableElements(dialog: HTMLDialogElement): HTMLElement[] {
 }
 
 function isBackdropClick(event: MouseEvent<HTMLDialogElement>): boolean {
+  if (event.target instanceof HTMLElement && event.target.classList.contains("ag-sheet__fallback-scrim")) return true;
   if (event.target !== event.currentTarget) return false;
 
   const bounds = event.currentTarget.getBoundingClientRect();
@@ -254,6 +255,7 @@ export function Sheet({
       ref={dialogRef}
       tabIndex={-1}
     >
+      <span aria-hidden="true" className="ag-sheet__fallback-scrim" />
       <div className="ag-sheet__surface">
         <header className="ag-sheet__header">
           <h2 className="ag-sheet__title" id={titleId}>

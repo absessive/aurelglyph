@@ -35,6 +35,7 @@ async function createWorkspace(): Promise<string> {
   }
 
   const artifactContents: Record<string, string> = {
+    "component-manifest.json": '{"release": "0.0.1"}',
     "README.md": 'Current version: `0.0.1`\n.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
     "preview/index.html": "<p>Aurelglyph Static Preview · v0.0.1</p>",
     "examples/react-vite/index.html": "<p>Aurelglyph React · v0.0.1</p>",
@@ -88,6 +89,7 @@ describe("workspace versioning", () => {
     await expect(readFile(join(root, "examples/react-vite/src/App.tsx"), "utf8")).resolves.toContain('"1.2.3"');
     await expect(readFile(join(root, "README.md"), "utf8")).resolves.toContain("`1.2.3`");
     await expect(readFile(join(root, "docs/consuming.md"), "utf8")).resolves.toContain('from: "1.2.3"');
+    await expect(readFile(join(root, "component-manifest.json"), "utf8")).resolves.toContain('"release": "1.2.3"');
   });
 
   it("requires a changelog section for the shared version", async () => {

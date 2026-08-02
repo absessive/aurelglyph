@@ -20,8 +20,10 @@ async function createWorkspace(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "aurelglyph-pages-"));
   tempRoots.push(root);
   const fontRoot = join(root, "packages", "css", "src", "fonts", "ofl");
+  const schemaRoot = join(root, "schemas");
 
   await mkdir(fontRoot, { recursive: true });
+  await mkdir(schemaRoot, { recursive: true });
   await writeFile(
     join(root, "package.json"),
     JSON.stringify({ name: "aurelglyph", version: "1.2.3", description: "A token-first design system." }, null, 2)
@@ -41,6 +43,36 @@ async function createWorkspace(): Promise<string> {
   );
   await Promise.all(fontFiles.map((file) => writeFile(join(fontRoot, file), `test font ${file}`)));
   await writeFile(join(fontRoot, "OFL-1.1.txt"), "test OFL font notices");
+  await writeFile(
+    join(root, "component-manifest.json"),
+    JSON.stringify(
+      {
+        $schema: "./schemas/component-manifest.schema.json",
+        schemaVersion: 1,
+        release: "1.2.3",
+        scope: "Interaction foundations",
+        platforms: [
+          { id: "css", label: "CSS/Web" },
+          { id: "react", label: "React" },
+          { id: "reactNative", label: "React Native" },
+          { id: "swiftUI", label: "SwiftUI" },
+          { id: "rails", label: "Rails" }
+        ],
+        components: [
+          {
+            id: "dialog",
+            name: "Dialog",
+            category: "Overlays",
+            introduced: "0.5.0",
+            evidence: { css: ".ag-dialog", react: "Dialog", reactNative: "Dialog", swiftUI: "AurelglyphDialog", rails: "aurelglyph_dialog" }
+          }
+        ]
+      },
+      null,
+      2
+    )
+  );
+  await writeFile(join(schemaRoot, "component-manifest.schema.json"), "{}\n");
 
   return root;
 }
@@ -60,6 +92,8 @@ describe("GitHub Pages generator", () => {
       "docs/index.html",
       "docs/usage.html",
       "docs/components.html",
+      "docs/component-manifest.json",
+      "docs/schemas/component-manifest.schema.json",
       "docs/changelog.html",
       "docs/CNAME"
     ]);
@@ -75,7 +109,7 @@ describe("GitHub Pages generator", () => {
     expect(index).toContain('href="components.html"');
     expect(index).toContain('href="changelog.html"');
     expect(index).toContain("Version 1.2.3");
-    expect(index).toContain("Shared design tokens and starter components for apps across web, Rails, and SwiftUI.");
+    expect(index).toContain("Shared design tokens and components for apps across web, React Native, Rails, and SwiftUI.");
     expect(index).toContain("Shared source files");
 
     expect(usage).toContain("<title>Aurelglyph Usage</title>");
@@ -84,10 +118,14 @@ describe("GitHub Pages generator", () => {
     expect(usage).toContain('exact: "1.2.3"');
     expect(usage).toContain("aurelglyph-rails");
     expect(usage).toContain("SwiftUI");
+    expect(usage).toContain("AurelglyphProvider");
+    expect(usage).toContain("React Native 0.86");
     expect(usage).toContain("aurelglyph_icon");
     expect(usage).toContain("AurelglyphIcon.creditCard");
     expect(usage).toContain("AurelglyphFontRegistry.registerFonts");
     expect(usage).toContain("AurelglyphTypography.displayLarge");
+    expect(usage).toContain("AurelglyphTheme(mode: .system, accent: .royalPurple)");
+    expect(usage).toContain("AurelglyphCombobox");
     expect(usage).toContain("does not bundle the web WOFF2 files");
     expect(usage).toContain("Apple-platform TTF files");
     expect(usage).toContain("Libre Baskerville");
@@ -98,6 +136,8 @@ describe("GitHub Pages generator", () => {
     expect(usage).toContain("app/assets/fonts/aurelglyph");
     expect(usage).toContain("javascript_include_tag");
     expect(usage).toContain("aurelglyph_sheet_trigger");
+    expect(usage).toContain("aurelglyph_combobox");
+    expect(usage).toContain("aurelglyph_grid");
     expect(usage).toContain('url("./assets/fonts/ofl/libre-baskerville-400.woff2")');
     expect(usage).toContain('url("./assets/fonts/ofl/atkinson-hyperlegible-400.woff2")');
     expect(usage).toContain('url("./assets/fonts/ofl/space-mono-400.woff2")');
@@ -122,6 +162,13 @@ describe("GitHub Pages generator", () => {
     expect(components).toContain("React Native");
     expect(components).toContain("SwiftUI");
     expect(components).toContain("Rails");
+    expect(components).toContain("Interaction foundations");
+    expect(components).toContain("Dialog");
+    expect(components).toContain("component-manifest.json");
+    expect(components).toContain("checked for shipped implementation evidence");
+    expect(components).toContain("Adapter and browser suites exercise applicable behavior and accessibility separately");
+    expect(components).toContain("schema-validated, machine-readable source of truth");
+    expect(components).toContain("Stable");
     expect(components).toContain("Preview");
     expect(components).toContain("Primary action");
     expect(components).toContain("Project name");
@@ -153,5 +200,7 @@ describe("GitHub Pages generator", () => {
     expect(changelog).toContain("</ul>\n<p>Unindented release context becomes its own paragraph.</p>");
 
     expect(cname).toBe("aurelglyph.absessive.com\n");
+    await expect(readFile(join(root, "docs", "component-manifest.json"), "utf8")).resolves.toContain('"release": "1.2.3"');
+    await expect(readFile(join(root, "docs", "schemas", "component-manifest.schema.json"), "utf8")).resolves.toBe("{}\n");
   });
 });

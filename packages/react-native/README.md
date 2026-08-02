@@ -1,22 +1,130 @@
 # @aurelglyph/react-native
 
-React Native token and typography adapters for Aurelglyph.
+Native Aurelglyph components, themes, tokens, and packaged fonts for iOS and Android.
 
 ```bash
-npm install @aurelglyph/react-native
+npm install @aurelglyph/react-native react react-native
 ```
 
-The main export provides native-safe family aliases rather than CSS font
-stacks:
+The 0.5 interaction layer targets the verified React Native 0.86.x line and
+React 19.2.3 or newer within React 19. It has no runtime UI dependency beyond
+React Native itself.
 
-```ts
-import { aurelglyphTheme } from "@aurelglyph/react-native";
+## Theme provider
 
-const bodyStyle = {
-  color: aurelglyphTheme["color.mode.dark.text"],
-  fontFamily: aurelglyphTheme["font.family.body"]
-};
+Wrap the app once. `system` follows the device appearance; dark mode and the
+`royal-purple` accent remain the Aurelglyph showcase defaults.
+
+```tsx
+import {
+  AurelglyphProvider,
+  Button,
+  Stack,
+  Surface,
+  TextField
+} from "@aurelglyph/react-native";
+
+export function Settings() {
+  return (
+    <AurelglyphProvider mode="system" accent="royal-purple">
+      <Surface elevation="raised">
+        <Stack gap={4}>
+          <TextField label="System name" value="Workbench" />
+          <Button onPress={() => {}}>Save changes</Button>
+        </Stack>
+      </Surface>
+    </AurelglyphProvider>
+  );
+}
 ```
+
+The generated `aurelglyphTheme` object is still exported for direct token
+access. `resolveAurelglyphTheme(mode, accent)` returns native numeric spacing
+and radius values plus mode-aware semantic colors. Components never hardcode
+their own palette.
+
+## Components
+
+The adapter shares the public Aurelglyph vocabulary used by React and Rails:
+
+- Actions: `Button`, `Icon`, `IconButton`, `ButtonGroup`
+- Fields: `TextField`, `SearchField`, `TextArea`, `Switch`, `Checkbox`,
+  `RadioGroup`, `Slider`, `NumberField`, `Select`, `Combobox`, `Autocomplete`,
+  `FileUpload`
+- Overlays: `Dialog`, `Drawer`, `Popover`, `Tooltip`, `Menu`, `Dropdown`,
+  `CommandPalette`
+- Navigation: `Tabs`, `SegmentedControl`, `TabBar`, `Pagination`
+- Feedback: `Spinner`, `Progress`
+- Layout: `Surface`, `Box`, `Stack`, `Container`, responsive `Grid`, `Divider`
+
+Value-selection controls use `value` plus `onValueChange`, with `defaultValue`
+for local state. Text and search fields follow React Native's native
+`value`/`onChangeText` contract; checkboxes use `checked`/`onCheckedChange`;
+overlays use controlled `open`/`onOpenChange`. Command-palette search text may
+be controlled separately with `query`/`onQueryChange`.
+
+```tsx
+const options = [
+  { value: "quiet", label: "Quiet", description: "Signal over noise." },
+  { value: "active", label: "Active" }
+];
+
+<Combobox
+  label="Operating mode"
+  options={options}
+  value={mode}
+  onValueChange={setMode}
+/>
+```
+
+`disabled`, `loading`, `readOnly`, `required`, and `invalid` are consistently
+reflected in interaction behavior and supported native accessibility states,
+labels, values, and hints. Adjustable controls implement VoiceOver and TalkBack
+increment/decrement actions; individual tabs, radios, checkboxes, menu items,
+dialog titles, progress indicators, and selection controls expose their
+corresponding native roles and values. Every dialog has a labeled close control
+in addition to back and optional scrim dismissal.
+Interactive labels always use the high-contrast foreground token; the muted
+token is reserved for helper text, descriptions, placeholders, and metadata.
+Modal transitions automatically disable themselves when the operating system's
+Reduce Motion setting is enabled.
+
+## Native behavior
+
+Overlays are backed by React Native `Modal` for reliable z-order, touch, and
+screen-reader isolation on both platforms. `Tooltip` accepts one Pressable-like
+trigger element, composes its existing long-press handlers, and adds an
+`accessibilityHint` without nesting another accessible control. It supports
+top, bottom, left, and right placement because touch devices do not have a
+universal hover contract. `Slider` uses a 44-point core responder target and
+the `adjustable` APIs, so it does not require a native slider dependency.
+
+React Native only exposes a `View` role when that view is itself accessible;
+making a structural wrapper accessible groups its descendants and can prevent
+VoiceOver or TalkBack from reaching each control independently. Aurelglyph
+therefore keeps group wrappers non-accessible, exposes the `dialog` role on the
+visible dialog title, and repeats group context in the labels or hints of tabs,
+radios, menu items, pagination controls, segmented controls, and grouped
+buttons. It does not claim web-style `navigation`, `tablist`, `radiogroup`,
+`toolbar`, or `list` landmarks on wrappers that native assistive technology
+cannot discover.
+
+`Spinner` uses the canonical `sm`, `md`, and `lg` sizes. `Container` supports
+`sm`, `md`, `lg`, `xl`, and full-width layouts. `ButtonGroup` supports
+horizontal and vertical orientation, and `Divider` is a semantic separator
+unless `decorative` is explicitly enabled.
+
+`Icon` provides stable dependency-free names for core controls: `search`,
+`check`, `close`, `plus`, `minus`, `info`, and directional chevrons. Pass a
+`label` only when the icon itself conveys meaning; otherwise it stays
+decorative.
+
+React Native core does not provide a document picker. `FileUpload` owns the
+accessible presentation, selected-file list, loading/error states, and removal
+actions, while the host supplies `onRequestFiles` using Expo DocumentPicker or
+its preferred native picker.
+
+## Fonts
 
 The optional font subpath exposes static Metro requires for the five packaged
 TTF assets. With Expo Font:
@@ -29,12 +137,7 @@ import {
 } from "@aurelglyph/react-native/fonts";
 
 const [fontsLoaded] = useFonts(aurelglyphFontAssets);
-
-const labelStyle = {
-  fontFamily: aurelglyphFontFamilies.uiBold
-};
 ```
 
-Bare React Native projects can link the files from `assets/fonts` with their
-normal asset pipeline. The aliases keep Expo and linked-font usage explicit;
-use the bold aliases for 600–700 weight text.
+Bare React Native projects can link the files from `assets/fonts` through their
+normal asset pipeline. Use the bold aliases for 600–700 weight text.

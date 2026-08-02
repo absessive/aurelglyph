@@ -397,6 +397,62 @@
       line-height: 1.4;
     }
 
+    .support-matrix-wrap {
+      max-width: 100%;
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .support-matrix {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .support-matrix th,
+    .support-matrix td {
+      border-bottom: 1px solid var(--color-border-soft);
+      padding: 12px 14px;
+      text-align: start;
+      vertical-align: middle;
+    }
+
+    .support-matrix th {
+      color: var(--color-text-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .support-matrix td {
+      color: var(--color-text);
+      font-size: 0.9rem;
+    }
+
+    .support-matrix td:not(:first-child) {
+      color: var(--color-accent-ink-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix__category {
+      display: block;
+      margin-top: 3px;
+      color: var(--color-text-subtle);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .markdown h1:first-child {
       margin-top: 0;
       font-size: clamp(2.6rem, 7vw, 5rem);
@@ -766,14 +822,14 @@
     <section class="hero">
       <div class="eyebrow">Systems operational</div>
       <h1>Aurelglyph</h1>
-      <p class="lead">Shared design tokens and starter components for apps across web, Rails, and SwiftUI.</p>
+      <p class="lead">Shared design tokens and components for apps across web, React Native, Rails, and SwiftUI.</p>
       <p>A token-first UX design language and component system for SwiftUI, React, React Native, and Rails.</p>
       <div class="actions">
         <a class="button" href="components.html">View components</a>
         <a class="button" href="usage.html">Use in apps</a>
       </div>
       <div class="meta" aria-label="Project metadata">
-        <div class="metric">Current release<strong>Version 0.4.1</strong></div>
+        <div class="metric">Current release<strong>Version 0.5.0</strong></div>
         <div class="metric">Package model<strong>Shared source files</strong></div>
         <div class="metric">Surface<strong>Raw GitHub Pages</strong></div>
       </div>

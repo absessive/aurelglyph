@@ -56,7 +56,13 @@ export function ExpandableSection({
         </span>
         <Icon className="ag-disclosure__icon" decorative name={isOpen ? "contract" : "expand"} />
       </button>
-      <div aria-hidden={!isOpen} className="ag-disclosure__panel" id={panelId}>
+      <div
+        aria-hidden={!isOpen}
+        className="ag-disclosure__panel"
+        hidden={!isOpen}
+        id={panelId}
+        inert={!isOpen ? true : undefined}
+      >
         <div className="ag-disclosure__panel-inner">{children}</div>
       </div>
     </section>

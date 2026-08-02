@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import * as Aurelglyph from "./index";
+
 const packageRoot = join(import.meta.dirname, "..");
 
 async function read(path: string): Promise<string> {
@@ -33,7 +35,7 @@ describe("React package contract", () => {
       scripts: {
         build: "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/build.mjs",
         prepare: "npm run build",
-        test: "vitest run src/**/*.test.ts"
+        test: "vitest run"
       },
       peerDependencies: {
         react: "^19.1.0"
@@ -56,5 +58,33 @@ describe("React package contract", () => {
 
     expect(source).toContain('export { ExpandableSection } from "./components/ExpandableSection.js";');
     expect(source).toContain('export type { ExpandableSectionProps } from "./components/ExpandableSection.js";');
+  });
+
+  it("exports the 0.5 interaction, form, feedback, and layout surface", () => {
+    const expectedExports = [
+      "Autocomplete",
+      "Box",
+      "ButtonGroup",
+      "Checkbox",
+      "Combobox",
+      "Container",
+      "Dialog",
+      "Divider",
+      "Drawer",
+      "Dropdown",
+      "Grid",
+      "IconButton",
+      "Menu",
+      "NumberField",
+      "Popover",
+      "RadioGroup",
+      "Slider",
+      "Spinner",
+      "Stack",
+      "Surface",
+      "Tooltip"
+    ] as const;
+
+    for (const name of expectedExports) expect(typeof Aurelglyph[name]).toBe("function");
   });
 });

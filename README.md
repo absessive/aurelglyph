@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.4.1`
+Current version: `0.5.0`
 
 ## Status
 
@@ -15,10 +15,11 @@ This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
 local workspace paths.
 
-Version 0.4.1 is a correctness release: React and Rails sheets now use a real
-modal lifecycle with controlled dismissal and focus restoration, Rails helpers
-emit ActionView-safe markup and real SVG icons, and focus, status, chart, and
-reduced-motion contracts are explicit across platform adapters.
+Version 0.5.0 is the interaction-foundations release: overlays, complete choice
+and numeric inputs, loading feedback, and responsive layout primitives now share
+one declared contract across CSS/Web, React, React Native, SwiftUI, and Rails.
+Adapter and browser suites exercise applicable disabled, loading, read-only,
+invalid, keyboard, dismissal, focus, accessibility, and reduced-motion behavior.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -34,6 +35,12 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
   select, alert, empty state, avatar, and badge
 - Phase 3 workbench controls: tabs, breadcrumbs, toast, progress, skeleton,
   metrics, data table, pagination, and command palette
+- Interaction foundations: dialog, drawer, menu/dropdown, popover, tooltip,
+  icon button, button group, checkbox, radio group, slider, number field,
+  combobox/autocomplete, spinner, divider, surface/box, stack, container, and
+  responsive grid
+- A machine-readable [component manifest](component-manifest.json), generated
+  support matrix, and [feature-completeness roadmap](docs/roadmap.md)
 - A static preview and a Vite React example app that consume the packages
 
 ## Install
@@ -72,6 +79,7 @@ Every distributed font directory includes the upstream notices and full OFL.
 Use the components in app code:
 
 ```tsx
+import { useState } from "react";
 import {
   AppShell,
   Alert,
@@ -79,36 +87,56 @@ import {
   Badge,
   Breadcrumbs,
   Button,
+  ButtonGroup,
   Card,
+  Checkbox,
+  Combobox,
   CommandPalette,
+  Container,
   DataTable,
+  Dialog,
+  Divider,
+  Drawer,
   EmptyState,
   ExpandableSection,
   FileUpload,
+  Grid,
   Icon,
+  IconButton,
   ListRow,
   ListSection,
+  Menu,
   Metric,
   NavigationPage,
   NavigationStack,
+  NumberField,
   Pagination,
+  Popover,
   Progress,
+  RadioGroup,
   SearchField,
   SegmentedControl,
   Select,
   Sheet,
   Skeleton,
+  Slider,
+  Spinner,
+  Stack,
+  Surface,
   Switch,
   Tabs,
   TabBar,
   TextArea,
   TextField,
   Toast,
+  Tooltip,
   Toolbar,
   TopBar
 } from "@aurelglyph/react";
 
 export function DesignSystemSetup() {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   return (
     <AppShell
       topBar={<TopBar title="Workbench" subtitle="Systems" />}
@@ -217,6 +245,11 @@ import { ExpandableSection } from "@aurelglyph/react";
 Use the mobile foundation components for app chrome, navigable sections,
 settings lists, status cards, search, and binary controls.
 
+`AppShell` renders its content as the page's `main` landmark by default. For an
+embedded preview inside an existing `main`, pass `contentAs="div"` to preserve a
+valid landmark structure, and set `TopBar`'s `titleAs` prop to match the
+surrounding heading hierarchy.
+
 ```tsx
 <AppShell
   topBar={<TopBar title="Workbench" subtitle="Systems" />}
@@ -278,6 +311,49 @@ value, `DataTable` and `Pagination` handle bounded result sets, and
 <Toast title="Settings saved" tone="success">The toast reports a non-blocking outcome.</Toast>
 <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
 ```
+
+#### Interaction Foundations
+
+Use the 0.5 controls for modal work, anchored actions, complete choice and
+numeric input, loading feedback, and responsive composition. Interactive
+controls are controlled or uncontrolled where that distinction is meaningful;
+modal components always report dismissal so application state stays canonical.
+
+```tsx
+<ButtonGroup label="Release actions">
+  <Button onClick={() => setDialogOpen(true)}>Publish</Button>
+  <Menu
+    label="More actions"
+    items={[{ id: "archive", label: "Archive", icon: "archive" }]}
+  />
+</ButtonGroup>
+
+<Dialog open={dialogOpen} onOpenChange={setDialogOpen} title="Publish release?">
+  Run the verified package gate before publishing.
+</Dialog>
+
+<Combobox
+  label="Accent theme"
+  options={[{ label: "Royal purple", value: "royal-purple" }]}
+  value={theme}
+  onValueChange={setTheme}
+/>
+<Checkbox label="Automated verification" checked={verify} onChange={handleVerify} />
+<RadioGroup label="Density" options={densityOptions} value={density} onValueChange={setDensity} />
+<Slider label="Signal strength" value={signal} onValueChange={setSignal} />
+<NumberField label="Retention days" min={1} max={90} value={days} onValueChange={setDays} />
+
+<Grid columns={{ base: 1, md: 2, lg: 3 }} minItemWidth="12rem">
+  <Surface>Primary system</Surface>
+  <Surface elevation="floating">Live inspection</Surface>
+</Grid>
+```
+
+The canonical [component manifest](component-manifest.json) records all 18
+cross-platform interaction-foundation families. `npm run check:components`
+validates the manifest schema and verifies all 90 implementation-evidence claims
+against shipped adapter source. Platform and browser suites test behavior and
+accessibility separately.
 
 #### TextField
 
@@ -342,6 +418,14 @@ Rails apps can use the helper exposed by the engine:
 <%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %>
 <%= aurelglyph_progress(value: 72) %>
 <%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %>
+<%= aurelglyph_dialog("Edit system", id: "edit-system") do %>
+  <%= aurelglyph_number_field(name: "system[retries]", label: "Retries", min: 0, max: 10) %>
+<% end %>
+<%= aurelglyph_menu(label: "System actions", items: [{ label: "Archive", value: "archive", icon: "archive" }]) %>
+<%= aurelglyph_combobox(name: "system_id", label: "System", options: @systems.map { |system| { label: system.name, value: system.id } }) %>
+<%= aurelglyph_grid(columns: { base: 1, md: 2, lg: 3 }, min_item_width: "16rem") do %>
+  <%= render @systems %>
+<% end %>
 ```
 
 Swift apps can use the typed icon contract when mapping to SwiftUI rendering or
@@ -466,17 +550,44 @@ Use generated CSS variables directly:
 npm install @aurelglyph/react-native
 ```
 
-Use the generated theme values as the source for platform styles:
+The adapter targets React Native 0.86 or newer and React 19.2.3 or newer. Wrap
+the app once for mode/accent resolution, then compose the same component
+vocabulary used by the web, SwiftUI, and Rails adapters:
 
-```ts
-import { aurelglyphTheme } from "@aurelglyph/react-native";
+```tsx
+import {
+  AurelglyphProvider,
+  Button,
+  Checkbox,
+  Combobox,
+  Grid,
+  Stack,
+  Surface
+} from "@aurelglyph/react-native";
 
-export const screen = {
-  backgroundColor: aurelglyphTheme["color.mode.dark.background"],
-  color: aurelglyphTheme["color.mode.dark.text"],
-  fontFamily: aurelglyphTheme["font.family.body"]
-};
+export function Settings() {
+  return (
+    <AurelglyphProvider accent="royal-purple" mode="system">
+      <Surface elevation="raised">
+        <Stack gap={4}>
+          <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
+          <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
+          <Grid columns={{ base: 1, md: 2 }}>
+            <Button onPress={save}>Save changes</Button>
+          </Grid>
+        </Stack>
+      </Surface>
+    </AurelglyphProvider>
+  );
+}
 ```
+
+`aurelglyphTheme` remains available for direct token access, while
+`resolveAurelglyphTheme(mode, accent)` returns mode-aware native values.
+Overlays use React Native `Modal`; tooltip behavior combines
+`accessibilityHint` with a press/long-press visual treatment; and the dependency-
+free slider exposes native `adjustable` actions. Hosts supply their preferred
+document picker to `FileUpload` through `onRequestFiles`.
 
 React Native font-family tokens resolve to native-safe Aurelglyph aliases, not
 CSS stacks. The optional font subpath exposes Metro-compatible static requires
@@ -505,7 +616,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.1")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.5.0")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
@@ -516,6 +627,41 @@ import AurelglyphUI
 
 let background = AurelglyphTokens.colorModeDarkBackground
 let accent = AurelglyphTokens.colorAccentRoyalPurple300
+```
+
+Install the shared semantic theme near the application root. `.system` follows
+the device appearance while preserving Aurelglyph's warm light and graphite
+dark palettes:
+
+```swift
+WorkbenchView()
+  .aurelglyphTheme(
+    AurelglyphTheme(mode: .system, accent: .royalPurple)
+  )
+```
+
+The 0.5 components use native bindings and presentations while keeping the
+cross-platform names. Dialogs and drawers also provide view modifiers for
+native presentation:
+
+```swift
+AurelglyphContainer {
+  AurelglyphStack(spacing: 16) {
+    AurelglyphNumberField("Retries", value: $retries, in: 0...10, step: 1)
+    AurelglyphCombobox("Destination", options: destinations, query: $query, selection: $destination)
+    AurelglyphCheckbox("Automated verification", isChecked: $verify)
+  }
+}
+.aurelglyphDialog(
+  isPresented: $showingArchive,
+  title: "Archive system",
+  message: "This can be restored later."
+) {
+  Text("The current system will move to Archive.")
+} actions: {
+  Button("Cancel", role: .cancel) { showingArchive = false }
+  Button("Archive", role: .destructive) { archive() }
+}
 ```
 
 Use the native typography adapter for SwiftUI font roles:
@@ -554,9 +700,11 @@ The package currently supports iOS 17 and macOS 14.
 Rails apps can consume the `aurelglyph-rails` gem from a local path, from this
 Git repository, or from RubyGems once published. The package ships a Rails
 engine, generated CSS with tokens plus shared component classes, generated token
-helpers, and view helpers for tokens, icons, disclosure, cards, lists, tabs,
-search, and switches. It also packages a framework-neutral sheet controller,
-the same WOFF2 font set, and `@font-face` declarations as the CSS adapter.
+helpers, and ActionView-safe helpers for the full shared component contract.
+It also packages a dependency-free interaction controller for sheets, dialogs,
+drawers, menus, popovers, tooltips, comboboxes, command palettes, and selection
+groups, plus the same WOFF2 font set and `@font-face` declarations as the CSS
+adapter.
 
 After `npm run build -w aurelglyph-rails`, the generated Rails-facing files are:
 
@@ -583,10 +731,11 @@ font URLs resolve:
  */
 ```
 
-Load `aurelglyph.js` through the asset pipeline when using `aurelglyph_sheet`.
-The controller converts server-rendered `data-open` intent into a native modal,
-handles trigger/dismiss controls, Escape and backdrop dismissal, and restores
-focus. See `packages/rails/README.md` for the complete markup contract.
+Load `aurelglyph.js` through the asset pipeline for interactive helpers. The
+controller progressively enhances server-rendered markup with modal isolation,
+roving focus, typeahead, filtering, layered dismissal, form-reset support, and
+Turbo-safe lifecycle cleanup. See `packages/rails/README.md` for the complete
+markup and event contract.
 
 Use Ruby token values where server-rendered components need shared constants:
 
@@ -622,7 +771,7 @@ motion becomes static when `prefers-reduced-motion: reduce` is active.
 - `@aurelglyph/tokens`: canonical tokens and generator
 - `@aurelglyph/css`: CSS variables, packaged fonts, base styles, and shared component classes
 - `@aurelglyph/react`: React components and component styles
-- `@aurelglyph/react-native`: React Native theme plus optional packaged native-font adapter
+- `@aurelglyph/react-native`: React Native themes, native components, and optional packaged-font adapter
 - `AurelglyphUI`: Swift Package exposing generated token constants, typography, and components
 - `aurelglyph-rails`: Rails engine, stylesheet, token helper, and view helper
 
@@ -654,11 +803,12 @@ Build the raw GitHub Pages files:
 npm run build:pages
 ```
 
-This writes `docs/index.html`, `docs/usage.html`, `docs/components.html`,
+This writes `docs/index.html`, `docs/usage.html`, `docs/components.html`, the
+machine-readable `docs/component-manifest.json` and schema,
 `docs/changelog.html`, `docs/CNAME`, and `docs/assets/fonts/ofl/`. The font
-directory includes `OFL-1.1.txt` with upstream notices and the complete license. The
-generated pages can be published with GitHub Pages configured to deploy from
-the `docs/` directory on the selected branch.
+directory includes `OFL-1.1.txt` with upstream notices and the complete license.
+The generated pages can be published with GitHub Pages configured to deploy
+from the `docs/` directory on the selected branch.
 
 For this repository, configure GitHub Pages in GitHub with:
 
@@ -716,6 +866,7 @@ npm install
 npm run build:assets
 npm run build
 npm run build:pages
+npm run check:components
 npm test
 npm run test:rails
 npm run test:swift

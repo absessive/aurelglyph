@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
+require "bigdecimal"
+require "json"
 require "action_view"
 require "securerandom"
+require_relative "interaction_helper"
 
 module Aurelglyph
   module Rails
     module Helper
       include ActionView::Helpers::TagHelper
+      include InteractionHelper
 
       ICON_GLYPHS = {
         "home" => "M4 11.5 12 4l8 7.5V20h-5v-5H9v5H4v-8.5Z",
@@ -131,8 +135,15 @@ module Aurelglyph
         end
 
         html_attributes = attributes.dup
-        classes = class_names_for("ag-icon", html_attributes.delete(:class))
+        classes = class_names_for("ag-icon", extract_html_attribute!(html_attributes, :class))
         label = title || icon_name.tr("-", " ").split.map(&:capitalize).join(" ")
+        html_attributes = without_html_attributes(html_attributes, :role, :title)
+        html_attributes = component_data_attributes(html_attributes, icon: icon_name)
+        html_attributes = component_aria_attributes(
+          html_attributes,
+          hidden: decorative ? "true" : nil,
+          label: decorative ? nil : label
+        )
         svg = content_tag(
           :svg,
           tag.path(d: glyph),
@@ -146,9 +157,6 @@ module Aurelglyph
           svg,
           html_attributes.merge(
             class: classes,
-            "data-icon": icon_name,
-            "aria-hidden": decorative ? "true" : nil,
-            "aria-label": decorative ? nil : label,
             role: decorative ? nil : "img",
             title: decorative ? nil : title
           ).compact
@@ -157,7 +165,8 @@ module Aurelglyph
 
       def aurelglyph_expandable_section(title, eyebrow: nil, open: false, **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-disclosure", html_attributes.delete(:class))
+        classes = class_names_for("ag-disclosure", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :open)
         heading = content_tag(
           :span,
           safe_join([
@@ -182,7 +191,7 @@ module Aurelglyph
 
       def aurelglyph_card(title: nil, eyebrow: nil, **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-card", html_attributes.delete(:class))
+        classes = class_names_for("ag-card", extract_html_attribute!(html_attributes, :class))
         header = if eyebrow || title
           content_tag(
             :header,
@@ -203,7 +212,7 @@ module Aurelglyph
 
       def aurelglyph_list_section(title: nil, eyebrow: nil, **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-list-section", html_attributes.delete(:class))
+        classes = class_names_for("ag-list-section", extract_html_attribute!(html_attributes, :class))
         header = if eyebrow || title
           content_tag(
             :div,
@@ -224,7 +233,13 @@ module Aurelglyph
 
       def aurelglyph_list_row(title, description: nil, icon: nil, selected: false, trailing: nil, **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-list-row", selected && "is-selected", html_attributes.delete(:class))
+        classes = class_names_for("ag-list-row", selected && "is-selected", extract_html_attribute!(html_attributes, :class))
+        selectable_role = [html_attributes[:role], html_attributes["role"]].compact.first
+        html_attributes = component_data_attributes(html_attributes, selected: selected ? "true" : nil)
+        html_attributes = component_aria_attributes(
+          html_attributes,
+          selected: selected && %w[columnheader gridcell option row rowheader tab treeitem].include?(selectable_role.to_s) ? "true" : nil
+        )
         icon_html = if icon
           content_tag(:span, aurelglyph_icon(icon, decorative: true), class: "ag-list-row__icon", "aria-hidden": "true")
         end
@@ -241,35 +256,42 @@ module Aurelglyph
         content_tag(
           :li,
           safe_join([icon_html, copy, trailing_html].compact),
-          html_attributes.merge(class: classes, "aria-selected": selected ? "true" : nil).compact
+          html_attributes.merge(
+            class: classes
+          ).compact
         )
       end
 
       def aurelglyph_tab_bar(items, active: nil, label: "Primary", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-tab-bar", html_attributes.delete(:class))
+        classes = class_names_for("ag-tab-bar", extract_html_attribute!(html_attributes, :class))
+        html_attributes = component_aria_attributes(html_attributes, label: label)
         items_html = items.map do |item|
           id = item.fetch(:id).to_s
           icon = item[:icon] && aurelglyph_icon(item[:icon], decorative: true, class: "ag-tab-bar__icon")
           text = content_tag(:span, item.fetch(:label), class: "ag-tab-bar__label")
-          content_tag(
-            :a,
-            safe_join([icon, text].compact),
+          common = {
             class: class_names_for("ag-tab-bar__item", id == active.to_s && "is-active"),
-            href: item.fetch(:href, "#"),
             "aria-current": id == active.to_s ? "page" : nil
-          )
+          }.compact
+          if item[:href]
+            content_tag(:a, safe_join([icon, text].compact), common.merge(href: item[:href]))
+          else
+            content_tag(:span, safe_join([icon, text].compact), common)
+          end
         end
 
-        content_tag(:nav, safe_join(items_html), html_attributes.merge(class: classes, "aria-label": label))
+        content_tag(:nav, safe_join(items_html), html_attributes.merge(class: classes))
       end
 
       def aurelglyph_search_field(name:, label:, value: nil, placeholder: "Search", **attributes)
         input_attributes = attributes.dup
-        input_classes = class_names_for("ag-search__input", input_attributes.delete(:class))
+        input_classes = class_names_for("ag-search__input", extract_html_attribute!(input_attributes, :class))
+        input_id = extract_html_attribute!(input_attributes, :id) || compatible_control_id(name, "ag-search")
+        input_attributes = without_html_attributes(input_attributes, :name, :placeholder, :type, :value)
         input = tag.input(
           **input_attributes.merge(
-            id: name,
+            id: input_id,
             class: input_classes,
             name: name,
             placeholder: placeholder,
@@ -285,30 +307,62 @@ module Aurelglyph
 
         content_tag(
           :div,
-          safe_join([content_tag(:label, label, class: "ag-search__label", for: name), control]),
+          safe_join([content_tag(:label, label, class: "ag-search__label", for: input_id), control]),
           class: "ag-search"
         )
       end
 
-      def aurelglyph_switch(name:, label:, checked: false, description: nil, **attributes)
+      def aurelglyph_switch(name:, label:, value: "1", checked: false, description: nil, disabled: false,
+                            read_only: false, loading: false, busy: false, required: false,
+                            invalid: false, error: nil, **attributes)
         input_attributes = attributes.dup
-        input_classes = class_names_for("ag-switch__input", input_attributes.delete(:class))
+        input_classes = class_names_for("ag-switch__input", extract_html_attribute!(input_attributes, :class))
+        input_id = extract_html_attribute!(input_attributes, :id) || compatible_control_id(name, "ag-switch")
+        input_attributes = without_html_attributes(
+          input_attributes,
+          :disabled,
+          :checked,
+          :name,
+          :readonly,
+          :required,
+          :role,
+          :type,
+          :value
+        )
+        description_id = description && "#{input_id}-description"
+        error_id = error && "#{input_id}-error"
+        described_by = merge_idrefs(extract_aria_attribute!(input_attributes, :describedby), description_id, error_id)
+        unavailable = disabled || loading
+        interaction_disabled = unavailable || read_only
+        invalid_state = invalid || !error.nil?
+        input_attributes = component_aria_attributes(
+          input_attributes,
+          describedby: described_by,
+          invalid: invalid_state ? "true" : nil,
+          busy: (busy || loading) ? "true" : nil,
+          checked: checked ? "true" : "false",
+          readonly: read_only ? "true" : nil
+        )
+        input_attributes = component_data_attributes(input_attributes, aurelglyph_switch_input: "")
         copy = content_tag(
           :span,
           safe_join([
             content_tag(:span, label, class: "ag-switch__label"),
-            description && content_tag(:span, description, class: "ag-switch__description")
+            description && content_tag(:span, description, class: "ag-switch__description", id: description_id)
           ].compact),
           class: "ag-switch__copy"
         )
         input = tag.input(
           **input_attributes.merge(
-            id: name,
+            id: input_id,
             checked: checked ? true : nil,
             class: input_classes,
-            name: name,
+            name: read_only ? nil : name,
+            value: value,
             role: "switch",
-            type: "checkbox"
+            type: "checkbox",
+            disabled: interaction_disabled ? true : nil,
+            required: required ? true : nil
           ).compact
         )
         track = content_tag(
@@ -318,23 +372,52 @@ module Aurelglyph
           "aria-hidden": "true"
         )
 
-        content_tag(:label, safe_join([copy, input, track]), class: "ag-switch", for: name)
+        error_html = error && content_tag(
+          :span,
+          error,
+          class: "ag-field__error ag-switch__error",
+          id: error_id,
+          "aria-live": "polite"
+        )
+        read_only_value = read_only && checked && !unavailable ? tag.input(type: "hidden", name: name, value: value) : nil
+        field = content_tag(
+          :label,
+          safe_join([copy, input, track]),
+          class: class_names_for("ag-switch", unavailable && "is-disabled", read_only && "is-readonly", invalid_state && "is-invalid"),
+          for: input_id,
+          "data-disabled": unavailable ? "true" : nil,
+          "data-busy": busy ? "true" : nil,
+          "data-invalid": invalid_state ? "true" : nil,
+          "data-loading": loading ? "true" : nil,
+          "data-readonly": read_only ? "true" : nil
+        )
+        content_tag(
+          :span,
+          safe_join([
+            field,
+            read_only_value,
+            error_html
+          ].compact),
+          class: "ag-field ag-switch-field"
+        )
       end
 
       def aurelglyph_toolbar(label: "Toolbar", **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-toolbar", html_attributes.delete(:class))
+        classes = class_names_for("ag-toolbar", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_aria_attributes(html_attributes, label: label)
 
         content_tag(
           :div,
           capture_content(&block),
-          html_attributes.merge(class: classes, role: "toolbar", "aria-label": label)
+          html_attributes.merge(class: classes, role: "toolbar")
         )
       end
 
       def aurelglyph_navigation_stack(title: nil, **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-nav-stack", html_attributes.delete(:class))
+        classes = class_names_for("ag-nav-stack", extract_html_attribute!(html_attributes, :class))
         title_html = title && content_tag(:h1, title, class: "ag-nav-stack__title")
         pages = content_tag(:div, capture_content(&block), class: "ag-nav-stack__pages")
 
@@ -343,7 +426,7 @@ module Aurelglyph
 
       def aurelglyph_navigation_page(title, actions: nil, **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-nav-page", html_attributes.delete(:class))
+        classes = class_names_for("ag-nav-page", extract_html_attribute!(html_attributes, :class))
         actions_html = actions && content_tag(:div, actions, class: "ag-nav-page__actions")
         header = content_tag(
           :header,
@@ -368,7 +451,8 @@ module Aurelglyph
         if aria_attributes.is_a?(Hash)
           aria_attributes = aria_attributes.dup
           %i[labelledby labelled_by labelled-by].each do |attribute|
-            labelled_by ||= extract_html_attribute!(aria_attributes, attribute)
+            supplied_labelled_by = extract_html_attribute!(aria_attributes, attribute)
+            labelled_by ||= supplied_labelled_by
           end
           extract_html_attribute!(aria_attributes, :modal)
         end
@@ -409,59 +493,138 @@ module Aurelglyph
         )
       end
 
-      def aurelglyph_segmented_control(items, active:, label: "Options", **attributes)
+      def aurelglyph_segmented_control(items, active:, label: "Options", disabled: false,
+                                       name: nil, **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-segmented", html_attributes.delete(:class))
+        classes = class_names_for("ag-segmented", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_data_attributes(
+          html_attributes,
+          aurelglyph_selection_group: "segmented",
+          disabled: disabled ? "true" : nil
+        )
+        html_attributes = component_aria_attributes(html_attributes, label: label)
+        requested_item = items.find { |item| item.fetch(:id).to_s == active.to_s }
+        active_item = if disabled
+          requested_item || items.first
+        elsif requested_item && !requested_item[:disabled]
+          requested_item
+        else
+          items.find { |item| !item[:disabled] }
+        end
+        resolved_active = active_item&.fetch(:id)&.to_s
         items_html = items.map do |item|
           id = item.fetch(:id).to_s
+          item_disabled = disabled || item[:disabled]
           content_tag(
             :button,
             item.fetch(:label),
-            class: class_names_for("ag-segmented__item", id == active.to_s && "is-active"),
+            class: class_names_for("ag-segmented__item", id == resolved_active && "is-active"),
             type: "button",
             role: "radio",
-            "aria-checked": id == active.to_s ? "true" : "false"
+            disabled: item_disabled ? true : nil,
+            tabindex: !item_disabled && id == resolved_active ? 0 : -1,
+            "aria-checked": id == resolved_active ? "true" : "false",
+            "data-aurelglyph-selection-item": "",
+            "data-value": id
           )
         end
 
         content_tag(
           :div,
-          safe_join(items_html),
-          html_attributes.merge(class: classes, role: "radiogroup", "aria-label": label)
+          safe_join([
+            safe_join(items_html),
+            name && resolved_active && tag.input(
+              type: "hidden",
+              name: name,
+              value: resolved_active,
+              disabled: disabled ? true : nil,
+              "data-aurelglyph-selection-value": ""
+            )
+          ].compact),
+          html_attributes.merge(
+            class: classes,
+            role: "radiogroup"
+          ).compact
         )
       end
 
-      def aurelglyph_select(name:, label:, options:, selected: nil, help_text: nil, **attributes)
+      def aurelglyph_select(name:, label:, options:, selected: nil, help_text: nil, error: nil,
+                            disabled: false, read_only: false, loading: false, busy: false,
+                            required: false, invalid: false, **attributes)
         select_attributes = attributes.dup
-        classes = class_names_for("ag-select__input", select_attributes.delete(:class))
+        classes = class_names_for("ag-select__input", extract_html_attribute!(select_attributes, :class))
+        select_id = extract_html_attribute!(select_attributes, :id) || compatible_control_id(name, "ag-select")
+        select_attributes = without_html_attributes(select_attributes, :disabled, :name, :required)
+        selected_value = selected.to_s unless selected.nil?
+        selected_option = options.find do |option|
+          !option[:disabled] && option.fetch(:value).to_s == selected_value
+        end unless selected_value.nil?
+        selected_option ||= options.find { |option| !option[:disabled] }
+        effective_selected = selected_option&.fetch(:value)&.to_s
         options_html = options.map do |option|
           value = option.fetch(:value).to_s
-          content_tag(:option, option.fetch(:label), value: value, selected: value == selected.to_s ? true : nil)
+          content_tag(
+            :option,
+            option.fetch(:label),
+            value: value,
+            selected: value == effective_selected ? true : nil,
+            disabled: option[:disabled] ? true : nil
+          )
         end
-        help_id = "#{name}-help"
+        help_id = help_text && "#{select_id}-help"
+        error_id = error && "#{select_id}-error"
+        invalid_state = invalid || !error.nil?
+        unavailable = disabled || loading
+        interaction_disabled = unavailable || read_only
+        described_by = merge_idrefs(extract_aria_attribute!(select_attributes, :describedby), help_id, error_id)
+        select_attributes = component_aria_attributes(
+          select_attributes,
+          describedby: described_by,
+          invalid: invalid_state ? "true" : nil,
+          busy: (busy || loading) ? "true" : nil,
+          readonly: read_only ? "true" : nil
+        )
         select = content_tag(
           :select,
           safe_join(options_html),
           select_attributes.merge(
-            id: name,
-            name: name,
+            id: select_id,
+            name: read_only ? nil : name,
             class: classes,
-            "aria-describedby": help_text ? help_id : nil
+            disabled: interaction_disabled ? true : nil,
+            required: required ? true : nil
           ).compact
         )
         control = content_tag(:span, select, class: "ag-select__control")
         help = help_text && content_tag(:span, help_text, class: "ag-select__help", id: help_id)
+        error_html = error && content_tag(:span, error, class: "ag-select__error", id: error_id, "aria-live": "polite")
+        read_only_value = if read_only && !unavailable && !effective_selected.nil?
+                            tag.input(type: "hidden", name: name, value: effective_selected)
+                          end
 
         content_tag(
-          :label,
-          safe_join([content_tag(:span, label, class: "ag-select__label"), control, help].compact),
-          class: "ag-select"
+          :div,
+          safe_join([
+            content_tag(:label, label, class: "ag-select__label", for: select_id),
+            control,
+            read_only_value,
+            help,
+            error_html
+          ].compact),
+          class: class_names_for("ag-select", unavailable && "is-disabled", read_only && "is-readonly", invalid_state && "is-invalid"),
+          "data-disabled": unavailable ? "true" : nil,
+          "data-busy": busy ? "true" : nil,
+          "data-invalid": invalid_state ? "true" : nil,
+          "data-loading": loading ? "true" : nil,
+          "data-readonly": read_only ? "true" : nil
         )
       end
 
       def aurelglyph_alert(title, tone: "info", **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-alert", "ag-alert--#{tone}", html_attributes.delete(:class))
+        classes = class_names_for("ag-alert", "ag-alert--#{tone}", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
         role = %w[danger warning].include?(tone.to_s) ? "alert" : "status"
         body = block && content_tag(:div, capture_content(&block), class: "ag-alert__body")
         copy = content_tag(
@@ -479,7 +642,7 @@ module Aurelglyph
 
       def aurelglyph_empty_state(title, icon: "archive", **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-empty-state", html_attributes.delete(:class))
+        classes = class_names_for("ag-empty-state", extract_html_attribute!(html_attributes, :class))
         icon_html = content_tag(
           :span,
           aurelglyph_icon(icon, decorative: true),
@@ -497,7 +660,9 @@ module Aurelglyph
 
       def aurelglyph_avatar(name, initials: nil, src: nil, **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-avatar", html_attributes.delete(:class))
+        classes = class_names_for("ag-avatar", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_aria_attributes(html_attributes, label: name)
         content = if src
           tag.img(alt: "", class: "ag-avatar__image", src: src)
         else
@@ -508,25 +673,28 @@ module Aurelglyph
         content_tag(
           :span,
           content,
-          html_attributes.merge(class: classes, role: "img", "aria-label": name)
+          html_attributes.merge(class: classes, role: "img")
         )
       end
 
       def aurelglyph_badge(label, tone: "neutral", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-badge", "ag-badge--#{tone}", html_attributes.delete(:class))
+        classes = class_names_for("ag-badge", "ag-badge--#{tone}", extract_html_attribute!(html_attributes, :class))
 
         content_tag(:span, label, html_attributes.merge(class: classes))
       end
 
       def aurelglyph_breadcrumbs(items, label: "Breadcrumb", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-breadcrumbs", html_attributes.delete(:class))
+        classes = class_names_for("ag-breadcrumbs", extract_html_attribute!(html_attributes, :class))
+        html_attributes = component_aria_attributes(html_attributes, label: label)
         items_html = items.map do |item|
           content = if item[:current]
             content_tag(:span, item.fetch(:label), class: "ag-breadcrumbs__current", "aria-current": "page")
+          elsif item[:href]
+            content_tag(:a, item.fetch(:label), class: "ag-breadcrumbs__link", href: item[:href])
           else
-            content_tag(:a, item.fetch(:label), class: "ag-breadcrumbs__link", href: item.fetch(:href, "#"))
+            content_tag(:span, item.fetch(:label), class: "ag-breadcrumbs__label")
           end
           content_tag(:li, content, class: "ag-breadcrumbs__item")
         end
@@ -534,44 +702,73 @@ module Aurelglyph
         content_tag(
           :nav,
           content_tag(:ol, safe_join(items_html), class: "ag-breadcrumbs__list"),
-          html_attributes.merge(class: classes, "aria-label": label)
+          html_attributes.merge(class: classes)
         )
       end
 
-      def aurelglyph_tabs(items, active:, label: "Sections", **attributes, &block)
+      def aurelglyph_tabs(items, active:, label: "Sections", disabled: false, **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-tabs", html_attributes.delete(:class))
-        tabs = items.map do |item|
+        classes = class_names_for("ag-tabs", extract_html_attribute!(html_attributes, :class))
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-tabs")
+        requested_item = items.find { |item| item.fetch(:id).to_s == active.to_s }
+        active_item = if disabled
+          requested_item || items.first
+        elsif requested_item && !requested_item[:disabled]
+          requested_item
+        else
+          items.find { |item| !item[:disabled] }
+        end
+        resolved_active = active_item&.fetch(:id)&.to_s
+        active_content = block && capture_content(&block)
+        tabs = items.each_with_index.map do |item, index|
           id = item.fetch(:id).to_s
+          item_disabled = disabled || item[:disabled]
           content_tag(
             :button,
             item.fetch(:label),
-            class: class_names_for("ag-tabs__tab", id == active.to_s && "is-active"),
-            id: "#{id}-tab",
+            class: class_names_for("ag-tabs__tab", id == resolved_active && "is-active"),
+            id: "#{root_id}-tab-#{index}",
             type: "button",
             role: "tab",
-            "aria-selected": id == active.to_s ? "true" : "false",
-            "aria-controls": "#{id}-panel"
+            disabled: item_disabled ? true : nil,
+            tabindex: !item_disabled && id == resolved_active ? 0 : -1,
+            "aria-selected": id == resolved_active ? "true" : "false",
+            "aria-controls": "#{root_id}-panel-#{index}",
+            "data-aurelglyph-selection-item": "",
+            "data-value": id
           )
         end
-        list = content_tag(:div, safe_join(tabs), class: "ag-tabs__list", role: "tablist", "aria-label": label)
-        panel = if block
+        list = content_tag(
+          :div,
+          safe_join(tabs),
+          class: "ag-tabs__list",
+          role: "tablist",
+          "aria-label": label,
+          "data-aurelglyph-selection-group": "tabs",
+          "data-disabled": disabled ? "true" : nil
+        )
+        panels = items.each_with_index.map do |item, index|
+          id = item.fetch(:id).to_s
+          content = item.key?(:content) ? item[:content] : (id == resolved_active ? active_content : nil)
           content_tag(
             :div,
-            capture_content(&block),
+            content,
             class: "ag-tabs__panel",
-            id: "#{active}-panel",
+            id: "#{root_id}-panel-#{index}",
             role: "tabpanel",
-            "aria-labelledby": "#{active}-tab"
+            tabindex: 0,
+            hidden: id == resolved_active ? nil : true,
+            "aria-labelledby": "#{root_id}-tab-#{index}"
           )
         end
 
-        content_tag(:div, safe_join([list, panel].compact), html_attributes.merge(class: classes))
+        content_tag(:div, safe_join([list, safe_join(panels)]), html_attributes.merge(id: root_id, class: classes))
       end
 
       def aurelglyph_toast(title, tone: "info", **attributes, &block)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-toast", "ag-toast--#{tone}", html_attributes.delete(:class))
+        classes = class_names_for("ag-toast", "ag-toast--#{tone}", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
         body = block && content_tag(:div, capture_content(&block), class: "ag-toast__body")
         copy = content_tag(
           :div,
@@ -588,38 +785,51 @@ module Aurelglyph
 
       def aurelglyph_progress(value:, max: 100, label: "Progress", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-progress", html_attributes.delete(:class))
-        percent = [[(value.to_f / max.to_f) * 100, 0].max, 100].min
+        classes = class_names_for("ag-progress", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
+        maximum = finite_number!(max, :max)
+        raise ArgumentError, "max must be greater than zero" unless maximum.positive?
+
+        numeric_value = finite_number!(value, :value)
+        clamped_value = [[numeric_value, 0].max, maximum].min
+        percent = (clamped_value / maximum) * 100
+        aria_value = serialize_number(clamped_value)
+        aria_maximum = serialize_number(maximum)
         bar = content_tag(:span, nil, class: "ag-progress__bar", style: "inline-size: #{percent}%")
+        html_attributes = component_aria_attributes(
+          html_attributes,
+          label: label,
+          valuemin: 0,
+          valuemax: aria_maximum,
+          valuenow: aria_value
+        )
 
         content_tag(
           :div,
           bar,
           html_attributes.merge(
             class: classes,
-            role: "progressbar",
-            "aria-label": label,
-            "aria-valuemin": 0,
-            "aria-valuemax": max,
-            "aria-valuenow": value
+            role: "progressbar"
           )
         )
       end
 
       def aurelglyph_skeleton(label: "Loading", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-skeleton", html_attributes.delete(:class))
+        classes = class_names_for("ag-skeleton", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_aria_attributes(html_attributes, label: label)
 
         content_tag(
           :span,
           nil,
-          html_attributes.merge(class: classes, role: "status", "aria-label": label)
+          html_attributes.merge(class: classes, role: "status")
         )
       end
 
       def aurelglyph_metric(label:, value:, delta: nil, **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-metric", html_attributes.delete(:class))
+        classes = class_names_for("ag-metric", extract_html_attribute!(html_attributes, :class))
         delta_html = delta && content_tag(:span, delta, class: "ag-metric__delta")
 
         content_tag(
@@ -633,9 +843,11 @@ module Aurelglyph
         )
       end
 
-      def aurelglyph_data_table(columns:, rows:, **attributes)
+      def aurelglyph_data_table(columns:, rows:, label: "Data table", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-table-wrap", html_attributes.delete(:class))
+        classes = class_names_for("ag-table-wrap", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role, :tabindex)
+        html_attributes = component_aria_attributes(html_attributes, label: label)
         headers = columns.map { |column| content_tag(:th, column.fetch(:header), scope: "col") }
         body_rows = rows.map do |row|
           cells = columns.map { |column| content_tag(:td, row.fetch(column.fetch(:key))) }
@@ -650,69 +862,234 @@ module Aurelglyph
           class: "ag-table"
         )
 
-        content_tag(:div, table, html_attributes.merge(class: classes))
+        content_tag(:div, table, html_attributes.merge(class: classes, role: "region", tabindex: 0))
       end
 
-      def aurelglyph_pagination(current_page:, total_pages:, label: "Pagination", **attributes)
+      def aurelglyph_pagination(current_page:, total_pages:, label: "Pagination", page_url: nil,
+                                previous_url: nil, next_url: nil, disabled: false,
+                                boundary_count: 1, sibling_count: 1, **attributes)
+        current_page = Integer(current_page)
+        total_pages = Integer(total_pages)
+        raise ArgumentError, "total_pages must be greater than zero" unless total_pages.positive?
+
+        current_page = [[current_page, 1].max, total_pages].min
+        boundary_count = [[Integer(boundary_count), 0].max, 5].min
+        sibling_count = [[Integer(sibling_count), 0].max, 5].min
         html_attributes = attributes.dup
-        classes = class_names_for("ag-pagination", html_attributes.delete(:class))
-        pages = (1..total_pages).map do |page|
-          content_tag(
-            :button,
-            page,
-            class: class_names_for("ag-pagination__page", page == current_page && "is-active"),
-            type: "button",
-            "aria-current": page == current_page ? "page" : nil
-          )
+        classes = class_names_for("ag-pagination", extract_html_attribute!(html_attributes, :class))
+        html_attributes = component_data_attributes(html_attributes, disabled: disabled ? "true" : nil)
+        html_attributes = component_aria_attributes(html_attributes, label: label)
+        pages = pagination_items(current_page, total_pages, boundary_count, sibling_count).map do |page|
+          if page == :ellipsis
+            next content_tag(:span, "…", class: "ag-pagination__ellipsis", "aria-hidden": "true")
+          end
+
+          active = page == current_page
+          url = resolve_page_url(page_url, page)
+          page_attributes = {
+            class: class_names_for("ag-pagination__page", active && "is-active"),
+            "aria-current": active ? "page" : nil,
+            "aria-label": "Page #{page}"
+          }.compact
+          if !active && !disabled && url
+            content_tag(:a, page, page_attributes.merge(href: url))
+          else
+            content_tag(:span, page, page_attributes.merge("aria-disabled": (!active && disabled) ? "true" : nil).compact)
+          end
         end
+        previous_url ||= resolve_page_url(page_url, current_page - 1) if current_page > 1
+        next_url ||= resolve_page_url(page_url, current_page + 1) if current_page < total_pages
+        previous = pagination_link("Previous", previous_url, disabled: disabled || current_page <= 1, rel: "prev")
+        following = pagination_link("Next", next_url, disabled: disabled || current_page >= total_pages, rel: "next")
 
         content_tag(
           :nav,
           safe_join([
-            content_tag(:button, "Previous", class: "ag-pagination__button", type: "button"),
+            previous,
             content_tag(:div, safe_join(pages), class: "ag-pagination__pages"),
-            content_tag(:button, "Next", class: "ag-pagination__button", type: "button")
+            following
           ]),
-          html_attributes.merge(class: classes, "aria-label": label)
+          html_attributes.merge(class: classes).compact
         )
       end
 
-      def aurelglyph_command_palette(items, label: "Command palette", placeholder: "Type a command", **attributes)
+      def aurelglyph_command_palette(items, label: "Command palette", placeholder: "Type a command",
+                                     empty_text: "No commands found.", **attributes)
         html_attributes = attributes.dup
-        classes = class_names_for("ag-command-palette", html_attributes.delete(:class))
+        classes = class_names_for("ag-command-palette", extract_html_attribute!(html_attributes, :class))
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-command-palette")
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_data_attributes(html_attributes, aurelglyph_command_palette: "")
+        html_attributes = component_aria_attributes(html_attributes, label: label)
+        input_id = "#{root_id}-input"
+        list_id = "#{root_id}-list"
         search = content_tag(
           :label,
           safe_join([
             content_tag(:span, label, class: "ag-command-palette__label"),
-            tag.input(class: "ag-command-palette__input", placeholder: placeholder, type: "search")
+            tag.input(
+              id: input_id,
+              class: "ag-command-palette__input",
+              placeholder: placeholder,
+              type: "search",
+              role: "combobox",
+              autocomplete: "off",
+              "aria-autocomplete": "list",
+              "aria-controls": list_id,
+              "aria-expanded": "true",
+              "data-aurelglyph-command-input": ""
+            )
           ]),
           class: "ag-command-palette__search"
         )
-        items_html = items.map do |item|
+        items_html = items.each_with_index.map do |item, index|
+          supplied_item_attributes = (item[:attributes] || {}).dup
+          supplied_item_type = extract_html_attribute!(supplied_item_attributes, :type)
+          supplied_item_class = extract_html_attribute!(supplied_item_attributes, :class)
+          supplied_item_attributes = without_html_attributes(
+            supplied_item_attributes,
+            :disabled,
+            :href,
+            :id,
+            :name,
+            :role,
+            :tabindex,
+            :value
+          )
+          supplied_item_attributes = component_data_attributes(
+            supplied_item_attributes,
+            aurelglyph_command_item: "",
+            value: item.fetch(:id).to_s,
+            label: item.fetch(:label),
+            keywords: Array(item[:keywords]).join(" ")
+          )
+          supplied_item_attributes = component_aria_attributes(
+            supplied_item_attributes,
+            selected: "false",
+            disabled: item[:disabled] ? "true" : nil
+          )
           icon = item[:icon] && aurelglyph_icon(item[:icon], decorative: true, class: "ag-command-palette__icon")
           shortcut = item[:shortcut] && content_tag(:kbd, item[:shortcut], class: "ag-command-palette__shortcut")
-          content_tag(
-            :button,
-            safe_join([
-              icon,
-              content_tag(:span, item.fetch(:label), class: "ag-command-palette__item-label"),
-              shortcut
-            ].compact),
-            class: "ag-command-palette__item",
-            type: "button",
-            role: "option"
-          )
+          item_content = safe_join([
+            icon,
+            content_tag(:span, item.fetch(:label), class: "ag-command-palette__item-label"),
+            shortcut
+          ].compact)
+          item_attributes = supplied_item_attributes.merge(
+            id: "#{root_id}-option-#{index}",
+            class: class_names_for(
+              "ag-command-palette__item",
+              item[:class],
+              supplied_item_class
+            ),
+            role: "option",
+            tabindex: -1
+          ).compact
+          if item[:href]
+            content_tag(:a, item_content, item_attributes.merge(href: item[:disabled] ? nil : item[:href]))
+          else
+            content_tag(
+              :button,
+              item_content,
+              item_attributes.merge(
+                type: supplied_item_type || (item[:name] ? "submit" : "button"),
+                disabled: item[:disabled] ? true : nil,
+                name: item[:name],
+                value: item[:form_value]
+              ).compact
+            )
+          end
         end
-        list = content_tag(:div, safe_join(items_html), class: "ag-command-palette__list", role: "listbox")
+        empty = content_tag(
+          :p,
+          empty_text,
+          class: "ag-command-palette__empty",
+          hidden: items.empty? ? nil : true,
+          role: "option",
+          "aria-disabled": "true",
+          "aria-selected": "false",
+          "aria-live": "polite",
+          "data-aurelglyph-command-empty": ""
+        )
+        list = content_tag(
+          :div,
+          safe_join([safe_join(items_html), empty]),
+          id: list_id,
+          class: "ag-command-palette__list",
+          role: "listbox",
+          "aria-label": label,
+          "data-aurelglyph-command-list": ""
+        )
 
         content_tag(
           :div,
           safe_join([search, list]),
-          html_attributes.merge(class: classes, role: "dialog", "aria-label": label)
+          html_attributes.merge(
+            id: root_id,
+            class: classes,
+            role: "dialog"
+          )
         )
       end
 
       private
+
+      def pagination_items(current_page, total_pages, boundary_count, sibling_count)
+        visible_pages = []
+        add_range = lambda do |start_page, end_page|
+          first_page = [1, start_page].max
+          last_page = [total_pages, end_page].min
+          visible_pages.concat((first_page..last_page).to_a) if first_page <= last_page
+        end
+
+        add_range.call(1, boundary_count)
+        add_range.call(total_pages - boundary_count + 1, total_pages)
+        add_range.call(current_page - sibling_count, current_page + sibling_count)
+
+        edge_window = boundary_count + (sibling_count * 2) + 2
+        add_range.call(1, edge_window + 1) if current_page <= edge_window
+        add_range.call(total_pages - edge_window, total_pages) if current_page > total_pages - edge_window
+
+        visible_pages.uniq.sort.each_with_object([]) do |page, items|
+          previous_page = items.last
+          if previous_page.is_a?(Integer)
+            items << (page - previous_page == 2 ? previous_page + 1 : :ellipsis) if page - previous_page > 1
+          end
+          items << page
+        end
+      end
+
+      def resolve_page_url(source, page)
+        return nil unless source
+
+        if source.respond_to?(:call)
+          source.call(page)
+        elsif source.respond_to?(:fetch)
+          source.fetch(page, nil)
+        elsif source.to_s.include?("%{page}")
+          format(source.to_s, page: page)
+        end
+      end
+
+      def pagination_link(label, href, disabled:, rel: nil)
+        attributes = {
+          class: "ag-pagination__button",
+          "aria-disabled": disabled || href.nil? ? "true" : nil,
+          rel: rel
+        }.compact
+        if disabled || href.nil?
+          content_tag(:span, label, attributes)
+        else
+          content_tag(:a, label, attributes.merge(href: href))
+        end
+      end
+
+      def compatible_control_id(name, fallback_prefix)
+        candidate = name.to_s
+        return candidate if candidate.match?(/\A[A-Za-z][A-Za-z0-9_:.\-]*\z/)
+
+        unique_dom_id(fallback_prefix)
+      end
 
       def capture_content(&block)
         block ? capture(&block) : safe_join([])
@@ -723,7 +1100,9 @@ module Aurelglyph
       end
 
       def extract_html_attribute!(attributes, name)
-        attributes.delete(name) || attributes.delete(name.to_s)
+        symbol_value = attributes.delete(name.to_sym)
+        string_value = attributes.delete(name.to_s)
+        symbol_value || string_value
       end
 
       def unique_dom_id(prefix)

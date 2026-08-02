@@ -397,6 +397,62 @@
       line-height: 1.4;
     }
 
+    .support-matrix-wrap {
+      max-width: 100%;
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .support-matrix {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .support-matrix th,
+    .support-matrix td {
+      border-bottom: 1px solid var(--color-border-soft);
+      padding: 12px 14px;
+      text-align: start;
+      vertical-align: middle;
+    }
+
+    .support-matrix th {
+      color: var(--color-text-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .support-matrix td {
+      color: var(--color-text);
+      font-size: 0.9rem;
+    }
+
+    .support-matrix td:not(:first-child) {
+      color: var(--color-accent-ink-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix__category {
+      display: block;
+      margin-top: 3px;
+      color: var(--color-text-subtle);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .markdown h1:first-child {
       margin-top: 0;
       font-size: clamp(2.6rem, 7vw, 5rem);
@@ -765,6 +821,16 @@
     </header>
     <article class="panel markdown">
 <h1>Changelog</h1>
+<h2>0.5.0</h2>
+<ul>
+<li>Add 18 interaction and layout families across CSS, React, React Native, SwiftUI, and Rails with shared naming, states, accessibility, and responsive behavior.</li>
+<li>Harden overlay focus and dismissal, unavailable form states, finite numeric bounds, bounded pagination, and responsive data and layout controls.</li>
+<li>Expand the React Native adapter with native theme, icon, navigation, form, selection, and overlay contracts, and bring SwiftUI presentation, interaction, layout, and theme APIs to parity.</li>
+<li>Add Rails progressive-enhancement helpers and controllers with generated cross-platform CSS, JavaScript, and token outputs.</li>
+<li>Publish a machine-readable component manifest, JSON Schema, support matrix, and staged roadmap toward 1.0 feature completeness.</li>
+<li>Expand the live gallery, static preview, package guides, and consuming documentation across light and dark modes and all six accent themes.</li>
+<li>Add a reproducible headless-Chrome and axe UX gate across 28 responsive contexts, plus broader adapter, contrast, package-contract, and dependency-security coverage.</li>
+</ul>
 <h2>0.4.1</h2>
 <ul>
 <li>Make React <code>Sheet</code> a genuinely modal controlled component with native <code>showModal()</code>/<code>close()</code> lifecycle, accessible title association, focus entry and restoration, Escape/backdrop/native-close reasons, and a tested fallback that also isolates background content and locks scrolling.</li>

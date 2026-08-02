@@ -191,12 +191,14 @@ describe("Sheet", () => {
     trigger.focus();
     const onOpenChange = vi.fn();
     const dialog = renderSheet({ onOpenChange });
+    const scrim = dialog.querySelector(".ag-sheet__fallback-scrim") as HTMLElement;
     const buttons = dialog.querySelectorAll("button");
     const first = buttons.item(0);
     const last = buttons.item(buttons.length - 1);
 
     expect(dialog.open).toBe(true);
     expect(dialog.getAttribute("aria-modal")).toBe("true");
+    expect(scrim.getAttribute("aria-hidden")).toBe("true");
     expect(document.activeElement).toBe(first);
     expect(trigger.hasAttribute("inert")).toBe(true);
     expect(trigger.getAttribute("aria-hidden")).toBe("true");
@@ -207,6 +209,9 @@ describe("Sheet", () => {
     last.focus();
     act(() => last.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Tab" })));
     expect(document.activeElement).toBe(first);
+
+    act(() => scrim.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(onOpenChange).toHaveBeenCalledWith(false, { reason: "backdrop" });
 
     act(() => dialog.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" })));
     expect(onOpenChange).toHaveBeenCalledWith(false, { reason: "escape" });

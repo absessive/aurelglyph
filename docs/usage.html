@@ -397,6 +397,62 @@
       line-height: 1.4;
     }
 
+    .support-matrix-wrap {
+      max-width: 100%;
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .support-matrix {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .support-matrix th,
+    .support-matrix td {
+      border-bottom: 1px solid var(--color-border-soft);
+      padding: 12px 14px;
+      text-align: start;
+      vertical-align: middle;
+    }
+
+    .support-matrix th {
+      color: var(--color-text-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .support-matrix td {
+      color: var(--color-text);
+      font-size: 0.9rem;
+    }
+
+    .support-matrix td:not(:first-child) {
+      color: var(--color-accent-ink-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix__category {
+      display: block;
+      margin-top: 3px;
+      color: var(--color-text-subtle);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .markdown h1:first-child {
       margin-top: 0;
       font-size: clamp(2.6rem, 7vw, 5rem);
@@ -767,13 +823,13 @@
       <h1>Usage</h1>
       <p>Use Aurelglyph by installing the package for your platform, importing the generated styles or token values, then setting the theme attributes on the root surface. Pin exact versions for applications and loosen ranges only when you are ready to adopt compatible updates.</p>
       <h2>React and CSS exact version</h2>
-      <pre><code>npm install @aurelglyph/css@0.4.1 @aurelglyph/react@0.4.1</code></pre>
+      <pre><code>npm install @aurelglyph/css@0.5.0 @aurelglyph/react@0.5.0</code></pre>
       <h2>React and CSS compatible range</h2>
-      <pre><code>npm install @aurelglyph/css@^0.4.1 @aurelglyph/react@^0.4.1</code></pre>
+      <pre><code>npm install @aurelglyph/css@^0.5.0 @aurelglyph/react@^0.5.0</code></pre>
       <pre><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
       <h2>React icons</h2>
-      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, Card, CommandPalette, DataTable, EmptyState, ExpandableSection, FileUpload, Icon, ListRow, ListSection, Metric, NavigationPage, NavigationStack, Pagination, Progress, SearchField, SegmentedControl, Select, Sheet, Skeleton, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, TopBar } from "@aurelglyph/react";
+      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, ButtonGroup, Card, Checkbox, Combobox, CommandPalette, Container, DataTable, Dialog, Divider, Drawer, EmptyState, ExpandableSection, FileUpload, Grid, Icon, IconButton, ListRow, ListSection, Menu, Metric, NavigationPage, NavigationStack, NumberField, Pagination, Popover, Progress, RadioGroup, SearchField, SegmentedControl, Select, Sheet, Skeleton, Slider, Spinner, Stack, Surface, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, Tooltip, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
@@ -823,7 +879,28 @@
   &lt;Pagination currentPage={2} totalPages={3} /&gt;
   &lt;Toast title="Settings saved" tone="success"&gt;The toast reports a non-blocking outcome.&lt;/Toast&gt;
   &lt;CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} /&gt;
+  &lt;Dialog open={dialogOpen} onOpenChange={setDialogOpen} title="Publish release?"&gt;Run the verified package gate.&lt;/Dialog&gt;
+  &lt;Menu label="Actions" items={[{ id: "archive", label: "Archive", icon: "archive" }]} /&gt;
+  &lt;Combobox label="Accent" options={themes} value={theme} onValueChange={setTheme} /&gt;
+  &lt;Checkbox label="Automated verification" checked={verify} onChange={handleVerify} /&gt;
+  &lt;Grid columns={{ base: 1, md: 2, lg: 3 }} minItemWidth="12rem"&gt;
+    &lt;Surface&gt;Primary system&lt;/Surface&gt;
+    &lt;Surface elevation="floating"&gt;Live inspection&lt;/Surface&gt;
+  &lt;/Grid&gt;
 &lt;/AppShell&gt;</code></pre>
+      <h2>React Native components</h2>
+      <pre><code>import { AurelglyphProvider, Button, Checkbox, Combobox, Stack, Surface } from "@aurelglyph/react-native";
+
+&lt;AurelglyphProvider accent="royal-purple" mode="system"&gt;
+  &lt;Surface elevation="raised"&gt;
+    &lt;Stack gap={4}&gt;
+      &lt;Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} /&gt;
+      &lt;Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} /&gt;
+      &lt;Button onPress={save}&gt;Save changes&lt;/Button&gt;
+    &lt;/Stack&gt;
+  &lt;/Surface&gt;
+&lt;/AurelglyphProvider&gt;</code></pre>
+      <p>The native adapter targets React Native 0.86 and React 19.2.3 or newer. It uses native modal and accessibility behavior, has no runtime UI dependency, and accepts a host document-picker callback for file uploads.</p>
       <h2>React Native typography</h2>
       <pre><code>import { aurelglyphTheme } from "@aurelglyph/react-native";
 import { aurelglyphFontAssets, aurelglyphFontFamilies } from "@aurelglyph/react-native/fonts";
@@ -838,7 +915,7 @@ const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></
       <pre><code>gem "aurelglyph-rails",
   git: "https://github.com/absessive/aurelglyph",
   glob: "packages/rails/aurelglyph-rails.gemspec",
-  tag: "v0.4.1"</code></pre>
+  tag: "v0.5.0"</code></pre>
       <p>The Rails gem includes the same six WOFF2 files and <code>@font-face</code> declarations as the CSS adapter. Keep the packaged <code>app/assets/fonts/aurelglyph</code> directory with the stylesheet.</p>
       <h2>Rails interactive sheets</h2>
       <p>Load the packaged <code>aurelglyph.js</code> controller when using sheets. It synchronizes server intent with the native modal lifecycle, dismissal, and focus restoration.</p>
@@ -866,11 +943,16 @@ const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></
 &lt;%= aurelglyph_badge("Live", tone: "accent") %&gt;
 &lt;%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %&gt;
 &lt;%= aurelglyph_progress(value: 72) %&gt;
-&lt;%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %&gt;</code></pre>
+&lt;%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %&gt;
+&lt;%= aurelglyph_menu(label: "System actions", items: [{ label: "Archive", value: "archive" }]) %&gt;
+&lt;%= aurelglyph_combobox(name: "system_id", label: "System", options: systems) %&gt;
+&lt;%= aurelglyph_grid(columns: { base: 1, md: 2, lg: 3 }, min_item_width: "16rem") do %&gt;
+  &lt;%= render @systems %&gt;
+&lt;% end %&gt;</code></pre>
       <h2>SwiftUI exact version</h2>
-      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "0.4.1")</code></pre>
+      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "0.5.0")</code></pre>
       <h2>SwiftUI compatible version</h2>
-      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", from: "0.4.1")</code></pre>
+      <pre><code>.package(url: "https://github.com/absessive/aurelglyph", from: "0.5.0")</code></pre>
       <h2>SwiftUI product dependency</h2>
       <pre><code>.product(name: "AurelglyphUI", package: "aurelglyph")</code></pre>
       <h2>Swift icons</h2>
@@ -892,6 +974,23 @@ Text("color.accent.royal-purple.300")
 Text("Calibrated systems")
   .font(AurelglyphTypography.display(size: 48, relativeTo: .largeTitle))</code></pre>
       <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. It bundles Apple-platform TTF files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono. Custom methods preserve their requested baseline and scale relative to the supplied Dynamic Type role; the generic role factory uses role-specific defaults. <code>AurelglyphTypography</code> registers and uses each available face independently, with native SwiftUI fallbacks.</p>
+      <h2>SwiftUI interaction foundations</h2>
+      <pre><code>WorkbenchView()
+  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple))
+
+AurelglyphContainer {
+  AurelglyphStack(spacing: 16) {
+    AurelglyphNumberField("Retries", value: $retries, in: 0...10, step: 1)
+    AurelglyphCombobox("Destination", options: destinations, query: $query, selection: $destination)
+    AurelglyphCheckbox("Automated verification", isChecked: $verify)
+  }
+}
+.aurelglyphDialog(isPresented: $showingArchive, title: "Archive system") {
+  Text("The current system will move to Archive.")
+} actions: {
+  Button("Cancel", role: .cancel) { showingArchive = false }
+  Button("Archive", role: .destructive) { archive() }
+}</code></pre>
       <h2>SwiftUI expandable section</h2>
       <pre><code>@State private var expanded = true
 

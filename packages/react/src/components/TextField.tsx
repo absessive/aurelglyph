@@ -1,7 +1,9 @@
 import type { InputHTMLAttributes, ReactElement, ReactNode } from "react";
 import { useId } from "react";
 
-export type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
+import { joinIds, type ControlStateProps } from "./foundation.js";
+
+export type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & Pick<ControlStateProps, "busy" | "invalid" | "loading"> & {
   error?: ReactNode;
   helpText?: ReactNode;
   label: ReactNode;
@@ -10,30 +12,37 @@ export type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
 export function TextField({
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
+  busy = false,
   className,
+  disabled,
   error,
   helpText,
   id,
+  invalid = false,
   label,
+  loading = false,
   ...props
 }: TextFieldProps): ReactElement {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const helpId = helpText ? `${inputId}-help` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
-  const describedBy = [ariaDescribedBy, helpId, errorId].filter(Boolean).join(" ");
+  const describedBy = joinIds(ariaDescribedBy, helpId, errorId);
+  const isInvalid = invalid || Boolean(error) || ariaInvalid === true || ariaInvalid === "true";
   const inputClassNames = ["ag-input", className].filter(Boolean).join(" ");
 
   return (
-    <div className="ag-field" data-invalid={error ? true : undefined}>
+    <div className="ag-field" data-invalid={isInvalid || undefined} data-loading={loading || undefined}>
       <label className="ag-field__label" htmlFor={inputId}>
         {label}
       </label>
       <input
         {...props}
-        aria-describedby={describedBy || undefined}
-        aria-invalid={error ? true : ariaInvalid}
+        aria-busy={busy || loading || undefined}
+        aria-describedby={describedBy}
+        aria-invalid={isInvalid || undefined}
         className={inputClassNames}
+        disabled={disabled || loading}
         id={inputId}
       />
       {helpText ? (
@@ -42,7 +51,7 @@ export function TextField({
         </p>
       ) : null}
       {error ? (
-        <p className="ag-field__error" id={errorId}>
+        <p aria-live="polite" className="ag-field__error" id={errorId}>
           {error}
         </p>
       ) : null}

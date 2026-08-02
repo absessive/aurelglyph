@@ -397,6 +397,62 @@
       line-height: 1.4;
     }
 
+    .support-matrix-wrap {
+      max-width: 100%;
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .support-matrix {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .support-matrix th,
+    .support-matrix td {
+      border-bottom: 1px solid var(--color-border-soft);
+      padding: 12px 14px;
+      text-align: start;
+      vertical-align: middle;
+    }
+
+    .support-matrix th {
+      color: var(--color-text-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .support-matrix td {
+      color: var(--color-text);
+      font-size: 0.9rem;
+    }
+
+    .support-matrix td:not(:first-child) {
+      color: var(--color-accent-ink-muted);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .support-matrix__category {
+      display: block;
+      margin-top: 3px;
+      color: var(--color-text-subtle);
+      font: 0.72rem/1.35 var(--font-mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .markdown h1:first-child {
       margin-top: 0;
       font-size: clamp(2.6rem, 7vw, 5rem);
@@ -765,7 +821,7 @@
     </header>
     <article class="panel markdown">
       <h1>Components</h1>
-      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Phase 2 covers app structure, controls, and feedback. Phase 3 covers workbench navigation, loading state, measured values, tables, pagination, and command execution.</p>
+      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Version 0.5.0 declares 18 interaction-foundation families without replacing each platform's native behavior.</p>
       <h2>Platform targets</h2>
       <div class="catalog">
         <section class="catalog-card">
@@ -778,6 +834,168 @@
             <li>Rails</li>
           </ul>
         </section>
+      </div>
+      <h2>Interaction foundations</h2>
+      <p>Every stable cell is checked for shipped implementation evidence during <code>npm test</code>. Adapter and browser suites exercise applicable behavior and accessibility separately. The schema-validated, machine-readable source of truth is <a href="component-manifest.json">component-manifest.json</a>.</p>
+      <div class="support-matrix-wrap" tabindex="0" role="region" aria-label="Cross-platform interaction foundation support">
+        <table class="support-matrix">
+          <thead>
+            <tr>
+              <th scope="col">Component</th>
+              <th scope="col">CSS/Web</th>
+              <th scope="col">React</th>
+              <th scope="col">React Native</th>
+              <th scope="col">SwiftUI</th>
+              <th scope="col">Rails</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Dialog</strong><span class="support-matrix__category">Overlays</span></td>
+              <td aria-label="Dialog is stable on CSS/Web">Stable</td>
+              <td aria-label="Dialog is stable on React">Stable</td>
+              <td aria-label="Dialog is stable on React Native">Stable</td>
+              <td aria-label="Dialog is stable on SwiftUI">Stable</td>
+              <td aria-label="Dialog is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Drawer</strong><span class="support-matrix__category">Overlays</span></td>
+              <td aria-label="Drawer is stable on CSS/Web">Stable</td>
+              <td aria-label="Drawer is stable on React">Stable</td>
+              <td aria-label="Drawer is stable on React Native">Stable</td>
+              <td aria-label="Drawer is stable on SwiftUI">Stable</td>
+              <td aria-label="Drawer is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Menu / Dropdown</strong><span class="support-matrix__category">Overlays</span></td>
+              <td aria-label="Menu / Dropdown is stable on CSS/Web">Stable</td>
+              <td aria-label="Menu / Dropdown is stable on React">Stable</td>
+              <td aria-label="Menu / Dropdown is stable on React Native">Stable</td>
+              <td aria-label="Menu / Dropdown is stable on SwiftUI">Stable</td>
+              <td aria-label="Menu / Dropdown is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Popover</strong><span class="support-matrix__category">Overlays</span></td>
+              <td aria-label="Popover is stable on CSS/Web">Stable</td>
+              <td aria-label="Popover is stable on React">Stable</td>
+              <td aria-label="Popover is stable on React Native">Stable</td>
+              <td aria-label="Popover is stable on SwiftUI">Stable</td>
+              <td aria-label="Popover is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Tooltip</strong><span class="support-matrix__category">Overlays</span></td>
+              <td aria-label="Tooltip is stable on CSS/Web">Stable</td>
+              <td aria-label="Tooltip is stable on React">Stable</td>
+              <td aria-label="Tooltip is stable on React Native">Stable</td>
+              <td aria-label="Tooltip is stable on SwiftUI">Stable</td>
+              <td aria-label="Tooltip is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Icon button</strong><span class="support-matrix__category">Actions</span></td>
+              <td aria-label="Icon button is stable on CSS/Web">Stable</td>
+              <td aria-label="Icon button is stable on React">Stable</td>
+              <td aria-label="Icon button is stable on React Native">Stable</td>
+              <td aria-label="Icon button is stable on SwiftUI">Stable</td>
+              <td aria-label="Icon button is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Button group</strong><span class="support-matrix__category">Actions</span></td>
+              <td aria-label="Button group is stable on CSS/Web">Stable</td>
+              <td aria-label="Button group is stable on React">Stable</td>
+              <td aria-label="Button group is stable on React Native">Stable</td>
+              <td aria-label="Button group is stable on SwiftUI">Stable</td>
+              <td aria-label="Button group is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Checkbox</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Checkbox is stable on CSS/Web">Stable</td>
+              <td aria-label="Checkbox is stable on React">Stable</td>
+              <td aria-label="Checkbox is stable on React Native">Stable</td>
+              <td aria-label="Checkbox is stable on SwiftUI">Stable</td>
+              <td aria-label="Checkbox is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Radio group</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Radio group is stable on CSS/Web">Stable</td>
+              <td aria-label="Radio group is stable on React">Stable</td>
+              <td aria-label="Radio group is stable on React Native">Stable</td>
+              <td aria-label="Radio group is stable on SwiftUI">Stable</td>
+              <td aria-label="Radio group is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Slider</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Slider is stable on CSS/Web">Stable</td>
+              <td aria-label="Slider is stable on React">Stable</td>
+              <td aria-label="Slider is stable on React Native">Stable</td>
+              <td aria-label="Slider is stable on SwiftUI">Stable</td>
+              <td aria-label="Slider is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Number field</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Number field is stable on CSS/Web">Stable</td>
+              <td aria-label="Number field is stable on React">Stable</td>
+              <td aria-label="Number field is stable on React Native">Stable</td>
+              <td aria-label="Number field is stable on SwiftUI">Stable</td>
+              <td aria-label="Number field is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Combobox / Autocomplete</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Combobox / Autocomplete is stable on CSS/Web">Stable</td>
+              <td aria-label="Combobox / Autocomplete is stable on React">Stable</td>
+              <td aria-label="Combobox / Autocomplete is stable on React Native">Stable</td>
+              <td aria-label="Combobox / Autocomplete is stable on SwiftUI">Stable</td>
+              <td aria-label="Combobox / Autocomplete is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Spinner</strong><span class="support-matrix__category">Feedback</span></td>
+              <td aria-label="Spinner is stable on CSS/Web">Stable</td>
+              <td aria-label="Spinner is stable on React">Stable</td>
+              <td aria-label="Spinner is stable on React Native">Stable</td>
+              <td aria-label="Spinner is stable on SwiftUI">Stable</td>
+              <td aria-label="Spinner is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Divider</strong><span class="support-matrix__category">Layout</span></td>
+              <td aria-label="Divider is stable on CSS/Web">Stable</td>
+              <td aria-label="Divider is stable on React">Stable</td>
+              <td aria-label="Divider is stable on React Native">Stable</td>
+              <td aria-label="Divider is stable on SwiftUI">Stable</td>
+              <td aria-label="Divider is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Surface / Box</strong><span class="support-matrix__category">Layout</span></td>
+              <td aria-label="Surface / Box is stable on CSS/Web">Stable</td>
+              <td aria-label="Surface / Box is stable on React">Stable</td>
+              <td aria-label="Surface / Box is stable on React Native">Stable</td>
+              <td aria-label="Surface / Box is stable on SwiftUI">Stable</td>
+              <td aria-label="Surface / Box is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Stack</strong><span class="support-matrix__category">Layout</span></td>
+              <td aria-label="Stack is stable on CSS/Web">Stable</td>
+              <td aria-label="Stack is stable on React">Stable</td>
+              <td aria-label="Stack is stable on React Native">Stable</td>
+              <td aria-label="Stack is stable on SwiftUI">Stable</td>
+              <td aria-label="Stack is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Container</strong><span class="support-matrix__category">Layout</span></td>
+              <td aria-label="Container is stable on CSS/Web">Stable</td>
+              <td aria-label="Container is stable on React">Stable</td>
+              <td aria-label="Container is stable on React Native">Stable</td>
+              <td aria-label="Container is stable on SwiftUI">Stable</td>
+              <td aria-label="Container is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Responsive grid</strong><span class="support-matrix__category">Layout</span></td>
+              <td aria-label="Responsive grid is stable on CSS/Web">Stable</td>
+              <td aria-label="Responsive grid is stable on React">Stable</td>
+              <td aria-label="Responsive grid is stable on React Native">Stable</td>
+              <td aria-label="Responsive grid is stable on SwiftUI">Stable</td>
+              <td aria-label="Responsive grid is stable on Rails">Stable</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <h2>Preview</h2>
       <div class="preview-stack">

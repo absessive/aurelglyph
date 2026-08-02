@@ -52,7 +52,7 @@ export function ListRow({
     .join(" ");
 
   return (
-    <li aria-selected={selected || undefined} className={classNames} data-selected={selected || undefined} {...props}>
+    <li aria-current={selected ? "true" : undefined} className={classNames} data-selected={selected || undefined} {...props}>
       {icon ? (
         <span className="ag-list-row__icon" aria-hidden="true">
           <Icon decorative name={icon} />

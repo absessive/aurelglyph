@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/react",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -27,12 +27,12 @@
   "scripts": {
     "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/build.mjs",
     "prepare": "npm run build",
-    "test": "vitest run src/**/*.test.ts"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "react": "^19.1.0"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.4.1"
+    "@aurelglyph/tokens": "0.5.0"
   }
 }

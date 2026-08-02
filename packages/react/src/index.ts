@@ -10,10 +10,16 @@ export { Breadcrumbs } from "./components/Breadcrumbs.js";
 export type { BreadcrumbItem, BreadcrumbsProps } from "./components/Breadcrumbs.js";
 export { Button } from "./components/Button.js";
 export type { ButtonProps, ButtonVariant } from "./components/Button.js";
+export { ButtonGroup } from "./components/ButtonGroup.js";
+export type { ButtonGroupProps } from "./components/ButtonGroup.js";
 export { Card } from "./components/Card.js";
 export type { CardProps } from "./components/Card.js";
 export { CommandPalette } from "./components/CommandPalette.js";
 export type { CommandPaletteItem, CommandPaletteProps } from "./components/CommandPalette.js";
+export { Combobox, Autocomplete } from "./components/Combobox.js";
+export type { AutocompleteProps, ComboboxOption, ComboboxProps } from "./components/Combobox.js";
+export { Checkbox } from "./components/Checkbox.js";
+export type { CheckboxProps } from "./components/Checkbox.js";
 export { DataTable } from "./components/Table.js";
 export type { DataTableColumn, DataTableProps } from "./components/Table.js";
 export { EmptyState } from "./components/EmptyState.js";
@@ -24,6 +30,14 @@ export { FileUpload } from "./components/FileUpload.js";
 export type { FileUploadProps } from "./components/FileUpload.js";
 export { Icon } from "./components/Icon.js";
 export type { AurelglyphIconName, IconProps } from "./components/Icon.js";
+export { IconButton } from "./components/IconButton.js";
+export type { IconButtonProps } from "./components/IconButton.js";
+export { Dialog } from "./components/Dialog.js";
+export type { DialogDismissReason, DialogOpenChangeDetails, DialogProps, DialogVariant } from "./components/Dialog.js";
+export { Drawer } from "./components/Drawer.js";
+export type { DrawerProps, DrawerSide } from "./components/Drawer.js";
+export { Divider } from "./components/Divider.js";
+export type { DividerProps } from "./components/Divider.js";
 export { ListRow, ListSection } from "./components/List.js";
 export type { ListRowProps, ListSectionProps } from "./components/List.js";
 export { Metric } from "./components/Metric.js";
@@ -52,6 +66,33 @@ export { TextArea } from "./components/TextArea.js";
 export type { TextAreaProps } from "./components/TextArea.js";
 export { TextField } from "./components/TextField.js";
 export type { TextFieldProps } from "./components/TextField.js";
+export { Menu, Dropdown } from "./components/Menu.js";
+export type { DropdownProps, MenuItem, MenuPlacement, MenuProps } from "./components/Menu.js";
+export { Popover } from "./components/Popover.js";
+export type { PopoverPlacement, PopoverProps } from "./components/Popover.js";
+export { Tooltip } from "./components/Tooltip.js";
+export type { TooltipPlacement, TooltipProps } from "./components/Tooltip.js";
+export { RadioGroup } from "./components/RadioGroup.js";
+export type { RadioGroupProps, RadioOption } from "./components/RadioGroup.js";
+export { Slider } from "./components/Slider.js";
+export type { SliderProps } from "./components/Slider.js";
+export { NumberField } from "./components/NumberField.js";
+export type { NumberFieldProps } from "./components/NumberField.js";
+export { Spinner } from "./components/Spinner.js";
+export type { SpinnerProps, SpinnerSize } from "./components/Spinner.js";
+export { Box, Container, Grid, Stack, Surface } from "./components/Layout.js";
+export type {
+  BoxProps,
+  ContainerProps,
+  ContainerSize,
+  GridProps,
+  GridResponsiveColumns,
+  StackProps,
+  SurfaceElevation,
+  SurfacePadding,
+  SurfaceProps
+} from "./components/Layout.js";
+export type { ControlStateProps } from "./components/foundation.js";
 export { TabBar } from "./components/TabBar.js";
 export type { TabBarItem, TabBarProps } from "./components/TabBar.js";
 export { Toast } from "./components/Toast.js";

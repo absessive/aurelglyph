@@ -6,31 +6,49 @@ import {
   Badge,
   Breadcrumbs,
   Button,
+  ButtonGroup,
   Card,
+  Checkbox,
+  Combobox,
   CommandPalette,
+  Container,
   DataTable,
+  Dialog,
+  Divider,
+  Drawer,
   EmptyState,
   ExpandableSection,
   FileUpload,
+  Grid,
   Icon,
+  IconButton,
   ListRow,
   ListSection,
+  Menu,
   Metric,
   NavigationPage,
   NavigationStack,
+  NumberField,
   Pagination,
+  Popover,
   Progress,
+  RadioGroup,
   SearchField,
   SegmentedControl,
   Select,
   Sheet,
   Skeleton,
+  Slider,
+  Spinner,
+  Stack,
+  Surface,
   Switch,
   Tabs,
   TabBar,
   TextArea,
   TextField,
   Toast,
+  Tooltip,
   Toolbar,
   TopBar
 } from "@aurelglyph/react";
@@ -53,7 +71,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.4.1";
+const packageVersion = "0.5.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -227,7 +245,7 @@ export function App() {
         </p>
       </aside>
 
-      <section className="example-workbench" aria-labelledby="hero-title">
+      <div className="example-workbench">
         <ThemeSwitcher mode={mode} setMode={setMode} setTheme={setTheme} theme={theme} />
 
         {activePage === "overview" && <OverviewPage mode={mode} theme={theme} />}
@@ -236,7 +254,7 @@ export function App() {
         {activePage === "changelog" && <ChangelogPage />}
 
         <p className="example-copyright">Copyright 2026 absessive.</p>
-      </section>
+      </div>
     </main>
   );
 }
@@ -260,7 +278,7 @@ function ThemeSwitcher({
           {mode} · {theme}
         </strong>
       </div>
-      <div className="example-segmented" aria-label="Mode">
+      <div className="example-segmented" aria-label="Mode" role="group">
         {modeOptions.map((option) => (
           <button
             aria-pressed={mode === option}
@@ -272,7 +290,7 @@ function ThemeSwitcher({
           </button>
         ))}
       </div>
-      <div className="example-swatches" aria-label="Accent theme">
+      <div className="example-swatches" aria-label="Accent theme" role="group">
         {themeOptions.map((option) => (
           <button
             aria-label={`Use ${option} theme`}
@@ -301,7 +319,7 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
           </p>
         </div>
 
-        <div className="example-hero__actions" aria-label="Package actions">
+        <div className="example-hero__actions" aria-label="Package actions" role="group">
           <Button icon="upload">Install packages</Button>
           <Button icon="settings" variant="secondary">
             Mode: {mode}
@@ -372,7 +390,7 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
                 helpText="Import package styles before composing controls."
                 label="React entry"
                 name="integration-notes"
-                placeholder={`import "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";\nimport { Button, TextField } from "@aurelglyph/react";`}
+                placeholder={`import "@aurelglyph/css";\nimport { Button, TextField } from "@aurelglyph/react";`}
               />
             </div>
           </div>
@@ -417,32 +435,154 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
 }
 
 function ComponentsPage() {
+  const [automationEnabled, setAutomationEnabled] = useState(true);
+  const [comboboxValue, setComboboxValue] = useState<string | null>("royal-purple");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [quietMode, setQuietMode] = useState(true);
+  const [radioValue, setRadioValue] = useState("standard");
+  const [retention, setRetention] = useState<number | null>(14);
+  const [signal, setSignal] = useState(64);
   const [viewMode, setViewMode] = useState("grid");
   const [tab, setTab] = useState("overview");
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <section className="example-panel" aria-labelledby="components-title">
       <div className="example-panel__header">
         <p className="example-kicker">COMPONENTS</p>
-        <h2 id="components-title">Component previews</h2>
+        <h1 id="components-title">Component previews</h1>
       </div>
       <p className="example-copy">
         Use the same component names, variants, and states across CSS/Web,
         React, React Native, SwiftUI, and Rails. This page shows the React
         package rendering the shared contract.
       </p>
-      <div className="example-platform-list" aria-label="Platform targets">
+      <div className="example-platform-list" aria-label="Platform targets" role="list">
         {platformTargets.map((target) => (
-          <span key={target}>{target}</span>
+          <span key={target} role="listitem">{target}</span>
         ))}
       </div>
       <div className="example-component-previews">
         <section className="example-preview-card">
-          <h3>Mobile shell</h3>
+          <h2>Interaction foundations</h2>
+          <Stack gap="md">
+            <ButtonGroup label="Overlay examples">
+              <Button icon="expand" onClick={() => setDialogOpen(true)}>
+                Open dialog
+              </Button>
+              <Button icon="sidebar" onClick={() => setDrawerOpen(true)} variant="secondary">
+                Open drawer
+              </Button>
+            </ButtonGroup>
+            <div className="example-inline-row">
+              <Menu
+                items={[
+                  { icon: "edit", id: "edit", label: "Edit system", shortcut: "E" },
+                  { icon: "archive", id: "archive", label: "Archive", shortcut: "A" },
+                  { disabled: true, icon: "delete", id: "delete", label: "Delete" }
+                ]}
+                label="System actions"
+              />
+              <Popover label="Release details" trigger="Inspect release">
+                <strong>Systems operational.</strong>
+                <p className="example-copy">All interaction adapters report the same 0.5 contract.</p>
+              </Popover>
+              <Tooltip content="Refresh package state">
+                <IconButton icon="refresh" label="Refresh package state" variant="secondary" />
+              </Tooltip>
+              <Spinner label="Checking adapters" size="sm" />
+            </div>
+          </Stack>
+          <Dialog
+            actions={<Button onClick={() => setDialogOpen(false)}>Confirm</Button>}
+            onOpenChange={setDialogOpen}
+            open={dialogOpen}
+            title="Publish component contract?"
+            variant="compact"
+          >
+            Review package versions, adapter tests, and accessibility checks before publishing.
+          </Dialog>
+          <Drawer
+            actions={<Button onClick={() => setDrawerOpen(false)} variant="secondary">Close</Button>}
+            onOpenChange={setDrawerOpen}
+            open={drawerOpen}
+            side="end"
+            title="Release inspector"
+          >
+            The drawer keeps focused inspection work attached to the current surface.
+          </Drawer>
+        </section>
+        <section className="example-preview-card">
+          <h2>Form state contract</h2>
+          <Stack gap="lg">
+            <Combobox
+              helpText="Type to filter theme names."
+              label="Accent theme"
+              name="components-accent"
+              onValueChange={setComboboxValue}
+              options={[
+                { label: "Royal purple", value: "royal-purple" },
+                { label: "Amber", value: "amber" },
+                { label: "Forest", value: "forest" },
+                { label: "Deep blue", value: "deep-blue" }
+              ]}
+              value={comboboxValue}
+            />
+            <Checkbox
+              checked={automationEnabled}
+              description="Run the cross-platform release gate before publishing."
+              label="Automated verification"
+              name="components-automation"
+              onChange={(event) => setAutomationEnabled(event.currentTarget.checked)}
+            />
+            <RadioGroup
+              helpText="Density changes spacing, never semantics."
+              label="Interface density"
+              name="components-density"
+              onValueChange={setRadioValue}
+              options={[
+                { label: "Compact", value: "compact" },
+                { label: "Standard", value: "standard" },
+                { label: "Comfortable", value: "comfortable" }
+              ]}
+              orientation="horizontal"
+              value={radioValue}
+            />
+            <Slider
+              formatValue={(value) => `${value}%`}
+              helpText="Primary chart and focus intensity preview."
+              label="Signal strength"
+              onValueChange={setSignal}
+              value={signal}
+            />
+            <NumberField
+              helpText="Use the step controls or enter a value."
+              label="Retention days"
+              max={90}
+              min={1}
+              name="components-retention"
+              onValueChange={setRetention}
+              value={retention}
+            />
+          </Stack>
+        </section>
+        <section className="example-preview-card">
+          <h2>Layout primitives</h2>
+          <Container size="full">
+            <Grid columns={{ base: 1, md: 2, lg: 3 }} minItemWidth="10rem">
+              <Surface elevation="flat"><strong>Surface</strong><p className="example-copy">Quiet base layer</p></Surface>
+              <Surface elevation="raised"><strong>Raised</strong><p className="example-copy">Working layer</p></Surface>
+              <Surface elevation="floating"><strong>Floating</strong><p className="example-copy">Transient layer</p></Surface>
+            </Grid>
+            <Divider label="Calibrated grid" />
+          </Container>
+        </section>
+        <section className="example-preview-card">
+          <h2>Mobile shell</h2>
           <AppShell
             className="example-mobile-shell"
+            contentAs="div"
             footer={
               <TabBar
                 activeId="systems"
@@ -453,7 +593,7 @@ function ComponentsPage() {
                 ]}
               />
             }
-            topBar={<TopBar actions={<Button icon="edit" variant="ghost">Edit</Button>} subtitle="Systems online" title="Workbench" />}
+            topBar={<TopBar actions={<Button icon="edit" variant="ghost">Edit</Button>} subtitle="Systems online" title="Workbench" titleAs="h3" />}
           >
             <div className="example-mobile-stack">
               <SearchField label="Search systems" name="systems-query" />
@@ -475,7 +615,7 @@ function ComponentsPage() {
           </AppShell>
         </section>
         <section className="example-preview-card">
-          <h3>Navigation and selections</h3>
+          <h2>Navigation and selections</h2>
           <NavigationStack title="Workbench">
             <NavigationPage
               actions={
@@ -530,7 +670,7 @@ function ComponentsPage() {
           </NavigationStack>
         </section>
         <section className="example-preview-card">
-          <h3>Workbench data</h3>
+          <h2>Workbench data</h2>
           <div className="example-mobile-stack">
             <Breadcrumbs items={[{ href: "#overview", label: "Workbench" }, { current: true, label: "Systems" }]} />
             <Tabs
@@ -563,7 +703,7 @@ function ComponentsPage() {
           </div>
         </section>
         <section className="example-preview-card">
-          <h3>Buttons</h3>
+          <h2>Buttons</h2>
           <div className="example-component-bar">
             <Button icon="send">Publish</Button>
             <Button icon="settings" variant="secondary">
@@ -581,7 +721,7 @@ function ComponentsPage() {
           </div>
         </section>
         <section className="example-preview-card">
-          <h3>Expandable sections</h3>
+          <h2>Expandable sections</h2>
           <div className="example-disclosure-stack">
             <ExpandableSection defaultOpen eyebrow="SYSTEM" title="Release readiness">
               <p>
@@ -598,7 +738,7 @@ function ComponentsPage() {
           </div>
         </section>
         <section className="example-preview-card">
-          <h3>Forms</h3>
+          <h2>Forms</h2>
           <div className="example-preview-grid">
             <TextField
               helpText="Label, helper text, placeholder, and focus treatment."
@@ -621,30 +761,30 @@ function ComponentsPage() {
           </div>
         </section>
         <section className="example-preview-card">
-          <h3>Upload and icons</h3>
+          <h2>Upload and icons</h2>
           <FileUpload
             accept=".json,.css,.ts,.tsx,.swift,.rb"
             helpText="Upload affordance with generated output file types."
             label="Generated outputs"
             name="components-upload"
           />
-          <div className="example-icon-row" aria-label="Icon preview">
+          <div className="example-icon-row" aria-label="Icon preview" role="list">
             {iconCatalog.map((name) => (
-              <span className="example-media-item__icon" key={name} title={name}>
+              <span aria-label={name} className="example-media-item__icon" key={name} role="listitem" title={name}>
                 <Icon decorative name={name} />
               </span>
             ))}
           </div>
         </section>
         <section className="example-preview-card">
-          <h3>Feedback and content</h3>
+          <h2>Feedback and content</h2>
           <div className="example-feedback-row">
             <span className="example-badge">Active</span>
             <div className="example-alert">Generated package outputs are in sync.</div>
-            <div className="example-progress" aria-label="Progress preview">
+            <div aria-label="Progress preview" aria-valuemax={100} aria-valuemin={0} aria-valuenow={72} className="example-progress" role="progressbar">
               <span />
             </div>
-            <div className="example-skeleton" aria-label="Skeleton loading preview">
+            <div aria-label="Skeleton loading preview" className="example-skeleton" role="status">
               <span />
               <span />
               <span />
@@ -661,11 +801,11 @@ function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
     <section className="example-panel" aria-labelledby="usage-title">
       <div className="example-panel__header">
         <p className="example-kicker">USAGE</p>
-        <h2 id="usage-title">Install and configure</h2>
+        <h1 id="usage-title">Install and configure</h1>
       </div>
       <div className="example-code-grid">
         <CodeBlock label="React install" code={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}`} />
-        <CodeBlock label="React styles" code={`import "@aurelglyph/css";\nimport "@aurelglyph/react/styles.css";`} />
+        <CodeBlock label="Shared styles" code={`import "@aurelglyph/css";`} />
         <CodeBlock label="React component" code={`import { Button, TextField } from "@aurelglyph/react";\n\n<Button icon="send">Publish</Button>\n<TextField label="Project name" name="project" />`} />
         <CodeBlock label="Rails Git ref" code={`gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v${packageVersion}"`} />
         <CodeBlock label="SwiftPM version" code={`.package(url: "https://github.com/absessive/aurelglyph", exact: "${packageVersion}")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "${packageVersion}")`} />
@@ -680,11 +820,12 @@ function ChangelogPage() {
     <section className="example-panel" aria-labelledby="changelog-title">
       <div className="example-panel__header">
         <p className="example-kicker">CHANGELOG</p>
-        <h2 id="changelog-title">{packageVersion}</h2>
+        <h1 id="changelog-title">{packageVersion}</h1>
       </div>
       <p className="example-copy">
-        Hardens real modal behavior, Rails rendering safety, cross-adapter SVG
-        icons, contrast, focus indicators, and reduced-motion behavior.
+        Adds 18 interaction-foundation families across five platform targets,
+        completes shared state and keyboard contracts, and publishes an
+        executable support manifest.
       </p>
     </section>
   );
@@ -694,7 +835,7 @@ function CodeBlock({ code, label }: { code: string; label: string }) {
   return (
     <figure className="example-code-block">
       <figcaption>{label}</figcaption>
-      <pre>
+      <pre tabIndex={0}>
         <code>{code}</code>
       </pre>
     </figure>

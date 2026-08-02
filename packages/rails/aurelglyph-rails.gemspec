@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.name = "aurelglyph-rails"
   spec.version = Aurelglyph::Rails::VERSION
   spec.authors = ["Ajit Chakrapani"]
-  spec.summary = "Rails assets and token helpers for Aurelglyph."
-  spec.description = "Aurelglyph Rails exposes generated design tokens and CSS assets for Rails apps."
+  spec.summary = "Rails component helpers and interaction assets for Aurelglyph."
+  spec.description = "Aurelglyph Rails provides ActionView-safe components, generated design assets, and dependency-free interaction controllers."
   spec.homepage = "https://github.com/absessive/aurelglyph"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1"

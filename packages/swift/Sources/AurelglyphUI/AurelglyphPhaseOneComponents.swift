@@ -1,6 +1,8 @@
 import SwiftUI
 
 public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
   private let topBar: TopBar
   private let content: Content
   private let tabBar: TabBar
@@ -16,6 +18,8 @@ public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: Vie
   }
 
   public var body: some View {
+    let palette = theme.palette(for: colorScheme)
+
     VStack(spacing: 0) {
       topBar
       ScrollView {
@@ -25,7 +29,9 @@ public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: Vie
       }
       tabBar
     }
-    .background(Color.aurelglyphBackground)
+    .foregroundStyle(palette.foreground)
+    .background(palette.background.ignoresSafeArea())
+    .tint(palette.accent)
   }
 }
 
@@ -83,6 +89,8 @@ public struct AurelglyphTabItem: Identifiable, Sendable {
 }
 
 public struct AurelglyphTabBar: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
   private let items: [AurelglyphTabItem]
   @Binding private var selection: String
 
@@ -92,6 +100,8 @@ public struct AurelglyphTabBar: View {
   }
 
   public var body: some View {
+    let palette = theme.palette(for: colorScheme)
+
     HStack(spacing: 8) {
       ForEach(items) { item in
         Button {
@@ -107,8 +117,8 @@ public struct AurelglyphTabBar: View {
           }
           .frame(maxWidth: .infinity)
           .padding(.vertical, 8)
-          .foregroundStyle(selection == item.id ? .primary : .secondary)
-          .background(selection == item.id ? Color.accentColor.opacity(0.16) : Color.clear)
+          .foregroundStyle(palette.foreground)
+          .background(selection == item.id ? palette.accent.opacity(0.16) : Color.clear)
           .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -261,33 +271,76 @@ public struct AurelglyphSearchField: View {
   }
 }
 
-private extension Color {
-  static let aurelglyphBackground = Color(red: 13 / 255, green: 13 / 255, blue: 11 / 255)
-}
-
 public struct AurelglyphSwitch: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.aurelglyphControlCopy) private var controlCopy
   private let title: String
   private let subtitle: String?
   @Binding private var isOn: Bool
+  private let isDisabled: Bool
+  private let isLoading: Bool
+  private let isReadOnly: Bool
+  private let error: String?
 
-  public init(_ title: String, subtitle: String? = nil, isOn: Binding<Bool>) {
+  public init(
+    _ title: String,
+    subtitle: String? = nil,
+    isOn: Binding<Bool>,
+    isDisabled: Bool = false,
+    isLoading: Bool = false,
+    isReadOnly: Bool = false,
+    error: String? = nil
+  ) {
     self.title = title
     self.subtitle = subtitle
     self._isOn = isOn
+    self.isDisabled = isDisabled
+    self.isLoading = isLoading
+    self.isReadOnly = isReadOnly
+    self.error = error
   }
 
   public var body: some View {
-    Toggle(isOn: $isOn) {
-      VStack(alignment: .leading, spacing: 3) {
-        Text(title)
-          .font(AurelglyphTypography.body)
-        if let subtitle {
-          Text(subtitle)
-            .font(AurelglyphTypography.caption)
-            .foregroundStyle(.secondary)
+    let palette = theme.palette(for: colorScheme)
+
+    VStack(alignment: .leading, spacing: 5) {
+      HStack(spacing: 8) {
+        Toggle(isOn: $isOn) {
+          VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+              .font(AurelglyphTypography.body)
+            if let subtitle {
+              Text(subtitle)
+                .font(AurelglyphTypography.caption)
+                .foregroundStyle(palette.muted)
+            }
+          }
+        }
+        .toggleStyle(.switch)
+        .tint(palette.accentControl)
+        .disabled(isDisabled || isLoading || isReadOnly)
+        .accessibilityValue(isLoading ? controlCopy.loading : (isOn ? controlCopy.on : controlCopy.off))
+        .accessibilityHint(
+          aurelglyphControlHint(
+            isReadOnly: isReadOnly,
+            error: error,
+            readOnlyLabel: controlCopy.readOnly
+          )
+        )
+        if isLoading {
+          ProgressView().controlSize(.mini)
+            .accessibilityLabel(controlCopy.loadingLabel(title))
         }
       }
+      .opacity(isDisabled ? 0.52 : 1)
+
+      if let error {
+        Text(error)
+          .font(AurelglyphTypography.caption)
+          .foregroundStyle(palette.danger)
+          .accessibilityLabel(error)
+      }
     }
-    .toggleStyle(.switch)
   }
 }

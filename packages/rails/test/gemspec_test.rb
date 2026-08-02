@@ -11,12 +11,14 @@ class AurelglyphRailsGemspecTest < Minitest::Test
 
   def test_gemspec_supports_git_installation
     assert_equal "aurelglyph-rails", @spec.name
+    assert_match(/component helpers/, @spec.summary)
     workspace_version = JSON.parse(File.read(File.expand_path("../../../package.json", __dir__))).fetch("version")
     assert_equal workspace_version, @spec.version.to_s
     assert_includes @spec.files, "lib/aurelglyph.rb"
     assert_includes @spec.files, "lib/aurelglyph/rails.rb"
     assert_includes @spec.files, "lib/aurelglyph/rails/engine.rb"
     assert_includes @spec.files, "lib/aurelglyph/rails/helper.rb"
+    assert_includes @spec.files, "lib/aurelglyph/rails/interaction_helper.rb"
     assert_includes @spec.files, "app/assets/stylesheets/aurelglyph.css"
     assert_includes @spec.files, "app/assets/javascripts/aurelglyph.js"
     assert_includes @spec.files, "app/assets/fonts/aurelglyph/libre-baskerville-400.woff2"

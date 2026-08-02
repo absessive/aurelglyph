@@ -9,6 +9,7 @@ export type DataTableColumn<Row> = {
 export type DataTableProps<Row> = HTMLAttributes<HTMLDivElement> & {
   columns: readonly DataTableColumn<Row>[];
   getRowId: (row: Row, index: number) => string;
+  label?: string;
   rows: readonly Row[];
 };
 
@@ -16,13 +17,14 @@ export function DataTable<Row>({
   className,
   columns,
   getRowId,
+  label = "Data table",
   rows,
   ...props
 }: DataTableProps<Row>): ReactElement {
   const classNames = ["ag-table-wrap", className].filter(Boolean).join(" ");
 
   return (
-    <div className={classNames} {...props}>
+    <div aria-label={label} className={classNames} role="region" tabIndex={0} {...props}>
       <table className="ag-table">
         <thead>
           <tr>

@@ -17,6 +17,8 @@ The command writes:
 - `docs/index.html`
 - `docs/usage.html`
 - `docs/components.html`
+- `docs/component-manifest.json`
+- `docs/schemas/component-manifest.schema.json`
 - `docs/changelog.html`
 - `docs/CNAME`
 
@@ -199,7 +201,9 @@ Use Phase 1 mobile foundations for app chrome, search, grouped settings, and
 binary controls. Use Phase 2 controls for structured app surfaces, page actions,
 bounded choice inputs, alerts, identity, and compact status labels. Use Phase 3
 controls for workbench navigation, non-blocking feedback, loading state,
-measured values, bounded result sets, and keyboard-first commands:
+measured values, bounded result sets, and keyboard-first commands. The 0.5
+interaction foundations add overlays, complete choice/numeric inputs, feedback,
+and responsive layout:
 
 ```tsx
 <AppShell
@@ -223,8 +227,23 @@ measured values, bounded result sets, and keyboard-first commands:
   <Metric label="Latency" value="42ms" delta="Stable" />
   <Progress value={72} />
   <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />
+  <Dialog open={dialogOpen} onOpenChange={setDialogOpen} title="Publish release?">
+    Run the verified package gate before publishing.
+  </Dialog>
+  <Combobox label="Accent" options={themes} value={theme} onValueChange={setTheme} />
+  <Checkbox label="Automated verification" checked={verify} onChange={handleVerify} />
+  <Grid columns={{ base: 1, md: 2, lg: 3 }} minItemWidth="12rem">
+    <Surface>Primary system</Surface>
+    <Surface elevation="floating">Live inspection</Surface>
+  </Grid>
 </AppShell>
 ```
+
+The checked cross-platform surface is published in
+[`component-manifest.json`](../component-manifest.json). Run
+`npm run check:components` to validate its schema, declared platform coverage,
+and all 90 implementation-evidence claims locally. Adapter and browser suites
+verify applicable behavior and accessibility separately.
 
 For CSS-only apps, install only `@aurelglyph/css`, import it once, and build
 with semantic variables or the shared `ag-*` component classes:
@@ -262,17 +281,37 @@ Install the native adapter:
 npm install @aurelglyph/react-native
 ```
 
-The generated native theme replaces CSS font stacks with registered
-Aurelglyph aliases:
+The adapter targets React Native 0.86 or newer and React 19.2.3 or newer. It
+ships native actions, fields, overlays, selection, navigation, feedback, and
+layout components with a mode/accent provider:
 
-```ts
-import { aurelglyphTheme } from "@aurelglyph/react-native";
+```tsx
+import {
+  AurelglyphProvider,
+  Button,
+  Checkbox,
+  Combobox,
+  Stack,
+  Surface
+} from "@aurelglyph/react-native";
 
-const bodyStyle = {
-  color: aurelglyphTheme["color.mode.dark.text"],
-  fontFamily: aurelglyphTheme["font.family.body"]
-};
+<AurelglyphProvider accent="royal-purple" mode="system">
+  <Surface elevation="raised">
+    <Stack gap={4}>
+      <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
+      <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
+      <Button onPress={save}>Save changes</Button>
+    </Stack>
+  </Surface>
+</AurelglyphProvider>
 ```
+
+`aurelglyphTheme` remains available for direct token access and
+`resolveAurelglyphTheme` resolves semantic native values. Overlays use React
+Native `Modal`; tooltip behavior uses native accessibility hints plus
+press/long-press disclosure; the slider implements native `adjustable` actions
+without a UI dependency. `FileUpload` accepts a host-provided document-picker
+callback because React Native core does not ship one.
 
 For Expo Font or another Metro-based loader, use the optional packaged-font
 entry point:
@@ -295,9 +334,10 @@ The full OFL text and upstream copyright notices ship beside those files.
 
 The current Rails-facing package is a gem skeleton named `aurelglyph-rails`.
 It ships the generated stylesheet with tokens plus shared component classes,
-the token helper, a Rails engine, WOFF2 font assets, and view helpers for tokens,
-icons, disclosure, cards, lists, tabs, search, and switches. It also includes a
-framework-neutral native-dialog controller for interactive sheets.
+the token helper, a Rails engine, WOFF2 font assets, and ActionView-safe helpers
+for the shared component contract. Its dependency-free controller progressively
+enhances sheets, dialogs, drawers, menus, popovers, tooltips, comboboxes,
+command palettes, and selection groups.
 
 From this workspace, generate the Rails-facing files:
 
@@ -339,9 +379,10 @@ Minimum Rails asset-pipeline setup after the gem is installed:
  */
 ```
 
-3. Link and load `aurelglyph.js` when using `aurelglyph_sheet`; it synchronizes
-   `data-open` with `showModal()`/`close()`, handles dismissals, and restores
-   focus. The Rails package README documents trigger and dismiss attributes.
+3. Link and load `aurelglyph.js` for interactive helpers. It provides modal
+   isolation, focus restoration, roving focus, typeahead, filtering, nested
+   dismissal, form-reset support, and Turbo-safe cleanup. The Rails package
+   README documents attributes and component events.
 
 4. Set `data-mode` and `data-theme` on the HTML root in your layout:
 
@@ -380,6 +421,14 @@ Use the Rails view helpers installed by the engine:
 <%= aurelglyph_metric(label: "Latency", value: "42ms", delta: "Stable") %>
 <%= aurelglyph_progress(value: 72) %>
 <%= aurelglyph_command_palette([{ id: "search", label: "Search systems", icon: "search", shortcut: "Cmd-K" }]) %>
+<%= aurelglyph_dialog("Edit system", id: "edit-system") do %>
+  <%= aurelglyph_number_field(name: "system[retries]", label: "Retries", min: 0, max: 10) %>
+<% end %>
+<%= aurelglyph_menu(label: "System actions", items: [{ label: "Archive", value: "archive" }]) %>
+<%= aurelglyph_combobox(name: "system_id", label: "System", options: systems) %>
+<%= aurelglyph_grid(columns: { base: 1, md: 2, lg: 3 }, min_item_width: "16rem") do %>
+  <%= render @systems %>
+<% end %>
 ```
 
 ## Swift
@@ -407,6 +456,32 @@ import AurelglyphUI
 
 let background = AurelglyphTokens.colorModeDarkBackground
 let accent = AurelglyphTokens.colorAccentRoyalPurple300
+```
+
+Install mode and accent resolution through the SwiftUI environment, then use
+native bindings and presentations with the shared component names:
+
+```swift
+WorkbenchView()
+  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple))
+
+AurelglyphContainer {
+  AurelglyphStack(spacing: 16) {
+    AurelglyphNumberField("Retries", value: $retries, in: 0...10, step: 1)
+    AurelglyphCombobox("Destination", options: destinations, query: $query, selection: $destination)
+    AurelglyphCheckbox("Automated verification", isChecked: $verify)
+  }
+}
+.aurelglyphDialog(
+  isPresented: $showingArchive,
+  title: "Archive system",
+  message: "This can be restored later."
+) {
+  Text("The current system will move to Archive.")
+} actions: {
+  Button("Cancel", role: .cancel) { showingArchive = false }
+  Button("Archive", role: .destructive) { archive() }
+}
 ```
 
 Use the native SwiftUI typography adapter for Aurelglyph roles:
@@ -483,5 +558,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.4.1")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.5.0")
 ```

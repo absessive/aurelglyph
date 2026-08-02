@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.0
+
+- Add 18 interaction and layout families across CSS, React, React Native,
+  SwiftUI, and Rails with shared naming, states, accessibility, and responsive
+  behavior.
+- Harden overlay focus and dismissal, unavailable form states, finite numeric
+  bounds, bounded pagination, and responsive data and layout controls.
+- Expand the React Native adapter with native theme, icon, navigation, form,
+  selection, and overlay contracts, and bring SwiftUI presentation,
+  interaction, layout, and theme APIs to parity.
+- Add Rails progressive-enhancement helpers and controllers with generated
+  cross-platform CSS, JavaScript, and token outputs.
+- Publish a machine-readable component manifest, JSON Schema, support matrix,
+  and staged roadmap toward 1.0 feature completeness.
+- Expand the live gallery, static preview, package guides, and consuming
+  documentation across light and dark modes and all six accent themes.
+- Add a reproducible headless-Chrome and axe UX gate across 28 responsive
+  contexts, plus broader adapter, contrast, package-contract, and
+  dependency-security coverage.
+
 ## 0.4.1
 
 - Make React `Sheet` a genuinely modal controlled component with native
