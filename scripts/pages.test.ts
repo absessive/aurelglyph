@@ -187,6 +187,10 @@ describe("GitHub Pages generator", () => {
     expect(components).toContain("expand");
     expect(components).toContain("contract");
     expect(components).toContain("Alert: generated package outputs are in sync.");
+    expect(components).toContain('class="ag-command-palette__list" role="listbox" aria-label="Commands"');
+    expect(components).toContain('aria-label="Skeleton loading preview" role="status"');
+    expect(components).toContain("--color-text-readable-muted: #584d41;");
+    expect(components).toContain(".support-matrix__category {\n      display: block;\n      margin-top: 3px;\n      color: var(--color-text-readable-muted);");
     expect(components).toContain("@media (prefers-reduced-motion: reduce)");
     expect(components).toContain(".ag-demo-disclosure summary::after {\n        transition: none;");
     expect(components).toContain(".ag-demo-disclosure p {\n        animation: none;");

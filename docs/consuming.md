@@ -201,7 +201,7 @@ Use Phase 1 mobile foundations for app chrome, search, grouped settings, and
 binary controls. Use Phase 2 controls for structured app surfaces, page actions,
 bounded choice inputs, alerts, identity, and compact status labels. Use Phase 3
 controls for workbench navigation, non-blocking feedback, loading state,
-measured values, bounded result sets, and keyboard-first commands. The 0.5
+measured values, bounded result sets, and keyboard-first commands. The current
 interaction foundations add overlays, complete choice/numeric inputs, feedback,
 and responsive layout:
 
@@ -558,5 +558,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.5.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.0")
 ```

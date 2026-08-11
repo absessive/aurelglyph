@@ -134,7 +134,7 @@ public enum AurelglyphTypography {
       return appliesRequestedWeight ? font.weight(weight) : font
     }
 
-    return Font.system(size: size, weight: weight, design: fallback)
+    return Font.system(textStyle, design: fallback, weight: weight)
   }
 
   private static func libreBaskervilleName(for weight: Font.Weight) -> String {

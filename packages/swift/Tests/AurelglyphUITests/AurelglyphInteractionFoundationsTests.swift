@@ -1,6 +1,7 @@
 import Testing
 import SwiftUI
 import Foundation
+import CoreGraphics
 @testable import AurelglyphUI
 
 @Test func exposesThemeModeAndAccentEnvironmentContract() {
@@ -178,6 +179,283 @@ import Foundation
   #expect(String(describing: type(of: grid)).contains("AurelglyphGrid"))
 }
 
+@Test func appliesResponsiveLayoutAndTouchTargetPolicies() {
+  #expect(AurelglyphResponsiveLayout.minimumInteractiveDimension == 44)
+  #expect(!AurelglyphResponsiveLayout.prefersStackedLayout(for: .xxxLarge))
+  #expect(AurelglyphResponsiveLayout.prefersStackedLayout(for: .accessibility1))
+  #expect(AurelglyphResponsiveLayout.prefersStackedLayout(for: .accessibility5))
+  #expect(AurelglyphResponsiveLayout.navigationWidth(20) == 44)
+  #expect(AurelglyphResponsiveLayout.navigationWidth(248) == 248)
+  #expect(AurelglyphResponsiveLayout.navigationWidth(.infinity) == 260)
+  #expect(AurelglyphResponsiveLayout.navigationWidth(.nan) == 260)
+  #expect(
+    !AurelglyphResponsiveLayout.usesRegularNavigation(
+      availableWidth: 568,
+      navigationWidth: 248,
+      isCompactWidth: false
+    )
+  )
+  #expect(
+    AurelglyphResponsiveLayout.usesRegularNavigation(
+      availableWidth: 569,
+      navigationWidth: 248,
+      isCompactWidth: false
+    )
+  )
+  #expect(
+    !AurelglyphResponsiveLayout.usesRegularNavigation(
+      availableWidth: 800,
+      navigationWidth: 248,
+      isCompactWidth: true
+    )
+  )
+
+  #expect(
+    AurelglyphStack<EmptyView>.resolvedAxis(
+      axis: .horizontal,
+      compactAxis: .vertical,
+      isCompactWidth: true,
+      usesAccessibilitySize: false
+    ) == .vertical
+  )
+  #expect(
+    AurelglyphStack<EmptyView>.resolvedAxis(
+      axis: .horizontal,
+      compactAxis: .vertical,
+      isCompactWidth: false,
+      usesAccessibilitySize: true
+    ) == .vertical
+  )
+  #expect(
+    AurelglyphStack<EmptyView>.resolvedAxis(
+      axis: .horizontal,
+      compactAxis: .vertical,
+      isCompactWidth: false,
+      usesAccessibilitySize: false
+    ) == .horizontal
+  )
+  #expect(
+    AurelglyphStack<EmptyView>.resolvedAxis(
+      axis: .horizontal,
+      compactAxis: nil,
+      isCompactWidth: true,
+      usesAccessibilitySize: true
+    ) == .horizontal
+  )
+}
+
+@Test func exposesCompatibleScrollOwnershipOptions() {
+  let presented = Binding.constant(true)
+  let shell = AurelglyphAppShell(scrollsContent: false) {
+    Text("Workbench")
+  } content: {
+    ScrollView { Text("Caller-managed scrolling") }
+  } tabBar: {
+    EmptyView()
+  }
+  let adaptiveShell = AurelglyphAppShell(
+    scrollsContent: false,
+    regularNavigationWidth: 248
+  ) {
+    Text("Workbench")
+  } regularNavigation: {
+    Text("Systems rail")
+  } content: {
+    Text("Adaptive content")
+  } tabBar: {
+    Text("Compact tabs")
+  }
+  let sheet = AurelglyphSheet("Details", scrollsContent: false) {
+    ScrollView { Text("Caller-managed sheet") }
+  } actions: {
+    Button("Done") {}
+  }
+  let drawer = AurelglyphDrawer(
+    "Details",
+    isPresented: presented,
+    scrollsContent: false
+  ) {
+    ScrollView { Text("Caller-managed drawer") }
+  }
+  let adaptiveStack = AurelglyphStack(axis: .horizontal, compactAxis: .vertical) {
+    Text("Primary")
+    Text("Secondary")
+  }
+
+  #expect(String(describing: type(of: shell)).contains("AurelglyphAppShell"))
+  #expect(String(describing: type(of: adaptiveShell)).contains("AurelglyphAppShell"))
+  #expect(String(describing: type(of: sheet)).contains("AurelglyphSheet"))
+  #expect(String(describing: type(of: drawer)).contains("AurelglyphDrawer"))
+  #expect(String(describing: type(of: adaptiveStack)).contains("AurelglyphStack"))
+}
+
+@Test @MainActor func rendersCompactAccessibilityLayoutAtRequestedViewport() {
+  let selection = Binding.constant("systems")
+  let view = VStack(spacing: 12) {
+    AurelglyphTopBar(
+      "A deliberately long localized workbench title",
+      subtitle: "Systems remain operational while the window changes size"
+    ) {
+      Image(systemName: "square.grid.2x2")
+    } actions: {
+      Button("Inspect details") {}
+      Button("Archive") {}
+    }
+
+    AurelglyphTabBar(
+      items: [
+        AurelglyphTabItem(id: "workbench", title: "Workbench", systemImage: "hammer"),
+        AurelglyphTabItem(id: "notes", title: "Notes", systemImage: "note.text"),
+        AurelglyphTabItem(id: "systems", title: "Systems", systemImage: "server.rack"),
+        AurelglyphTabItem(id: "lab", title: "Laboratory", systemImage: "flask"),
+        AurelglyphTabItem(id: "archive", title: "Archive", systemImage: "archivebox"),
+        AurelglyphTabItem(id: "settings", title: "Settings", systemImage: "gearshape")
+      ],
+      selection: selection
+    )
+
+    AurelglyphDataTable(
+      headers: ["System", "Environment", "Region", "Status", "Last calibration"],
+      rows: [["Observatory", "Production", "North America", "Operational", "Just now"]]
+    )
+  }
+  .environment(\.dynamicTypeSize, .accessibility5)
+  .frame(width: 320, height: 568, alignment: .top)
+
+  let renderer = ImageRenderer(content: view)
+  renderer.proposedSize = ProposedViewSize(width: 320, height: 568)
+  renderer.scale = 1
+
+  #expect(renderer.cgImage?.width == 320)
+  #expect(renderer.cgImage?.height == 568)
+}
+
+@Test @MainActor func selectsContainerResponsiveLayoutsBeforeContentOverflows() {
+  let adaptiveStack = AurelglyphStack(
+    axis: .horizontal,
+    compactAxis: .vertical,
+    spacing: 8
+  ) {
+    Color.red.frame(width: 200, height: 44)
+    Color.blue.frame(width: 200, height: 44)
+  }
+  .environment(\.horizontalSizeClass, nil)
+
+  let stackRenderer = ImageRenderer(content: adaptiveStack)
+  stackRenderer.proposedSize = ProposedViewSize(width: 320, height: 300)
+  stackRenderer.scale = 1
+
+  #expect(stackRenderer.cgImage?.width == 200)
+  #expect(stackRenderer.cgImage?.height == 96)
+
+  let adaptiveHeader = AurelglyphAdaptiveHeaderLayout(
+    leadingItemCount: 1,
+    primarySpacing: 12,
+    trailingSpacing: 8,
+    fallbackSpacing: 10,
+    forceFallback: false,
+    layoutDirection: .leftToRight
+  ) {
+    Color.red.frame(width: 200, height: 44)
+    Color.blue.frame(width: 200, height: 44)
+  }
+  let headerRenderer = ImageRenderer(content: adaptiveHeader)
+  headerRenderer.proposedSize = ProposedViewSize(width: 320, height: 300)
+  headerRenderer.scale = 1
+
+  #expect(headerRenderer.cgImage?.width == 320)
+  #expect(headerRenderer.cgImage?.height == 98)
+
+  let selection = Binding.constant("primary")
+  let longLabelControls = VStack(spacing: 12) {
+    AurelglyphTabBar(
+      items: [
+        AurelglyphTabItem(
+          id: "primary",
+          title: "Primary observability workbench",
+          systemImage: "waveform.path.ecg"
+        ),
+        AurelglyphTabItem(
+          id: "secondary",
+          title: "Secondary infrastructure archive",
+          systemImage: "archivebox"
+        )
+      ],
+      selection: selection
+    )
+    AurelglyphSegmentedControl(
+      items: [
+        AurelglyphSegmentedItem(id: "primary", title: "Primary observability workbench"),
+        AurelglyphSegmentedItem(id: "secondary", title: "Secondary infrastructure archive")
+      ],
+      selection: selection
+    )
+  }
+  .environment(\.dynamicTypeSize, .xxxLarge)
+
+  let controlsRenderer = ImageRenderer(content: longLabelControls)
+  controlsRenderer.proposedSize = ProposedViewSize(width: 320, height: 300)
+  controlsRenderer.scale = 1
+
+  #expect(controlsRenderer.cgImage?.width == 320)
+  #expect(controlsRenderer.cgImage?.height ?? 0 > 0)
+}
+
+@Test @MainActor func mirrorsAdaptiveChromeForRightToLeftLayouts() {
+  let adaptiveHeader = AurelglyphAdaptiveHeaderLayout(
+    leadingItemCount: 1,
+    primarySpacing: 12,
+    trailingSpacing: 8,
+    fallbackSpacing: 10,
+    forceFallback: false,
+    layoutDirection: .rightToLeft
+  ) {
+    Color.red.frame(width: 100, height: 44)
+    Color.blue.frame(width: 80, height: 44)
+  }
+  let headerRenderer = ImageRenderer(content: adaptiveHeader)
+  headerRenderer.proposedSize = ProposedViewSize(width: 320, height: 44)
+  headerRenderer.scale = 1
+
+  if let image = headerRenderer.cgImage,
+     let leftPixel = rgbaPixel(in: image, x: 10, y: 22),
+     let rightPixel = rgbaPixel(in: image, x: 310, y: 22) {
+    #expect(leftPixel.blue > leftPixel.red)
+    #expect(rightPixel.red > rightPixel.blue)
+  } else {
+    Issue.record("Expected the RTL adaptive header to render")
+  }
+
+  let shell = AurelglyphAppShell(
+    scrollsContent: false,
+    regularNavigationWidth: 80
+  ) {
+    Color.green.frame(height: 24)
+  } regularNavigation: {
+    Color.red
+  } content: {
+    Color.blue.frame(maxWidth: .infinity, maxHeight: .infinity)
+  } tabBar: {
+    Color.yellow.frame(height: 44)
+  }
+  .environment(\.horizontalSizeClass, .regular)
+  .environment(\.layoutDirection, .rightToLeft)
+  .frame(width: 420, height: 240)
+
+  let shellRenderer = ImageRenderer(content: shell)
+  shellRenderer.proposedSize = ProposedViewSize(width: 420, height: 240)
+  shellRenderer.scale = 1
+
+  if let image = shellRenderer.cgImage,
+     let contentPixel = rgbaPixel(in: image, x: 100, y: 120),
+     let navigationPixel = rgbaPixel(in: image, x: 380, y: 120) {
+    #expect(contentPixel.blue > contentPixel.red)
+    #expect(navigationPixel.red > navigationPixel.blue)
+  } else {
+    Issue.record("Expected the RTL app shell to render")
+  }
+}
+
 @Test func clampsProgressPaginationAndValidNumberSteps() {
   #expect(AurelglyphProgress.normalizedTotal(0) == 1)
   #expect(AurelglyphProgress.clampedValue(-10, total: 100) == 0)
@@ -260,4 +538,42 @@ private func relativeLuminance(_ hex: String) -> Double {
   }
 
   return components[0] * 0.2126 + components[1] * 0.7152 + components[2] * 0.0722
+}
+
+private func rgbaPixel(
+  in image: CGImage,
+  x: Int,
+  y: Int
+) -> (red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8)? {
+  guard x >= 0, x < image.width, y >= 0, y < image.height else { return nil }
+
+  let bytesPerPixel = 4
+  let bytesPerRow = image.width * bytesPerPixel
+  var bytes = [UInt8](repeating: 0, count: bytesPerRow * image.height)
+  let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue
+    | CGImageAlphaInfo.premultipliedLast.rawValue
+
+  return bytes.withUnsafeMutableBytes { buffer in
+    guard let baseAddress = buffer.baseAddress,
+          let context = CGContext(
+            data: baseAddress,
+            width: image.width,
+            height: image.height,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: bitmapInfo
+          ) else {
+      return nil
+    }
+
+    context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+    let offset = y * bytesPerRow + x * bytesPerPixel
+    return (
+      red: buffer[offset],
+      green: buffer[offset + 1],
+      blue: buffer[offset + 2],
+      alpha: buffer[offset + 3]
+    )
+  }
 }

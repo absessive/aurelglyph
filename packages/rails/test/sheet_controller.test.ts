@@ -651,6 +651,256 @@ describe("Aurelglyph Rails interaction controllers", () => {
     expect(menu.getAttribute("data-open")).toBe("false");
   });
 
+  it("positions every anchored surface within the visual viewport and clipping scrollports", () => {
+    const originalVisualViewport = Object.getOwnPropertyDescriptor(window, "visualViewport");
+    const visualViewport = new EventTarget();
+    Object.assign(visualViewport, {
+      height: 230,
+      offsetLeft: 20,
+      offsetTop: 10,
+      width: 260
+    });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: visualViewport });
+
+    try {
+      document.body.innerHTML = `
+        <div id="clip" style="overflow-x: auto; overflow-y: auto">
+          <div data-aurelglyph-menu="" data-open="false" id="positioned-menu">
+            <button data-aurelglyph-menu-trigger="" type="button">Menu</button>
+            <div data-aurelglyph-menu-content="" role="menu" hidden>
+              <button data-aurelglyph-menu-item="" role="menuitem">Inspect</button>
+            </div>
+          </div>
+          <span data-aurelglyph-popover="" data-open="false" id="positioned-popover">
+            <button data-aurelglyph-popover-trigger="" type="button">Popover</button>
+            <span data-aurelglyph-popover-content="" role="dialog" tabindex="-1" hidden>Details</span>
+          </span>
+          <div data-aurelglyph-combobox="" data-open="false" id="positioned-combobox">
+            <input data-aurelglyph-combobox-input="" />
+            <input data-aurelglyph-combobox-value="" type="hidden" />
+            <div data-aurelglyph-combobox-listbox="" role="listbox" hidden>
+              <div data-aurelglyph-combobox-option="" data-label="Alpha" data-value="alpha" role="option">Alpha</div>
+            </div>
+          </div>
+          <span data-aurelglyph-tooltip="" data-open="false" id="positioned-tooltip">
+            <button type="button">Tooltip</button>
+            <span data-aurelglyph-tooltip-content="" role="tooltip" hidden>Details</span>
+          </span>
+        </div>
+      `;
+      const clip = document.querySelector<HTMLElement>("#clip");
+      const menu = document.querySelector<HTMLElement>("#positioned-menu");
+      const popover = document.querySelector<HTMLElement>("#positioned-popover");
+      const combobox = document.querySelector<HTMLElement>("#positioned-combobox");
+      const tooltip = document.querySelector<HTMLElement>("#positioned-tooltip");
+      const surfaces = [
+        menu?.querySelector<HTMLElement>("[data-aurelglyph-menu-content]"),
+        popover?.querySelector<HTMLElement>("[data-aurelglyph-popover-content]"),
+        combobox?.querySelector<HTMLElement>("[data-aurelglyph-combobox-listbox]"),
+        tooltip?.querySelector<HTMLElement>("[data-aurelglyph-tooltip-content]")
+      ];
+      if (!clip || !menu || !popover || !combobox || !tooltip || surfaces.some((surface) => !surface)) {
+        throw new Error("Invalid anchored-surface fixture");
+      }
+      Object.defineProperties(clip, {
+        clientHeight: { configurable: true, value: 140 },
+        clientLeft: { configurable: true, value: 4 },
+        clientTop: { configurable: true, value: 6 },
+        clientWidth: { configurable: true, value: 170 }
+      });
+      vi.spyOn(clip, "getBoundingClientRect").mockReturnValue({
+        bottom: 260,
+        height: 180,
+        left: 100,
+        right: 300,
+        top: 80,
+        width: 200,
+        x: 100,
+        y: 80
+      } as DOMRect);
+      surfaces.forEach((surface) => {
+        vi.spyOn(surface as HTMLElement, "getBoundingClientRect").mockReturnValue({
+          bottom: 300,
+          height: 100,
+          left: 250,
+          right: 350,
+          top: 200,
+          width: 100,
+          x: 250,
+          y: 200
+        } as DOMRect);
+      });
+
+      aurelglyph().init?.(document);
+      expect(aurelglyph().menus?.open(menu)).toBe(true);
+      expect(aurelglyph().popovers?.open(popover)).toBe(true);
+      expect(aurelglyph().comboboxes?.open(combobox)).toBe(true);
+      expect(aurelglyph().tooltips?.open(tooltip)).toBe(true);
+
+      surfaces.forEach((surface) => {
+        expect(surface?.style.getPropertyValue("--ag-floating-available-width")).toBe("154px");
+        expect(surface?.style.getPropertyValue("--ag-floating-available-height")).toBe("124px");
+        expect(surface?.style.getPropertyValue("--ag-floating-shift-x")).toBe("-84px");
+        expect(surface?.style.getPropertyValue("--ag-floating-shift-y")).toBe("-82px");
+      });
+
+      expect(aurelglyph().menus?.close(menu)).toBe(true);
+      expect(aurelglyph().popovers?.close(popover)).toBe(true);
+      expect(aurelglyph().comboboxes?.close(combobox)).toBe(true);
+      expect(aurelglyph().tooltips?.close(tooltip)).toBe(true);
+      surfaces.forEach((surface) => {
+        expect(surface?.style.getPropertyValue("--ag-floating-available-width")).toBe("");
+        expect(surface?.style.getPropertyValue("--ag-floating-available-height")).toBe("");
+        expect(surface?.style.getPropertyValue("--ag-floating-shift-x")).toBe("");
+        expect(surface?.style.getPropertyValue("--ag-floating-shift-y")).toBe("");
+      });
+    } finally {
+      if (originalVisualViewport) Object.defineProperty(window, "visualViewport", originalVisualViewport);
+      else delete (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+    }
+  });
+
+  it("repositions anchored surfaces on scroll and viewport resize, then releases disconnected surfaces", async () => {
+    const originalVisualViewport = Object.getOwnPropertyDescriptor(window, "visualViewport");
+    const viewportBounds = { height: 230, offsetLeft: 20, offsetTop: 10, width: 260 };
+    const visualViewport = new EventTarget();
+    Object.defineProperties(visualViewport, {
+      height: { get: () => viewportBounds.height },
+      offsetLeft: { get: () => viewportBounds.offsetLeft },
+      offsetTop: { get: () => viewportBounds.offsetTop },
+      width: { get: () => viewportBounds.width }
+    });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: visualViewport });
+
+    try {
+      document.body.innerHTML = `
+        <div id="moving-clip" style="overflow-x: auto; overflow-y: auto">
+          <div data-aurelglyph-menu="" data-open="false" id="moving-menu">
+            <div id="moving-trigger-wrapper">
+              <button data-aurelglyph-menu-trigger="" type="button">Menu</button>
+            </div>
+            <div data-aurelglyph-menu-content="" role="menu" hidden>
+              <button data-aurelglyph-menu-item="" role="menuitem">Inspect</button>
+            </div>
+          </div>
+        </div>
+      `;
+      const clip = document.querySelector<HTMLElement>("#moving-clip");
+      const menu = document.querySelector<HTMLElement>("#moving-menu");
+      const triggerWrapper = menu?.querySelector<HTMLElement>("#moving-trigger-wrapper");
+      const trigger = menu?.querySelector<HTMLElement>("[data-aurelglyph-menu-trigger]");
+      const surface = menu?.querySelector<HTMLElement>("[data-aurelglyph-menu-content]");
+      if (!clip || !menu || !triggerWrapper || !trigger || !surface) throw new Error("Invalid moving anchored-surface fixture");
+      let clipBounds = { bottom: 260, left: 100, right: 300, top: 80 };
+      let triggerCollapsed = false;
+      let triggerTop = 120;
+      Object.defineProperties(clip, {
+        clientHeight: { configurable: true, get: () => clipBounds.bottom - clipBounds.top },
+        clientLeft: { configurable: true, value: 0 },
+        clientTop: { configurable: true, value: 0 },
+        clientWidth: { configurable: true, get: () => clipBounds.right - clipBounds.left }
+      });
+      vi.spyOn(clip, "getBoundingClientRect").mockImplementation(() => ({
+        ...clipBounds,
+        height: clipBounds.bottom - clipBounds.top,
+        width: clipBounds.right - clipBounds.left,
+        x: clipBounds.left,
+        y: clipBounds.top
+      } as DOMRect));
+      vi.spyOn(trigger, "getBoundingClientRect").mockImplementation(() => triggerCollapsed
+        ? ({ bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0, x: 0, y: 0 } as DOMRect)
+        : ({
+            bottom: triggerTop + 40,
+            height: 40,
+            left: 150,
+            right: 230,
+            top: triggerTop,
+            width: 80,
+            x: 150,
+            y: triggerTop
+          } as DOMRect));
+      vi.spyOn(surface, "getBoundingClientRect").mockReturnValue({
+        bottom: 300,
+        height: 100,
+        left: 250,
+        right: 350,
+        top: 200,
+        width: 100,
+        x: 250,
+        y: 200
+      } as DOMRect);
+
+      aurelglyph().init?.(document);
+      expect(aurelglyph().menus?.open(menu)).toBe(true);
+      clipBounds = { bottom: 230, left: 120, right: 270, top: 90 };
+      clip.dispatchEvent(new Event("scroll"));
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 24));
+      expect(surface.style.getPropertyValue("--ag-floating-available-width")).toBe("134px");
+      expect(surface.style.getPropertyValue("--ag-floating-available-height")).toBe("124px");
+      expect(surface.style.getPropertyValue("--ag-floating-shift-x")).toBe("-88px");
+      expect(surface.style.getPropertyValue("--ag-floating-shift-y")).toBe("-78px");
+
+      viewportBounds.width = 230;
+      viewportBounds.height = 200;
+      visualViewport.dispatchEvent(new Event("resize"));
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 24));
+      expect(surface.style.getPropertyValue("--ag-floating-available-width")).toBe("114px");
+      expect(surface.style.getPropertyValue("--ag-floating-available-height")).toBe("104px");
+      expect(surface.style.getPropertyValue("--ag-floating-shift-x")).toBe("-108px");
+      expect(surface.style.getPropertyValue("--ag-floating-shift-y")).toBe("-98px");
+
+      triggerTop = 20;
+      window.dispatchEvent(new Event("scroll"));
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 24));
+      expect(menu.getAttribute("data-open")).toBe("false");
+      expect(surface.hidden).toBe(true);
+      expect(surface.style.getPropertyValue("--ag-floating-visibility")).toBe("");
+
+      triggerTop = 120;
+      expect(aurelglyph().menus?.open(menu)).toBe(true);
+      triggerCollapsed = true;
+      trigger.hidden = true;
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 24));
+      expect(menu.getAttribute("data-open")).toBe("false");
+      expect(surface.hidden).toBe(true);
+
+      triggerCollapsed = false;
+      trigger.hidden = false;
+      expect(aurelglyph().menus?.open(menu)).toBe(true);
+
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 150));
+      triggerWrapper.style.visibility = "hidden";
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 24));
+      expect(menu.getAttribute("data-open")).toBe("false");
+      expect(surface.hidden).toBe(true);
+
+      triggerWrapper.style.visibility = "visible";
+      expect(aurelglyph().menus?.open(menu)).toBe(true);
+      trigger.remove();
+      await flushMutations();
+      expect(menu.getAttribute("data-open")).toBe("false");
+      expect(surface.hidden).toBe(true);
+      expect(surface.style.getPropertyValue("--ag-floating-available-width")).toBe("");
+      expect(surface.style.getPropertyValue("--ag-floating-available-height")).toBe("");
+
+      triggerWrapper.append(trigger);
+      expect(aurelglyph().menus?.open(menu)).toBe(true);
+
+      menu.remove();
+      await flushMutations();
+      expect(surface.style.getPropertyValue("--ag-floating-available-width")).toBe("");
+      expect(surface.style.getPropertyValue("--ag-floating-available-height")).toBe("");
+      expect(surface.style.getPropertyValue("--ag-floating-shift-x")).toBe("");
+      expect(surface.style.getPropertyValue("--ag-floating-shift-y")).toBe("");
+      visualViewport.dispatchEvent(new Event("resize"));
+      await new Promise((resolveWait) => window.setTimeout(resolveWait, 24));
+      expect(surface.style.getPropertyValue("--ag-floating-shift-x")).toBe("");
+    } finally {
+      if (originalVisualViewport) Object.defineProperty(window, "visualViewport", originalVisualViewport);
+      else delete (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+    }
+  });
+
   it("cycles menu typeahead, activates anchors, and escapes disabled focus states", () => {
     document.body.innerHTML = `
       <div data-aurelglyph-menu="" data-open="false" id="keyboard-menu">

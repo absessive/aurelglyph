@@ -7,6 +7,8 @@ export type {
   AurelglyphProviderProps
 } from "./theme.js";
 export type { ControlStateProps } from "./foundation.js";
+export { AurelglyphOverlayHost } from "./overlay-host.js";
+export type { AurelglyphOverlayHostProps, OverlayHostFrame } from "./overlay-host.js";
 export { Icon } from "./icons.js";
 export type { AurelglyphIconName, IconProps } from "./icons.js";
 

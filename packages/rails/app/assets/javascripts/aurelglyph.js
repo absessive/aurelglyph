@@ -40,6 +40,7 @@
       const entry = interactionLayers[index];
       if (entry.element.isConnected) continue;
       interactionLayers.splice(index, 1);
+      stopAnchoredSurface(entry.element);
       if (entry.kind !== "sheet") continue;
       const state = states.get(entry.element);
       if (!state) continue;
@@ -703,6 +704,215 @@
     );
   }
 
+  const anchoredSurfaceStates = new WeakMap();
+  const clippingOverflowValues = ["auto", "clip", "hidden", "overlay", "scroll"];
+
+  function clearAnchoredSurfaceStyles(surface) {
+    if (!surface) return;
+    surface.style.removeProperty("--ag-floating-visibility");
+    surface.style.removeProperty("--ag-floating-available-width");
+    surface.style.removeProperty("--ag-floating-available-height");
+    surface.style.removeProperty("--ag-floating-shift-x");
+    surface.style.removeProperty("--ag-floating-shift-y");
+  }
+
+  function stopAnchoredSurface(owner) {
+    const state = anchoredSurfaceStates.get(owner);
+    if (!state) return;
+    state.stopped = true;
+    if (state.animationFrame !== null) state.cancelFrame(state.animationFrame);
+    state.stabilizationTimers.forEach((timer) => state.view.clearTimeout(timer));
+    state.resizeObserver?.disconnect();
+    state.disconnectObserver?.disconnect();
+    state.visibilityObserver?.disconnect();
+    state.view.removeEventListener("resize", state.schedule);
+    state.view.removeEventListener("scroll", state.schedule, true);
+    state.visualViewport?.removeEventListener("resize", state.schedule);
+    state.visualViewport?.removeEventListener("scroll", state.schedule);
+    clearAnchoredSurfaceStyles(state.surface);
+    anchoredSurfaceStates.delete(owner);
+  }
+
+  function startAnchoredSurface(owner, surface, margin, anchor, onAnchorHidden) {
+    if (!surface) {
+      stopAnchoredSurface(owner);
+      return;
+    }
+
+    const nextAnchor = anchor || owner;
+    const existing = anchoredSurfaceStates.get(owner);
+    if (existing?.surface === surface && existing.anchor === nextAnchor) {
+      existing.onAnchorHidden = onAnchorHidden;
+      existing.update();
+      existing.schedule();
+      return;
+    }
+    stopAnchoredSurface(owner);
+
+    const view = surface.ownerDocument.defaultView || global;
+    const requestFrame =
+      typeof view.requestAnimationFrame === "function"
+        ? view.requestAnimationFrame.bind(view)
+        : (callback) => view.setTimeout(callback, 0);
+    const cancelFrame =
+      typeof view.cancelAnimationFrame === "function"
+        ? view.cancelAnimationFrame.bind(view)
+        : view.clearTimeout.bind(view);
+    const collectAncestors = (element) => {
+      const collected = [];
+      for (
+        let ancestor = element?.parentElement;
+        ancestor && ancestor !== surface.ownerDocument.documentElement;
+        ancestor = ancestor.parentElement
+      ) {
+        collected.push(ancestor);
+      }
+      return collected;
+    };
+    const surfaceAncestors = collectAncestors(surface);
+    const observedAncestors = Array.from(new Set([...surfaceAncestors, ...collectAncestors(nextAnchor)]));
+    const edgeMargin = Number.isFinite(margin) ? margin : 8;
+    const state = {
+      anchor: nextAnchor,
+      anchorWasVisible: false,
+      animationFrame: null,
+      cancelFrame,
+      disconnectObserver: null,
+      onAnchorHidden,
+      resizeObserver: null,
+      schedule: null,
+      stabilizationTimers: [],
+      stopped: false,
+      surface,
+      update: null,
+      view,
+      visibilityObserver: null,
+      visualViewport: view.visualViewport || null
+    };
+
+    const update = () => {
+      if (state.stopped) return;
+      if (!owner.isConnected || !surface.isConnected || surface.hidden) {
+        stopAnchoredSurface(owner);
+        return;
+      }
+
+      surface.style.removeProperty("--ag-floating-visibility");
+      surface.style.setProperty("--ag-floating-shift-x", "0px");
+      surface.style.setProperty("--ag-floating-shift-y", "0px");
+      const visualViewport = state.visualViewport;
+      let viewportLeft = visualViewport?.offsetLeft ?? 0;
+      let viewportTop = visualViewport?.offsetTop ?? 0;
+      let viewportRight = viewportLeft + (visualViewport?.width ?? view.innerWidth);
+      let viewportBottom = viewportTop + (visualViewport?.height ?? view.innerHeight);
+
+      surfaceAncestors.forEach((ancestor) => {
+        if (!ancestor.isConnected) return;
+        const style = view.getComputedStyle(ancestor);
+        const clipsX = clippingOverflowValues.includes(style.overflowX);
+        const clipsY = clippingOverflowValues.includes(style.overflowY);
+        if (!clipsX && !clipsY) return;
+        const rect = ancestor.getBoundingClientRect();
+        const clientLeft = rect.left + ancestor.clientLeft;
+        const clientTop = rect.top + ancestor.clientTop;
+        const clientRight = clientLeft + ancestor.clientWidth;
+        const clientBottom = clientTop + ancestor.clientHeight;
+        if (clipsX) {
+          viewportLeft = Math.max(viewportLeft, clientLeft);
+          viewportRight = Math.min(viewportRight, clientRight);
+        }
+        if (clipsY) {
+          viewportTop = Math.max(viewportTop, clientTop);
+          viewportBottom = Math.min(viewportBottom, clientBottom);
+        }
+      });
+
+      const anchorRect = state.anchor?.getBoundingClientRect();
+      if (anchorRect) {
+        const measurableAnchor = anchorRect.width > 0 || anchorRect.height > 0;
+        let anchorHiddenByStyle = !state.anchor.isConnected;
+        for (
+          let element = state.anchor;
+          element && !anchorHiddenByStyle;
+          element = element.parentElement
+        ) {
+          const style = view.getComputedStyle(element);
+          anchorHiddenByStyle = style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse";
+        }
+        const anchorVisible = anchorRect.right > viewportLeft
+          && anchorRect.left < viewportRight
+          && anchorRect.bottom > viewportTop
+          && anchorRect.top < viewportBottom;
+        if (anchorHiddenByStyle || (measurableAnchor && !anchorVisible) || (state.anchorWasVisible && !measurableAnchor)) {
+          surface.style.setProperty("--ag-floating-visibility", "hidden");
+          state.onAnchorHidden?.();
+          return;
+        }
+        if (measurableAnchor && anchorVisible) state.anchorWasVisible = true;
+      }
+
+      surface.style.setProperty(
+        "--ag-floating-available-width",
+        `${Math.max(0, Math.floor(viewportRight - viewportLeft - edgeMargin * 2))}px`
+      );
+      surface.style.setProperty(
+        "--ag-floating-available-height",
+        `${Math.max(0, Math.floor(viewportBottom - viewportTop - edgeMargin * 2))}px`
+      );
+      const rect = surface.getBoundingClientRect();
+      let shiftX = 0;
+      let shiftY = 0;
+      if (rect.left < viewportLeft + edgeMargin) shiftX = viewportLeft + edgeMargin - rect.left;
+      else if (rect.right > viewportRight - edgeMargin) shiftX = viewportRight - edgeMargin - rect.right;
+      if (rect.top < viewportTop + edgeMargin) shiftY = viewportTop + edgeMargin - rect.top;
+      else if (rect.bottom > viewportBottom - edgeMargin) shiftY = viewportBottom - edgeMargin - rect.bottom;
+      surface.style.setProperty("--ag-floating-shift-x", `${Math.round(shiftX)}px`);
+      surface.style.setProperty("--ag-floating-shift-y", `${Math.round(shiftY)}px`);
+    };
+    const schedule = () => {
+      if (state.stopped) return;
+      if (state.animationFrame !== null) state.cancelFrame(state.animationFrame);
+      state.animationFrame = requestFrame(() => {
+        state.animationFrame = null;
+        update();
+      });
+    };
+    state.schedule = schedule;
+    state.update = update;
+    anchoredSurfaceStates.set(owner, state);
+
+    update();
+    if (state.stopped) return;
+    schedule();
+    state.stabilizationTimers.push(view.setTimeout(update, 0), view.setTimeout(update, 120));
+    view.addEventListener("resize", schedule);
+    view.addEventListener("scroll", schedule, true);
+    state.visualViewport?.addEventListener("resize", schedule);
+    state.visualViewport?.addEventListener("scroll", schedule);
+    if (typeof view.ResizeObserver === "function") {
+      state.resizeObserver = new view.ResizeObserver(schedule);
+      state.resizeObserver.observe(surface);
+      state.resizeObserver.observe(state.anchor);
+      observedAncestors.forEach((ancestor) => state.resizeObserver.observe(ancestor));
+    }
+    if (typeof view.MutationObserver === "function" && surface.ownerDocument.documentElement) {
+      state.disconnectObserver = new view.MutationObserver(() => {
+        if (!owner.isConnected || !surface.isConnected) stopAnchoredSurface(owner);
+        else if (!state.anchor.isConnected) {
+          surface.style.setProperty("--ag-floating-visibility", "hidden");
+          state.onAnchorHidden?.();
+        }
+      });
+      state.disconnectObserver.observe(surface.ownerDocument.documentElement, { childList: true, subtree: true });
+      state.visibilityObserver = new view.MutationObserver(schedule);
+      const mutationTargets = new Set([...observedAncestors, surface.ownerDocument.documentElement, state.anchor]);
+      mutationTargets.forEach((target) => state.visibilityObserver.observe(target, {
+        attributeFilter: ["class", "hidden", "style"],
+        attributes: true
+      }));
+    }
+  }
+
   function menuParts(menu) {
     return {
       content: menu.querySelector(menuContentSelector),
@@ -729,11 +939,11 @@
 
   function writeMenuState(menu, open) {
     const { content, trigger } = menuParts(menu);
-    if (!content || !trigger) return;
+    if (!content) return;
     const value = String(open);
     if (menu.getAttribute("data-open") !== value) menu.setAttribute("data-open", value);
     menu.classList.toggle("is-open", open);
-    trigger.setAttribute("aria-expanded", value);
+    trigger?.setAttribute("aria-expanded", value);
     content.hidden = !open;
     if (!open) setMenuRoving(menu, null);
   }
@@ -743,6 +953,7 @@
     if (!canOpenInteraction(menu) || isMenuUnavailable(menu)) {
       state.isOpen = false;
       removeInteractionLayer(menu);
+      stopAnchoredSurface(menu);
       writeMenuState(menu, false);
       return false;
     }
@@ -758,6 +969,8 @@
         target.focus();
       }
     }
+    const { content, trigger } = menuParts(menu);
+    startAnchoredSurface(menu, content, 8, trigger, () => closeMenu(menu, "anchor-hidden", false));
     if (!wasOpen) dispatchComponentEvent(menu, "menu", "open", { reason: reason || "api" });
     return !wasOpen;
   }
@@ -768,6 +981,7 @@
     closeDescendantInteractions(menu, "ancestor-close");
     state.isOpen = false;
     removeInteractionLayer(menu);
+    stopAnchoredSurface(menu);
     writeMenuState(menu, false);
     if (restoreFocus) {
       const { trigger } = menuParts(menu);
@@ -928,11 +1142,11 @@
 
   function writePopoverState(popover, open) {
     const { content, trigger } = popoverParts(popover);
-    if (!content || !trigger) return;
+    if (!content) return;
     const value = String(open);
     if (popover.getAttribute("data-open") !== value) popover.setAttribute("data-open", value);
     popover.classList.toggle("is-open", open);
-    trigger.setAttribute("aria-expanded", value);
+    trigger?.setAttribute("aria-expanded", value);
     content.hidden = !open;
   }
 
@@ -952,6 +1166,7 @@
       const target = focusableElements(content)[0] || content;
       if (typeof target.focus === "function") target.focus();
     }
+    startAnchoredSurface(popover, content, 8, trigger, () => closePopover(popover, "anchor-hidden", false));
     if (!wasOpen) dispatchComponentEvent(popover, "popover", "open", { reason: reason || "api" });
     return !wasOpen;
   }
@@ -962,6 +1177,7 @@
     closeDescendantInteractions(popover, "ancestor-close");
     state.isOpen = false;
     removeInteractionLayer(popover);
+    stopAnchoredSurface(popover);
     writePopoverState(popover, false);
     if (restoreFocus && state.returnFocus && state.returnFocus.isConnected) state.returnFocus.focus();
     state.returnFocus = null;
@@ -1093,11 +1309,11 @@
 
   function writeComboboxState(combobox, open) {
     const { input, list, toggle } = comboboxParts(combobox);
-    if (!input || !list) return;
+    if (!list) return;
     const value = String(open);
     if (combobox.getAttribute("data-open") !== value) combobox.setAttribute("data-open", value);
     combobox.classList.toggle("is-open", open);
-    input.setAttribute("aria-expanded", value);
+    input?.setAttribute("aria-expanded", value);
     if (toggle) toggle.setAttribute("aria-label", open ? "Close options" : "Open options");
     list.hidden = !open;
     if (!open) setComboboxActive(combobox, null);
@@ -1108,6 +1324,7 @@
     if (!canOpenInteraction(combobox) || isComboboxUnavailable(combobox)) {
       state.isOpen = false;
       removeInteractionLayer(combobox);
+      stopAnchoredSurface(combobox);
       writeComboboxState(combobox, false);
       return false;
     }
@@ -1115,6 +1332,8 @@
     state.isOpen = true;
     if (!wasOpen) pushInteractionLayer(combobox, "combobox");
     writeComboboxState(combobox, true);
+    const { input, list } = comboboxParts(combobox);
+    startAnchoredSurface(combobox, list, 8, input, () => closeCombobox(combobox, "anchor-hidden"));
     if (!wasOpen) dispatchComponentEvent(combobox, "combobox", "open", { reason: reason || "api" });
     return !wasOpen;
   }
@@ -1125,6 +1344,7 @@
     closeDescendantInteractions(combobox, "ancestor-close");
     state.isOpen = false;
     removeInteractionLayer(combobox);
+    stopAnchoredSurface(combobox);
     writeComboboxState(combobox, false);
     if (wasOpen) dispatchComponentEvent(combobox, "combobox", "close", { reason: reason || "api" });
     return wasOpen;
@@ -1369,6 +1589,9 @@
     state.isOpen = true;
     if (!wasOpen) pushInteractionLayer(tooltip, "tooltip");
     writeTooltipState(tooltip, true);
+    startAnchoredSurface(tooltip, tooltip.querySelector(tooltipContentSelector), 8, tooltip, () =>
+      closeTooltip(tooltip, "anchor-hidden", true)
+    );
     if (!wasOpen) dispatchComponentEvent(tooltip, "tooltip", "open", { reason: reason || "api" });
     return !wasOpen;
   }
@@ -1378,6 +1601,7 @@
     const wasOpen = state.isOpen;
     state.isOpen = false;
     removeInteractionLayer(tooltip);
+    stopAnchoredSurface(tooltip);
     if (resetActivation) {
       state.hasFocus = false;
       state.hasPointer = false;
@@ -1427,6 +1651,12 @@
       const state = attachTooltip(tooltip);
       if (!wasInitialized) state.isOpen = false;
       writeTooltipState(tooltip, state.isOpen);
+      if (state.isOpen) {
+        startAnchoredSurface(tooltip, tooltip.querySelector(tooltipContentSelector), 8, tooltip, () =>
+          closeTooltip(tooltip, "anchor-hidden", true)
+        );
+      }
+      else stopAnchoredSurface(tooltip);
     });
     return tooltips;
   }

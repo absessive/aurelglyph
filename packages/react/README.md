@@ -48,7 +48,13 @@ native elements first and add ARIA only where a composite widget requires it.
 `default`, `compact`, and `wide` variants. `Menu`
 (`Dropdown`) and `Popover` support controlled or uncontrolled open state. Menus
 support logical `bottom-start`, `bottom-end`, `top-start`, and `top-end`
-placement.
+placement. Menu, popover, tooltip, and combobox surfaces measure the visual
+viewport and clipping ancestors on open and on viewport or ancestor-scroll
+changes, then shift and scroll within constrained portrait, landscape, or
+embedded-shell windows instead of clipping. They dismiss when their anchor
+leaves those visible bounds. Menu roving focus does not scroll the corrected
+surface away from its anchor. Tooltip surfaces do not intercept the trigger's
+hover target when edge correction places them over it.
 
 ```tsx
 import { Button, Dialog, Menu } from "@aurelglyph/react";
@@ -131,6 +137,18 @@ feedback and structural patterns.
 Additional controls in this release include `IconButton`, `ButtonGroup`,
 `Spinner`, and `Divider`. All component styling remains token-based and supports
 light mode, dark mode, and every Aurelglyph accent theme.
+
+Responsive shells keep the top bar and footer in view while the main region
+owns available height. Pagination wraps bounded page sets, data tables retain
+horizontal scrolling, and anchored surfaces are constrained to the intersection
+of the visual viewport and any clipping scrollports. The optional AppShell rail
+responds to the shell's own container width and does not reserve space when it
+is absent. Optional top bars and footers can be omitted without displacing the
+flexible body row. These contracts are exercised at compact portrait, phone
+landscape, tablet, laptop, and wide breakpoints by the workspace UX gate.
+`AppShell` fills `100dvh` by default; embedded previews or bounded workspaces
+can set `--ag-app-shell-height` on the shell without changing its internal
+scroll ownership.
 
 `AppShell` owns the page's `main` landmark by default. When demonstrating or
 embedding a shell inside an existing `main`, set `contentAs="div"` (or another

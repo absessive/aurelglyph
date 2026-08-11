@@ -193,10 +193,12 @@ describe("Button", () => {
 
   it("uses semantic accent control tokens for primary button contrast", () => {
     const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+    const buttonRule = /\.ag-button \{([\s\S]*?)\n\}/u.exec(css)?.[1];
 
     expect(css).toContain("color: var(--ag-color-semantic-accent-foreground);");
     expect(css).toContain("var(--ag-color-semantic-accent-control)");
     expect(css).toContain("var(--ag-color-semantic-accent-control-strong)");
+    expect(buttonRule).not.toMatch(/^\s*color var\(--ag-motion-duration-fast\)/mu);
   });
 
   it("disables and announces loading controls", () => {
@@ -302,9 +304,12 @@ describe("Phase 1 mobile foundation components", () => {
 
     expect(shell.props.className).toContain("ag-app-shell");
     expect(topBar.props.className).toContain("ag-top-bar");
+    const shellBody = (shell.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
+    expect(shellBody?.props.className).toContain("ag-app-shell__body--with-navigation");
 
     const embedded = AppShell({ children: "Embedded", contentAs: "section" }) as ReactElement<Record<string, unknown>>;
     const embeddedBody = (embedded.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
+    expect(embeddedBody?.props.className).not.toContain("ag-app-shell__body--with-navigation");
     const embeddedContent = (embeddedBody?.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
     expect(embeddedContent?.type).toBe("section");
 
@@ -312,6 +317,16 @@ describe("Phase 1 mobile foundation components", () => {
     const titleGroup = (embeddedTopBar.props.children as Array<ReactElement<Record<string, unknown>> | null>)[1];
     const embeddedTitle = (titleGroup?.props.children as Array<ReactElement<Record<string, unknown>> | null>)[0];
     expect(embeddedTitle?.type).toBe("h3");
+
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+    expect(css).toContain("container-name: ag-app-shell");
+    expect(css).toContain("@container ag-app-shell (min-width: 760px)");
+    expect(css).toContain(".ag-app-shell__body--with-navigation");
+    expect(css).toContain(".ag-app-shell__body:has(> .ag-app-shell__nav)");
+    expect(css).toMatch(/\.ag-app-shell__top \{[\s\S]*?grid-row: 1;/u);
+    expect(css).toMatch(/\.ag-app-shell__body \{[\s\S]*?grid-row: 2;/u);
+    expect(css).toMatch(/\.ag-app-shell__footer \{[\s\S]*?grid-row: 3;/u);
+    expect(css).toMatch(/\.ag-tooltip__surface \{[\s\S]*?pointer-events: none;/u);
   });
 
   it("renders tab bar items with active page semantics", () => {

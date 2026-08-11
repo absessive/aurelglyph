@@ -1,7 +1,10 @@
 import {
   Children,
   cloneElement,
+  createContext,
   isValidElement,
+  useContext,
+  useState,
   type ReactElement,
   type ReactNode
 } from "react";
@@ -12,6 +15,7 @@ import {
   Text,
   View,
   useWindowDimensions,
+  type LayoutChangeEvent,
   type PressableProps,
   type StyleProp,
   type TextStyle,
@@ -25,6 +29,68 @@ import { useAurelglyphTheme } from "./theme.js";
 
 export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
+const ButtonGroupVisualContext = createContext<"horizontal" | "vertical" | null>(null);
+const buttonPaintKeys = [
+  "backgroundColor",
+  "borderBlockColor",
+  "borderBlockEndColor",
+  "borderBlockStartColor",
+  "borderBottomColor",
+  "borderBottomEndRadius",
+  "borderBottomLeftRadius",
+  "borderBottomRightRadius",
+  "borderBottomStartRadius",
+  "borderBottomWidth",
+  "borderColor",
+  "borderCurve",
+  "borderEndColor",
+  "borderEndEndRadius",
+  "borderEndStartRadius",
+  "borderEndWidth",
+  "borderLeftColor",
+  "borderLeftWidth",
+  "borderRadius",
+  "borderRightColor",
+  "borderRightWidth",
+  "borderStartColor",
+  "borderStartEndRadius",
+  "borderStartStartRadius",
+  "borderStartWidth",
+  "borderStyle",
+  "borderTopColor",
+  "borderTopEndRadius",
+  "borderTopLeftRadius",
+  "borderTopRightRadius",
+  "borderTopStartRadius",
+  "borderTopWidth",
+  "borderWidth",
+  "boxShadow",
+  "experimental_backgroundImage",
+  "experimental_backgroundPosition",
+  "experimental_backgroundRepeat",
+  "experimental_backgroundSize",
+  "outlineColor",
+  "outlineOffset",
+  "outlineStyle",
+  "outlineWidth",
+  "shadowColor",
+  "shadowOffset",
+  "shadowOpacity",
+  "shadowRadius"
+] as const satisfies ReadonlyArray<keyof ViewStyle>;
+
+function splitButtonStyle(style: StyleProp<ViewStyle>): { layout: ViewStyle | undefined; paint: ViewStyle | undefined } {
+  const flattened = StyleSheet.flatten(style);
+  if (!flattened) return { layout: undefined, paint: undefined };
+  const layout = { ...flattened } as Record<string, unknown>;
+  const paint: Record<string, unknown> = {};
+  for (const key of buttonPaintKeys) {
+    if (layout[key] !== undefined) paint[key] = layout[key];
+    delete layout[key];
+  }
+  return { layout: layout as ViewStyle, paint: paint as ViewStyle };
+}
+
 export type ButtonProps = Omit<PressableProps, "children" | "disabled" | "style"> &
   Pick<ControlStateProps, "busy" | "disabled" | "loading"> & {
     children: ReactNode;
@@ -40,6 +106,7 @@ export function Button({
   busy = false,
   children,
   disabled = false,
+  hitSlop,
   icon,
   loading = false,
   size = "md",
@@ -49,9 +116,15 @@ export function Button({
   ...props
 }: ButtonProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const attachedOrientation = useContext(ButtonGroupVisualContext);
   const unavailable = disabled || loading;
   const palette = buttonPalette(variant, theme.colors);
   const height = size === "sm" ? 36 : size === "lg" ? 52 : 44;
+  const visualInset = size === "sm" ? 4 : 0;
+  const visualInsetX = attachedOrientation === "horizontal" ? 0 : visualInset;
+  const visualInsetY = attachedOrientation === "vertical" ? 0 : visualInset;
+  const targetSize = Math.max(44, height);
+  const consumerStyle = splitButtonStyle(style);
   return (
     <Pressable
       {...props}
@@ -59,19 +132,37 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ busy: busy || loading, disabled: unavailable }}
       disabled={unavailable}
+      hitSlop={hitSlop}
       style={({ pressed }) => [
         styles.button,
         {
-          minHeight: height,
-          backgroundColor: palette.background,
-          borderColor: palette.border,
+          backgroundColor: "transparent",
           borderRadius: theme.radii.sm,
           opacity: unavailable ? 0.52 : pressed ? 0.82 : 1,
-          paddingHorizontal: size === "sm" ? theme.space[3] : theme.space[4]
+          paddingHorizontal: (size === "sm" ? theme.space[3] : theme.space[4]) + visualInsetX,
+          paddingVertical: visualInsetY
         },
-        style
+        consumerStyle.layout,
+        { minHeight: targetSize, minWidth: targetSize }
       ]}
     >
+      <View
+        accessible={false}
+        pointerEvents="none"
+        style={[
+          styles.buttonBackdrop,
+          {
+            backgroundColor: palette.background,
+            borderColor: palette.border,
+            borderRadius: theme.radii.sm,
+            bottom: visualInsetY,
+            left: visualInsetX,
+            right: visualInsetX,
+            top: visualInsetY
+          },
+          consumerStyle.paint
+        ]}
+      />
       {loading ? <ActivityIndicator color={palette.text} size="small" /> : icon}
       {typeof children === "string" || typeof children === "number" ? (
         <Text
@@ -126,24 +217,37 @@ export type ButtonGroupProps = ViewProps & {
   label: string;
   attached?: boolean;
   orientation?: "horizontal" | "vertical";
+  wrap?: boolean;
 };
 
-export function ButtonGroup({ attached = false, children, label, orientation = "horizontal", style, ...props }: ButtonGroupProps): ReactElement {
+export function ButtonGroup({ attached = false, children, label, orientation = "horizontal", style, wrap = !attached, ...props }: ButtonGroupProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const horizontal = orientation === "horizontal";
   const items = Children.map(children, (child, index) => {
     if (!isValidElement<ButtonProps>(child)) return child;
     return cloneElement(child, {
       accessibilityHint: [label, child.props.accessibilityHint].filter(Boolean).join(". "),
       style: [
+        horizontal ? styles.buttonGroupItem : undefined,
         child.props.style,
-        attached && index > 0 ? orientation === "horizontal" ? { marginLeft: -1 } : { marginTop: -1 } : undefined
+        attached && index > 0 ? horizontal ? { marginLeft: -1 } : { marginTop: -1 } : undefined
       ]
     });
   });
   return (
-    <View accessible={false} style={[styles.buttonGroup, { flexDirection: orientation === "horizontal" ? "row" : "column", gap: attached ? 0 : theme.space[2] }, style]} {...props}>
-      {items}
-    </View>
+    <ButtonGroupVisualContext.Provider value={attached ? orientation : null}>
+      <View
+        accessible={false}
+        style={[
+          styles.buttonGroup,
+          { flexDirection: horizontal ? "row" : "column", flexWrap: horizontal && wrap ? "wrap" : "nowrap", gap: attached ? 0 : theme.space[2] },
+          style
+        ]}
+        {...props}
+      >
+        {items}
+      </View>
+    </ButtonGroupVisualContext.Provider>
   );
 }
 
@@ -281,15 +385,34 @@ export type GridProps = ViewProps & {
   children?: ReactNode;
   columns?: number | GridResponsiveColumns;
   gap?: SurfacePadding;
+  minItemWidth?: number;
 };
 
-export function Grid({ children, columns = 1, gap = 4, style, ...props }: GridProps): ReactElement {
+export function Grid({ children, columns = 1, gap = 4, minItemWidth, onLayout, style, ...props }: GridProps): ReactElement {
   const theme = useAurelglyphTheme();
-  const { width } = useWindowDimensions();
-  const count = resolveResponsiveColumns(columns, width);
+  const { width: windowWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const spacing = theme.space[gap];
+  const availableWidth = containerWidth ?? windowWidth;
+  const responsiveCount = resolveResponsiveColumns(columns, availableWidth);
+  const safeMinItemWidth = minItemWidth !== undefined && Number.isFinite(minItemWidth) && minItemWidth > 0 ? minItemWidth : undefined;
+  const widthLimitedCount = safeMinItemWidth
+    ? Math.max(1, Math.floor((availableWidth + spacing) / (safeMinItemWidth + spacing)))
+    : responsiveCount;
+  const count = Math.min(responsiveCount, widthLimitedCount);
+  const handleLayout = (event: LayoutChangeEvent): void => {
+    const nextWidth = event.nativeEvent.layout.width;
+    if (Number.isFinite(nextWidth) && nextWidth > 0) {
+      setContainerWidth((current) => current === nextWidth ? current : nextWidth);
+    }
+    onLayout?.(event);
+  };
   return (
-    <View style={[{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -spacing / 2, rowGap: spacing }, style]} {...props}>
+    <View
+      {...props}
+      onLayout={handleLayout}
+      style={[{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -spacing / 2, rowGap: spacing }, style]}
+    >
       {Children.map(children, (child) => (
         <View style={{ flexBasis: `${100 / count}%`, maxWidth: `${100 / count}%`, paddingHorizontal: spacing / 2 }}>
           {child}
@@ -338,12 +461,17 @@ export function Progress({ label = "Progress", max = 100, min = 0, showValue = f
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
+    flexShrink: 1,
     gap: 8,
-    justifyContent: "center"
+    justifyContent: "center",
+    maxWidth: "100%",
+    minWidth: 0,
+    position: "relative"
   },
-  buttonText: { fontWeight: "600", letterSpacing: 0.25 },
-  buttonGroup: { alignItems: "center" },
+  buttonBackdrop: { borderWidth: StyleSheet.hairlineWidth, position: "absolute" },
+  buttonText: { flexShrink: 1, fontWeight: "600", letterSpacing: 0.25, minWidth: 0, textAlign: "center" },
+  buttonGroup: { alignItems: "center", maxWidth: "100%" },
+  buttonGroupItem: { flexShrink: 1, minWidth: 44 },
   spinner: { alignItems: "center", justifyContent: "center" }
 });

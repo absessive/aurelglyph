@@ -59,6 +59,7 @@ afterEach(() => {
   act(() => root.unmount());
   container.remove();
   document.body.replaceChildren();
+  vi.restoreAllMocks();
   delete (globalThis as ActEnvironment).IS_REACT_ACT_ENVIRONMENT;
 });
 
@@ -273,6 +274,7 @@ describe("existing component completion", () => {
 describe("overlay foundations", () => {
   it("navigates menu items and restores trigger focus on Escape", async () => {
     const onOpenChange = vi.fn();
+    const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
     render(
       createElement(Menu, {
         defaultOpen: true,
@@ -297,6 +299,7 @@ describe("overlay foundations", () => {
     fire(items[2] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "Home" }));
     fire(items[0] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "d" }));
     expect(document.activeElement).toBe(items[2]);
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
     fire(items[2] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
     await act(async () => undefined);
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
@@ -310,6 +313,201 @@ describe("overlay foundations", () => {
     expect(onOpenChange).toHaveBeenCalledWith(true);
     fire(document.body, new Event("pointerdown", { bubbles: true }));
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("shifts popovers into the viewport on the opening frame", () => {
+    render(createElement(Popover, { children: "Panel", label: "Details", trigger: "Open" }));
+    const surface = container.querySelector(".ag-popover__surface") as HTMLDivElement;
+    vi.spyOn(surface, "getBoundingClientRect").mockReturnValue({
+      bottom: 260,
+      height: 120,
+      left: -32,
+      right: 272,
+      top: 140,
+      width: 304,
+      x: -32,
+      y: 140,
+      toJSON: () => ({})
+    });
+
+    act(() => (container.querySelector(".ag-popover__trigger") as HTMLButtonElement).click());
+
+    expect(surface.style.getPropertyValue("--ag-floating-shift-x")).toBe("40px");
+    expect(surface.style.getPropertyValue("--ag-floating-shift-y")).toBe("0px");
+  });
+
+  it("constrains anchored surfaces to the client box of clipping scrollports", () => {
+    container.style.overflowX = "hidden";
+    container.style.overflowY = "auto";
+    Object.defineProperties(container, {
+      clientHeight: { configurable: true, value: 130 },
+      clientLeft: { configurable: true, value: 4 },
+      clientTop: { configurable: true, value: 6 },
+      clientWidth: { configurable: true, value: 170 }
+    });
+    vi.spyOn(container, "getBoundingClientRect").mockReturnValue({
+      bottom: 240,
+      height: 160,
+      left: 100,
+      right: 300,
+      top: 80,
+      width: 200,
+      x: 100,
+      y: 80,
+      toJSON: () => ({})
+    });
+    render(createElement(Popover, { children: "Panel", label: "Details", trigger: "Open" }));
+    const surface = container.querySelector(".ag-popover__surface") as HTMLDivElement;
+    vi.spyOn(surface, "getBoundingClientRect").mockReturnValue({
+      bottom: 190,
+      height: 120,
+      left: 90,
+      right: 250,
+      top: 70,
+      width: 160,
+      x: 90,
+      y: 70,
+      toJSON: () => ({})
+    });
+
+    act(() => (container.querySelector(".ag-popover__trigger") as HTMLButtonElement).click());
+
+    expect(surface.style.getPropertyValue("--ag-floating-available-width")).toBe("154px");
+    expect(surface.style.getPropertyValue("--ag-floating-available-height")).toBe("114px");
+    expect(surface.style.getPropertyValue("--ag-floating-shift-x")).toBe("22px");
+    expect(surface.style.getPropertyValue("--ag-floating-shift-y")).toBe("24px");
+  });
+
+  it("applies viewport collision shifts to menu and combobox surfaces", () => {
+    render(
+      createElement(
+        "div",
+        null,
+        createElement(Menu, { items: [{ id: "edit", label: "Edit" }], label: "Actions" }),
+        createElement(Combobox, { label: "System", options: [{ label: "Atlas", value: "atlas" }] })
+      )
+    );
+    const menu = container.querySelector(".ag-menu__surface") as HTMLDivElement;
+    const list = container.querySelector(".ag-combobox__list") as HTMLDivElement;
+    vi.spyOn(menu, "getBoundingClientRect").mockReturnValue({
+      bottom: window.innerHeight + 140,
+      height: 160,
+      left: 20,
+      right: 220,
+      top: window.innerHeight - 20,
+      width: 200,
+      x: 20,
+      y: window.innerHeight - 20,
+      toJSON: () => ({})
+    });
+    vi.spyOn(list, "getBoundingClientRect").mockReturnValue({
+      bottom: 300,
+      height: 120,
+      left: -25,
+      right: 275,
+      top: 180,
+      width: 300,
+      x: -25,
+      y: 180,
+      toJSON: () => ({})
+    });
+
+    act(() => (container.querySelector(".ag-menu__trigger") as HTMLButtonElement).click());
+    expect(Number.parseInt(menu.style.getPropertyValue("--ag-floating-shift-y"), 10)).toBeLessThan(0);
+    fire(document.body, new Event("pointerdown", { bubbles: true }));
+    fire(container.querySelector("[role='combobox']") as HTMLInputElement, new FocusEvent("focusin", { bubbles: true }));
+    expect(list.style.getPropertyValue("--ag-floating-shift-x")).toBe("33px");
+  });
+
+  it("dismisses an anchored surface after scrolling its trigger out of the clipping bounds", async () => {
+    container.style.overflowX = "auto";
+    container.style.overflowY = "auto";
+    Object.defineProperties(container, {
+      clientHeight: { configurable: true, value: 160 },
+      clientLeft: { configurable: true, value: 0 },
+      clientTop: { configurable: true, value: 0 },
+      clientWidth: { configurable: true, value: 240 }
+    });
+    vi.spyOn(container, "getBoundingClientRect").mockReturnValue({
+      bottom: 240,
+      height: 160,
+      left: 40,
+      right: 280,
+      top: 80,
+      width: 240,
+      x: 40,
+      y: 80,
+      toJSON: () => ({})
+    });
+    const onOpenChange = vi.fn();
+    render(createElement(Menu, { items: [{ id: "inspect", label: "Inspect" }], label: "Actions", onOpenChange }));
+    const trigger = container.querySelector(".ag-menu__trigger") as HTMLButtonElement;
+    const surface = container.querySelector(".ag-menu__surface") as HTMLDivElement;
+    let triggerCollapsed = false;
+    let triggerTop = 120;
+    vi.spyOn(trigger, "getBoundingClientRect").mockImplementation(() => triggerCollapsed
+      ? { bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0, x: 0, y: 0, toJSON: () => ({}) }
+      : {
+          bottom: triggerTop + 40,
+          height: 40,
+          left: 80,
+          right: 180,
+          top: triggerTop,
+          width: 100,
+          x: 80,
+          y: triggerTop,
+          toJSON: () => ({})
+        });
+    vi.spyOn(surface, "getBoundingClientRect").mockReturnValue({
+      bottom: 220,
+      height: 60,
+      left: 80,
+      right: 200,
+      top: 160,
+      width: 120,
+      x: 80,
+      y: 160,
+      toJSON: () => ({})
+    });
+
+    act(() => trigger.click());
+    expect(surface.hidden).toBe(false);
+    triggerTop = 20;
+    fire(window, new Event("scroll"));
+    await act(async () => new Promise((resolveWait) => window.setTimeout(resolveWait, 60)));
+
+    expect(surface.hidden).toBe(true);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(surface.style.getPropertyValue("--ag-floating-visibility")).toBe("");
+
+    triggerTop = 120;
+    act(() => trigger.click());
+    expect(surface.hidden).toBe(false);
+    triggerCollapsed = true;
+    trigger.hidden = true;
+    await act(async () => new Promise((resolveWait) => window.setTimeout(resolveWait, 60)));
+    expect(surface.hidden).toBe(true);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("dismisses a combobox when an anchor-only ancestor becomes hidden", async () => {
+    render(createElement(Combobox, {
+      label: "System",
+      options: [{ label: "Atlas", value: "atlas" }]
+    }));
+    const control = container.querySelector(".ag-combobox__control") as HTMLDivElement;
+    const input = container.querySelector("[role='combobox']") as HTMLInputElement;
+    const list = container.querySelector(".ag-combobox__list") as HTMLDivElement;
+
+    fire(input, new FocusEvent("focusin", { bubbles: true }));
+    expect(list.hidden).toBe(false);
+    await act(async () => new Promise((resolveWait) => window.setTimeout(resolveWait, 150)));
+
+    control.style.visibility = "hidden";
+    await act(async () => new Promise((resolveWait) => window.setTimeout(resolveWait, 60)));
+
+    expect(list.hidden).toBe(true);
+    expect(list.style.getPropertyValue("--ag-floating-visibility")).toBe("");
   });
 
   it("tracks tooltip hover and focus independently and dismisses both with Escape", () => {

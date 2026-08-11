@@ -50,10 +50,11 @@ export function Menu({
         { maxHeight: "72%", maxWidth: 440 },
         placement === "top" ? { marginBottom: "auto", marginTop: 56 } : placement === "bottom" ? { marginBottom: 40, marginTop: "auto" } : undefined
       ]}
+      scrollable={false}
       title={title}
       variant="compact"
     >
-      <ScrollView accessible={false} bounces={false}>
+      <ScrollView accessible={false} bounces={false} style={styles.selectionList}>
         <View style={{ gap: theme.space[1] }}>
           {items.length === 0 ? (
             <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{emptyMessage}</Text>
@@ -83,7 +84,7 @@ export function Menu({
                     }
                   ]}
                 >
-                  <View style={{ flex: 1, gap: 2 }}>
+                  <View style={styles.optionCopy}>
                     <Text style={{ color: item.danger ? theme.colors.danger : theme.colors.text, fontFamily: theme.fonts.ui, fontSize: 15 }}>{item.label}</Text>
                     {item.description ? <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{item.description}</Text> : null}
                   </View>
@@ -175,7 +176,7 @@ export function Combobox({
           }
         ]}
       >
-        <Text style={{ color: selected ? theme.colors.text : theme.colors.muted, flex: 1, fontFamily: theme.fonts.ui }}>
+        <Text style={{ color: selected ? theme.colors.text : theme.colors.muted, flex: 1, flexShrink: 1, fontFamily: theme.fonts.ui, minWidth: 0 }}>
           {selected ? labelForValue(options, selected) : loading ? "Loading…" : placeholder}
         </Text>
         <Icon color={theme.colors.muted} name="chevron-down" size={16} />
@@ -188,6 +189,7 @@ export function Combobox({
         }}
         open={open && !unavailable}
         panelStyle={{ maxHeight: "82%" }}
+        scrollable={false}
         title={label}
         variant="compact"
       >
@@ -210,7 +212,7 @@ export function Combobox({
           ]}
           value={query}
         />
-        <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
+        <ScrollView bounces={false} keyboardShouldPersistTaps="handled" style={styles.selectionList}>
           <View accessible={false} style={{ gap: theme.space[1] }}>
             {results.length === 0 ? (
               <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{emptyMessage}</Text>
@@ -240,7 +242,7 @@ export function Combobox({
                       }
                     ]}
                   >
-                    <View style={{ flex: 1, gap: 2 }}>
+                    <View style={styles.optionCopy}>
                       <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui }}>{option.label}</Text>
                       {option.description ? <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{option.description}</Text> : null}
                     </View>
@@ -329,6 +331,7 @@ export function CommandPalette({
       }}
       open={open}
       panelStyle={{ maxHeight: "82%", maxWidth: 680 }}
+      scrollable={false}
       title={title}
       variant="wide"
     >
@@ -345,7 +348,7 @@ export function CommandPalette({
         ]}
         value={query}
       />
-      <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
+      <ScrollView bounces={false} keyboardShouldPersistTaps="handled" style={styles.selectionList}>
         <View accessible={false} style={{ gap: theme.space[1] }}>
           {results.length === 0 ? <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{emptyMessage}</Text> : null}
           {results.map((item) => (
@@ -366,7 +369,7 @@ export function CommandPalette({
                 { backgroundColor: pressed ? theme.colors.surfaceMuted : "transparent", borderColor: "transparent", borderRadius: theme.radii.sm, opacity: item.disabled ? 0.48 : 1 }
               ]}
             >
-              <View style={{ flex: 1, gap: 2 }}>
+              <View style={styles.optionCopy}>
                 <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui }}>{item.label}</Text>
                 {item.description ? <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{item.description}</Text> : null}
               </View>
@@ -381,6 +384,8 @@ export function CommandPalette({
 const styles = StyleSheet.create({
   comboboxTrigger: { alignItems: "center", borderWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 10, minHeight: 44, paddingHorizontal: 12, paddingVertical: 10 },
   option: { alignItems: "center", borderWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 12, minHeight: 48, paddingHorizontal: 12, paddingVertical: 9 },
+  optionCopy: { flex: 1, gap: 2, minWidth: 0 },
   searchInput: { borderWidth: StyleSheet.hairlineWidth, fontSize: 16, minHeight: 46, paddingHorizontal: 12, paddingVertical: 10 },
+  selectionList: { flexShrink: 1, minHeight: 0 },
   signalDot: { borderRadius: 4, height: 8, width: 8 }
 });

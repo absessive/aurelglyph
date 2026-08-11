@@ -6,7 +6,7 @@ for iOS 17 and macOS 14 or newer.
 The public Git package lives at the repository root:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.5.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.0")
 ```
 
 ```swift
@@ -26,11 +26,11 @@ Text("Calibrated systems")
 ```
 
 Packaged custom faces keep their requested baseline and scale relative to the
-supplied Dynamic Type role; a system fallback still preserves the requested
-baseline size. The generic `font` factory defaults display to
-`.largeTitle`, editorial serif to `.title3`, UI/body to `.body`, and mono to
-`.caption`. Registration validates every expected PostScript face and only
-falls back the individual face that is unavailable.
+supplied Dynamic Type role; a system fallback preserves that Dynamic Type role
+even when an individual packaged face is unavailable. The generic `font`
+factory defaults display to `.largeTitle`, editorial serif to `.title3`, UI/body
+to `.body`, and mono to `.caption`. Registration validates every expected
+PostScript face and only falls back the individual face that is unavailable.
 
 `AurelglyphExpandableSection` follows the system Reduce Motion setting: its
 disclosure state changes immediately without the reveal animation when enabled.
@@ -60,7 +60,7 @@ supporting descriptions and metadata.
 
 ## Interaction foundations
 
-The 0.5 interaction layer uses native SwiftUI presentation and accessibility
+The 0.6 responsive interaction layer uses native SwiftUI presentation and accessibility
 behavior while preserving shared Aurelglyph naming:
 
 - Presentation: `AurelglyphDialog`, `AurelglyphDrawer`, `AurelglyphMenu`
@@ -82,6 +82,66 @@ hit area on iOS. Control errors are announced with the focused field, and built-
 dialog, drawer, pagination, command-palette, and combobox copy can be overridden
 for localization. Shared state phrases and generated labels can be replaced once
 per hierarchy with `.aurelglyphControlCopy(AurelglyphControlCopy(...))`.
+
+## Responsive behavior
+
+Interactive controls owned by Aurelglyph enforce a minimum 44-point iOS target.
+Top bars, list rows, toolbars, button groups, tab bars, and segmented controls
+fall back to stacked or horizontally scrollable layouts when their content no
+longer fits. Accessibility Dynamic Type sizes prefer the expanded layouts so
+essential labels are not forced onto one truncated line.
+
+`AurelglyphGrid` automatically reduces its adaptive column count as width
+shrinks. For a horizontal stack that should become vertical when its container
+is narrow, in a compact horizontal size class, or at accessibility text sizes,
+opt in without branching at each call site:
+
+```swift
+AurelglyphStack(axis: .horizontal, compactAxis: .vertical, spacing: 12) {
+  PrimaryAction()
+  SecondaryAction()
+}
+```
+
+`AurelglyphAppShell` owns vertical scrolling by default. Pass
+`scrollsContent: false` when its content is already a `List`, `ScrollView`, or
+another container that must own scrolling:
+
+```swift
+AurelglyphAppShell(scrollsContent: false) {
+  WorkbenchTopBar()
+} content: {
+  List(systems) { system in
+    SystemRow(system)
+  }
+} tabBar: {
+  WorkbenchTabBar()
+}
+```
+
+Apps with a regular-width rail can provide it without maintaining a separate
+shell. `AurelglyphAppShell` uses the rail outside compact horizontal size classes
+when it and a 320-point content region fit, then falls back to the compact bottom
+navigation as the window narrows:
+
+```swift
+AurelglyphAppShell(regularNavigationWidth: 248) {
+  WorkbenchTopBar()
+} regularNavigation: {
+  SystemsRail()
+} content: {
+  WorkbenchContent()
+} tabBar: {
+  WorkbenchTabBar()
+}
+```
+
+Drawer and sheet bodies scroll by default while their headers remain reachable.
+Their initializers and presentation modifiers also accept
+`scrollsContent: false` for caller-managed `List` or `ScrollView` content.
+Popovers use SwiftUI's native compact adaptation, so they become sheets where
+the platform determines that a popover would be too constrained. Data tables
+preserve every column through horizontal scrolling in compact windows.
 
 ```swift
 @State private var showingArchive = false

@@ -1,6 +1,6 @@
 {
   "name": "aurelglyph-rails",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "license": "MIT",
   "files": [
@@ -15,6 +15,6 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.5.0"
+    "@aurelglyph/tokens": "0.6.0"
   }
 }

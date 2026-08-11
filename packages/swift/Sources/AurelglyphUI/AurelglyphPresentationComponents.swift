@@ -82,20 +82,11 @@ public struct AurelglyphDialog<Content: View, Actions: View>: View {
       }
       .frame(maxHeight: 480)
 
-      ViewThatFits(in: .horizontal) {
-        HStack(spacing: 10) {
-          Spacer(minLength: 0)
-          actions
-        }
-        .controlSize(.large)
-        .fixedSize(horizontal: true, vertical: false)
-
-        VStack(alignment: .trailing, spacing: 10) {
-          actions
-        }
-        .controlSize(.large)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+      dialogActionsLayout {
+        actions
       }
+      .controlSize(.large)
+      .frame(maxWidth: .infinity, alignment: .trailing)
       }
       .padding(24)
       .frame(maxWidth: size.maxWidth)
@@ -109,6 +100,15 @@ public struct AurelglyphDialog<Content: View, Actions: View>: View {
       .accessibilityElement(children: .contain)
       .accessibilityAddTraits(.isModal)
     }
+  }
+
+  private var dialogActionsLayout: AurelglyphAdaptiveLayout {
+    AurelglyphAdaptiveLayout(
+      primary: AnyLayout(HStackLayout(spacing: 10)),
+      fallback: AnyLayout(VStackLayout(alignment: .trailing, spacing: 10)),
+      fittingAxis: .horizontal,
+      forceFallback: false
+    )
   }
 }
 
@@ -191,6 +191,7 @@ public struct AurelglyphDrawer<Content: View>: View {
   private let title: String
   private let edge: AurelglyphDrawerEdge
   private let dismissOnBackdropTap: Bool
+  private let scrollsContent: Bool
   private let closeLabel: String
   private let dismissLabel: String
   private let content: Content
@@ -200,6 +201,7 @@ public struct AurelglyphDrawer<Content: View>: View {
     isPresented: Binding<Bool>,
     edge: AurelglyphDrawerEdge = .end,
     dismissOnBackdropTap: Bool = true,
+    scrollsContent: Bool = true,
     closeLabel: String? = nil,
     dismissLabel: String? = nil,
     @ViewBuilder content: () -> Content
@@ -208,6 +210,7 @@ public struct AurelglyphDrawer<Content: View>: View {
     self._isPresented = isPresented
     self.edge = edge
     self.dismissOnBackdropTap = dismissOnBackdropTap
+    self.scrollsContent = scrollsContent
     self.closeLabel = closeLabel ?? "Close \(title)"
     self.dismissLabel = dismissLabel ?? "Dismiss \(title)"
     self.content = content()
@@ -247,8 +250,7 @@ public struct AurelglyphDrawer<Content: View>: View {
             .accessibilityFocused($accessibleCloseControlFocused)
             .accessibilityLabel(closeLabel)
           }
-          content
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+          drawerBody
         }
         .padding(20)
         .frame(
@@ -324,6 +326,20 @@ public struct AurelglyphDrawer<Content: View>: View {
       accessibleCloseControlFocused = true
     }
   }
+
+  @ViewBuilder private var drawerBody: some View {
+    if scrollsContent {
+      ScrollView {
+        content
+          .frame(maxWidth: .infinity, alignment: .topLeading)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      .scrollIndicators(.visible)
+    } else {
+      content
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+  }
 }
 
 private extension View {
@@ -351,6 +367,7 @@ private struct AurelglyphDrawerPresenter<DrawerContent: View>: ViewModifier {
   let title: String
   let edge: AurelglyphDrawerEdge
   let dismissOnBackdropTap: Bool
+  let scrollsContent: Bool
   let closeLabel: String?
   let dismissLabel: String?
   let drawerContent: DrawerContent
@@ -366,6 +383,7 @@ private struct AurelglyphDrawerPresenter<DrawerContent: View>: ViewModifier {
         isPresented: $isPresented,
         edge: edge,
         dismissOnBackdropTap: dismissOnBackdropTap,
+        scrollsContent: scrollsContent,
         closeLabel: closeLabel,
         dismissLabel: dismissLabel
       ) {
@@ -382,6 +400,7 @@ public extension View {
     title: String,
     edge: AurelglyphDrawerEdge = .end,
     dismissOnBackdropTap: Bool = true,
+    scrollsContent: Bool = true,
     closeLabel: String? = nil,
     dismissLabel: String? = nil,
     @ViewBuilder content: () -> DrawerContent
@@ -392,6 +411,7 @@ public extension View {
         title: title,
         edge: edge,
         dismissOnBackdropTap: dismissOnBackdropTap,
+        scrollsContent: scrollsContent,
         closeLabel: closeLabel,
         dismissLabel: dismissLabel,
         drawerContent: content()
@@ -457,11 +477,18 @@ public struct AurelglyphMenu: View {
         .disabled(item.isDisabled)
       }
     } label: {
-      if let systemImage {
-        Label(label, systemImage: systemImage)
-      } else {
-        Text(label)
+      Group {
+        if let systemImage {
+          Label(label, systemImage: systemImage)
+        } else {
+          Text(label)
+        }
       }
+      .frame(
+        minWidth: AurelglyphResponsiveLayout.minimumInteractiveDimension,
+        minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension
+      )
+      .contentShape(Rectangle())
     }
     .disabled(isDisabled)
     .accessibilityLabel(label)
@@ -504,7 +531,6 @@ public struct AurelglyphPopover<Label: View, Content: View>: View {
         content
       }
       .padding(12)
-      .presentationCompactAdaptation(.popover)
     }
   }
 }

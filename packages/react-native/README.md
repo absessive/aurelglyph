@@ -6,7 +6,7 @@ Native Aurelglyph components, themes, tokens, and packaged fonts for iOS and And
 npm install @aurelglyph/react-native react react-native
 ```
 
-The 0.5 interaction layer targets the verified React Native 0.86.x line and
+The 0.6 responsive interaction layer targets the verified React Native 0.86.x line and
 React 19.2.3 or newer within React 19. It has no runtime UI dependency beyond
 React Native itself.
 
@@ -89,14 +89,68 @@ token is reserved for helper text, descriptions, placeholders, and metadata.
 Modal transitions automatically disable themselves when the operating system's
 Reduce Motion setting is enabled.
 
+## Responsive and constrained layouts
+
+`Dialog`, `Drawer`, and selection overlays stay inside a safe-area-aware,
+keyboard-avoiding shell in compact portrait and landscape windows. Dialog
+bodies scroll by default, while headers and wrapping action footers remain
+reachable. Set `scrollable={false}` when the child already owns scrolling, such
+as a `FlatList`. `screenInset`, `contentContainerStyle`,
+`keyboardAvoidingBehavior`, and `keyboardVerticalOffset` tune the shell without
+replacing it. Standard `Modal` options such as `statusBarTranslucent`,
+`supportedOrientations`, and `transparent` are forwarded and remain
+consumer-overridable.
+
+`AurelglyphProvider` also installs the non-modal root overlay host used by
+tooltips. It uses the native safe area by default; pass `overlayInsets` from the
+host application's safe-area source when explicit cross-platform inset values
+are available. `AurelglyphOverlayHost` is exported for apps that need to place
+the host separately from the theme provider; set `overlayHost={false}` when the
+application owns every host. The host reserves an elevated, non-blocking root
+layer so application panels do not cover active tooltips. Because a native
+`Modal` is presented above the application's root native hierarchy, wrap
+tooltip-bearing content in an `AurelglyphOverlayHost` inside any consumer-owned
+`Modal`. Aurelglyph `Dialog`, `Drawer`, and `Popover` do this automatically.
+
+```tsx
+<Modal visible={open} onRequestClose={close}>
+  <AurelglyphOverlayHost>
+    <ModalContentWithTooltips />
+  </AurelglyphOverlayHost>
+</Modal>
+```
+
+`Grid` resolves breakpoints from its measured container rather than the full
+device window, so it behaves correctly in drawers, tablet split views, and
+nested panels. `minItemWidth` can reduce the requested column count when a cell
+would otherwise become too narrow.
+
+```tsx
+<Grid
+  columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+  minItemWidth={240}
+>
+  {systems.map((system) => <SystemCard key={system.id} system={system} />)}
+</Grid>
+```
+
+Horizontal `ButtonGroup` instances wrap by default unless attached;
+`SegmentedControl` wraps and gives enlarged labels more width, while `TabBar`
+expands and scrolls when its destinations no longer fit. Small buttons keep
+their compact 36-point visual height while exposing a 44-point touch area.
+Pagination and segmented targets are at least 44 points in both dimensions.
+
 ## Native behavior
 
-Overlays are backed by React Native `Modal` for reliable z-order, touch, and
-screen-reader isolation on both platforms. `Tooltip` accepts one Pressable-like
+Modal surfaces are backed by React Native `Modal` for reliable z-order, touch,
+and screen-reader isolation on both platforms. `Tooltip` accepts one Pressable-like
 trigger element, composes its existing long-press handlers, and adds an
 `accessibilityHint` without nesting another accessible control. It supports
 top, bottom, left, and right placement because touch devices do not have a
-universal hover contract. `Slider` uses a 44-point core responder target and
+universal hover contract. Visible tooltips render through the provider's
+non-blocking root overlay host, measure and remeasure their trigger, flip away
+from constrained edges, and clamp to the host's safe bounds. `Slider` uses a
+44-point core responder target and
 the `adjustable` APIs, so it does not require a native slider dependency.
 
 React Native only exposes a `View` role when that view is itself accessible;
@@ -111,8 +165,8 @@ cannot discover.
 
 `Spinner` uses the canonical `sm`, `md`, and `lg` sizes. `Container` supports
 `sm`, `md`, `lg`, `xl`, and full-width layouts. `ButtonGroup` supports
-horizontal and vertical orientation, and `Divider` is a semantic separator
-unless `decorative` is explicitly enabled.
+horizontal and vertical orientation plus an explicit `wrap` override, and
+`Divider` is a semantic separator unless `decorative` is explicitly enabled.
 
 `Icon` provides stable dependency-free names for core controls: `search`,
 `check`, `close`, `plus`, `minus`, `info`, and directional chevrons. Pass a

@@ -20,6 +20,7 @@ import {
   nextEnabledIndex,
   useControllableState,
   useDismissLayer,
+  useViewportShift,
   type ControlStateProps
 } from "./foundation.js";
 
@@ -98,6 +99,7 @@ export function Combobox({
   const errorId = error ? `${comboboxId}-error` : undefined;
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const suppressFocusOpenRef = useRef(false);
   const initialLabel = options.find((option) => option.value === defaultValue)?.label ?? "";
   const [selectedValue, setSelectedValue] = useControllableState<string | null>({
@@ -126,6 +128,12 @@ export function Combobox({
     value === undefined ? undefined : value === null ? "" : options.find((option) => option.value === value)?.label;
 
   useDismissLayer({ enabled: open && !unavailable, onDismiss: () => setOpen(false), refs: [rootRef] });
+  useViewportShift({
+    anchorRef: inputRef,
+    enabled: open && !unavailable,
+    onAnchorHidden: () => setOpen(false),
+    ref: listRef
+  });
 
   useEffect(() => {
     if (!unavailable) return;
@@ -272,7 +280,7 @@ export function Combobox({
           <Icon decorative name="chevron-down" />
         </button>
       </div>
-      <div className="ag-combobox__list" hidden={!open || unavailable} id={listId} role="listbox">
+      <div className="ag-combobox__list" hidden={!open || unavailable} id={listId} ref={listRef} role="listbox">
         {isBusy ? (
           <div aria-disabled="true" aria-selected="false" className="ag-combobox__empty" role="option">
             Loading…

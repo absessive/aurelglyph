@@ -71,7 +71,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.5.0";
+const packageVersion = "0.6.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -486,7 +486,7 @@ function ComponentsPage() {
               />
               <Popover label="Release details" trigger="Inspect release">
                 <strong>Systems operational.</strong>
-                <p className="example-copy">All interaction adapters report the same 0.5 contract.</p>
+                <p className="example-copy">All interaction adapters report the same 0.6 contract.</p>
               </Popover>
               <Tooltip content="Refresh package state">
                 <IconButton icon="refresh" label="Refresh package state" variant="secondary" />
@@ -593,6 +593,19 @@ function ComponentsPage() {
                 ]}
               />
             }
+            navigation={
+              <nav aria-label="Shell sections" className="example-nav">
+                <a className="is-active" href="#components">
+                  <span className="example-nav__dot" />Workbench
+                </a>
+                <a href="#components">
+                  <span className="example-nav__dot" />Systems
+                </a>
+                <a href="#components">
+                  <span className="example-nav__dot" />Settings
+                </a>
+              </nav>
+            }
             topBar={<TopBar actions={<Button icon="edit" variant="ghost">Edit</Button>} subtitle="Systems online" title="Workbench" titleAs="h3" />}
           >
             <div className="example-mobile-stack">
@@ -610,6 +623,15 @@ function ComponentsPage() {
                 label="Quiet mode"
                 name="quiet-mode"
                 onChange={(event) => setQuietMode(event.currentTarget.checked)}
+              />
+              <Menu
+                items={[
+                  { id: "inspect", label: "Inspect system" },
+                  { id: "archive", label: "Archive system" }
+                ]}
+                label="Shell actions"
+                menuLabel="Shell actions"
+                placement="bottom-end"
               />
             </div>
           </AppShell>

@@ -142,6 +142,7 @@ public enum AurelglyphAxis: Sendable {
 }
 
 public struct AurelglyphButtonGroup<Content: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   private let axis: AurelglyphAxis
   private let spacing: CGFloat
   private let label: String
@@ -160,15 +161,25 @@ public struct AurelglyphButtonGroup<Content: View>: View {
   }
 
   public var body: some View {
-    let layout = axis == .horizontal
-      ? AnyLayout(HStackLayout(spacing: spacing))
-      : AnyLayout(VStackLayout(alignment: .leading, spacing: spacing))
-
-    layout {
+    adaptiveLayout {
       content
     }
     .accessibilityElement(children: .contain)
     .accessibilityLabel(label)
+  }
+
+  private var adaptiveLayout: AurelglyphAdaptiveLayout {
+    AurelglyphAdaptiveLayout(
+      primary: axis == .horizontal
+        ? AnyLayout(HStackLayout(spacing: spacing))
+        : AnyLayout(VStackLayout(alignment: .leading, spacing: spacing)),
+      fallback: axis == .horizontal
+        ? AnyLayout(VStackLayout(alignment: .leading, spacing: spacing))
+        : nil,
+      fittingAxis: .horizontal,
+      forceFallback: axis == .horizontal
+        && AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize)
+    )
   }
 }
 
@@ -463,6 +474,8 @@ public struct AurelglyphSlider: View {
 
       Slider(value: boundedValue, in: range, step: step)
         .tint(palette.accentControl)
+        .frame(minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
+        .contentShape(Rectangle())
         .disabled(isDisabled || isLoading || isReadOnly)
         .accessibilityLabel(label)
         .accessibilityValue(valueFormatter(resolvedValue))

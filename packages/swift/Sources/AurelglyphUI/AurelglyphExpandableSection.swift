@@ -48,6 +48,11 @@ public struct AurelglyphExpandableSection<Content: View>: View {
             .foregroundStyle(.tint)
             .accessibilityHidden(true)
         }
+        .frame(
+          maxWidth: .infinity,
+          minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension,
+          alignment: .leading
+        )
         .contentShape(Rectangle())
       }
       .buttonStyle(.plain)

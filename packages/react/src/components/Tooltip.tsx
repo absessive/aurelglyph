@@ -9,7 +9,7 @@ import {
   type ReactNode
 } from "react";
 
-import { joinIds, useDismissLayer } from "./foundation.js";
+import { joinIds, useDismissLayer, useViewportShift } from "./foundation.js";
 
 type TooltipTriggerProps = {
   "aria-describedby"?: string;
@@ -35,6 +35,7 @@ export function Tooltip({ children, content, id, placement = "top" }: TooltipPro
   const [hovered, setHovered] = useState(false);
   const open = focused || hovered;
   const rootRef = useRef<HTMLSpanElement>(null);
+  const surfaceRef = useRef<HTMLSpanElement>(null);
 
   useDismissLayer({
     enabled: open,
@@ -43,6 +44,15 @@ export function Tooltip({ children, content, id, placement = "top" }: TooltipPro
       setHovered(false);
     },
     refs: [rootRef]
+  });
+  useViewportShift({
+    anchorRef: rootRef,
+    enabled: open,
+    onAnchorHidden: () => {
+      setFocused(false);
+      setHovered(false);
+    },
+    ref: surfaceRef
   });
 
   const trigger = cloneElement(children, {
@@ -75,7 +85,7 @@ export function Tooltip({ children, content, id, placement = "top" }: TooltipPro
       ref={rootRef}
     >
       {trigger}
-      <span className="ag-tooltip__surface" hidden={!open} id={tooltipId} role="tooltip">
+      <span className="ag-tooltip__surface" hidden={!open} id={tooltipId} ref={surfaceRef} role="tooltip">
         {content}
       </span>
     </span>

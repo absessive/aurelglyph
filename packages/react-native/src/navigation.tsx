@@ -1,5 +1,5 @@
 import { type ReactElement, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 
 import { clamp, useControllableState, type ControlStateProps } from "./foundation.js";
 import { Button } from "./primitives.js";
@@ -55,7 +55,7 @@ export function Tabs({
                   }
                 ]}
               >
-                <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontWeight: isSelected ? "600" : "400" }}>{item.label}</Text>
+                <Text style={{ color: theme.colors.text, flexShrink: 1, fontFamily: theme.fonts.ui, fontWeight: isSelected ? "600" : "400" }}>{item.label}</Text>
                 {item.badge ? <Text style={{ color: theme.colors.accentStrong, fontFamily: theme.fonts.mono, fontSize: 10 }}>{item.badge}</Text> : null}
               </Pressable>
             );
@@ -90,6 +90,8 @@ export function SegmentedControl({
   ...props
 }: SegmentedControlProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const { fontScale } = useWindowDimensions();
+  const segmentMinWidth = Math.min(192, 96 * (Number.isFinite(fontScale) ? Math.max(1, fontScale) : 1));
   const firstEnabled = items.find((item) => !item.disabled)?.value ?? "";
   const [selected, setSelected] = useControllableState({ defaultValue: defaultValue ?? firstEnabled, onChange: onValueChange, value });
   const active = items.some((item) => item.value === selected && !item.disabled) ? selected : firstEnabled;
@@ -116,11 +118,12 @@ export function SegmentedControl({
                 backgroundColor: checked ? theme.colors.surface : "transparent",
                 borderColor: checked ? theme.colors.accent : "transparent",
                 borderRadius: theme.radii.xs,
+                flexBasis: segmentMinWidth,
                 opacity: unavailable ? 0.48 : pressed ? 0.76 : 1
               }
             ]}
           >
-            <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontSize: 13, fontWeight: checked ? "600" : "400" }}>{item.label}</Text>
+            <Text style={{ color: theme.colors.text, flexShrink: 1, fontFamily: theme.fonts.ui, fontSize: 13, fontWeight: checked ? "600" : "400", textAlign: "center" }}>{item.label}</Text>
           </Pressable>
         );
       })}
@@ -209,12 +212,19 @@ export function TabBar({
   ...props
 }: TabBarProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const { fontScale } = useWindowDimensions();
+  const tabItemMinWidth = Math.min(144, 64 * (Number.isFinite(fontScale) ? Math.max(1, fontScale) : 1));
   const firstEnabled = items.find((item) => !item.disabled)?.id ?? "";
   const [selected, setSelected] = useControllableState({ defaultValue: defaultValue ?? firstEnabled, onChange: onValueChange, value });
   const active = items.some((item) => item.id === selected && !item.disabled) ? selected : firstEnabled;
   return (
     <View accessible={false} style={[styles.tabBar, { backgroundColor: theme.colors.surface, borderColor: theme.colors.borderStrong }, style]} {...props}>
-      <View accessible={false} style={styles.tabBarList}>
+      <ScrollView
+        accessible={false}
+        contentContainerStyle={styles.tabBarList}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
         {items.map((item) => {
           const isSelected = item.id === active;
           const unavailable = disabled || loading || item.disabled;
@@ -226,29 +236,29 @@ export function TabBar({
               disabled={unavailable}
               key={item.id}
               onPress={() => setSelected(item.id)}
-              style={({ pressed }) => [styles.tabBarItem, { opacity: unavailable ? 0.48 : pressed ? 0.74 : 1 }]}
+              style={({ pressed }) => [styles.tabBarItem, { flexBasis: tabItemMinWidth, minWidth: tabItemMinWidth, opacity: unavailable ? 0.48 : pressed ? 0.74 : 1 }]}
             >
               {item.icon}
-              <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontSize: 12, fontWeight: isSelected ? "600" : "400" }}>{item.label}</Text>
-              {item.badge ? <Text style={{ color: theme.colors.accentStrong, fontFamily: theme.fonts.mono, fontSize: 9 }}>{item.badge}</Text> : null}
+              <Text style={{ color: theme.colors.text, flexShrink: 1, fontFamily: theme.fonts.ui, fontSize: 12, fontWeight: isSelected ? "600" : "400", textAlign: "center" }}>{item.label}</Text>
+              {item.badge ? <Text style={{ color: theme.colors.accentStrong, flexShrink: 1, fontFamily: theme.fonts.mono, fontSize: 9, textAlign: "center" }}>{item.badge}</Text> : null}
               <View accessible={false} style={[styles.tabBarIndicator, { backgroundColor: isSelected ? theme.colors.accent : "transparent" }]} />
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { alignItems: "center", borderWidth: StyleSheet.hairlineWidth, height: 36, justifyContent: "center", minWidth: 36, paddingHorizontal: 8 },
+  page: { alignItems: "center", borderWidth: StyleSheet.hairlineWidth, justifyContent: "center", minHeight: 44, minWidth: 44, paddingHorizontal: 8 },
   pagination: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  segment: { alignItems: "center", borderWidth: StyleSheet.hairlineWidth, flex: 1, justifyContent: "center", minHeight: 36, paddingHorizontal: 10, paddingVertical: 7 },
-  segmented: { borderWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 2, padding: 3 },
+  segment: { alignItems: "center", borderWidth: StyleSheet.hairlineWidth, flexBasis: 96, flexGrow: 1, flexShrink: 1, justifyContent: "center", minHeight: 44, minWidth: 44, paddingHorizontal: 10, paddingVertical: 7 },
+  segmented: { borderWidth: StyleSheet.hairlineWidth, flexDirection: "row", flexWrap: "wrap", gap: 2, padding: 3 },
   tab: { alignItems: "center", borderBottomWidth: 2, flexDirection: "row", gap: 6, minHeight: 44, paddingHorizontal: 14, paddingVertical: 10 },
   tabBar: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: "hidden" },
   tabBarIndicator: { borderRadius: 1, bottom: 0, height: 2, left: 12, position: "absolute", right: 12 },
-  tabBarItem: { alignItems: "center", flex: 1, gap: 3, justifyContent: "center", minHeight: 56, paddingHorizontal: 8, paddingVertical: 7, position: "relative" },
-  tabBarList: { flexDirection: "row" },
+  tabBarItem: { alignItems: "center", flexBasis: 64, flexGrow: 1, flexShrink: 0, gap: 3, justifyContent: "center", minHeight: 56, minWidth: 64, paddingHorizontal: 8, paddingVertical: 7, position: "relative" },
+  tabBarList: { flexDirection: "row", flexGrow: 1 },
   tabList: { borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row" }
 });

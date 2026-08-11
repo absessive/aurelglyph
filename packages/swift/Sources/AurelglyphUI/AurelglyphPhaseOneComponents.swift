@@ -3,15 +3,39 @@ import SwiftUI
 public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: View {
   @Environment(\.aurelglyphTheme) private var theme
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+  private let scrollsContent: Bool
+  private let regularNavigation: AnyView?
+  private let regularNavigationWidth: CGFloat
   private let topBar: TopBar
   private let content: Content
   private let tabBar: TabBar
 
   public init(
+    scrollsContent: Bool = true,
     @ViewBuilder topBar: () -> TopBar,
     @ViewBuilder content: () -> Content,
     @ViewBuilder tabBar: () -> TabBar
   ) {
+    self.scrollsContent = scrollsContent
+    self.regularNavigation = nil
+    self.regularNavigationWidth = AurelglyphResponsiveLayout.defaultNavigationWidth
+    self.topBar = topBar()
+    self.content = content()
+    self.tabBar = tabBar()
+  }
+
+  public init<RegularNavigation: View>(
+    scrollsContent: Bool = true,
+    regularNavigationWidth: CGFloat = 260,
+    @ViewBuilder topBar: () -> TopBar,
+    @ViewBuilder regularNavigation: () -> RegularNavigation,
+    @ViewBuilder content: () -> Content,
+    @ViewBuilder tabBar: () -> TabBar
+  ) {
+    self.scrollsContent = scrollsContent
+    self.regularNavigation = AnyView(regularNavigation())
+    self.regularNavigationWidth = AurelglyphResponsiveLayout.navigationWidth(regularNavigationWidth)
     self.topBar = topBar()
     self.content = content()
     self.tabBar = tabBar()
@@ -20,22 +44,91 @@ public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: Vie
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
 
-    VStack(spacing: 0) {
-      topBar
-      ScrollView {
-        content
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(16)
+    Group {
+      if let regularNavigation {
+        adaptiveLayout(navigation: regularNavigation)
+      } else {
+        compactLayout
       }
-      tabBar
     }
     .foregroundStyle(palette.foreground)
     .background(palette.background.ignoresSafeArea())
     .tint(palette.accent)
   }
+
+  private func adaptiveLayout(navigation: AnyView) -> some View {
+    GeometryReader { geometry in
+      let usesRegularNavigation = AurelglyphResponsiveLayout.usesRegularNavigation(
+        availableWidth: geometry.size.width,
+        navigationWidth: regularNavigationWidth,
+        isCompactWidth: horizontalSizeClass == .compact
+      )
+
+      HStack(spacing: 0) {
+        navigation
+          .frame(width: usesRegularNavigation ? regularNavigationWidth : 0)
+          .frame(maxHeight: .infinity, alignment: .topLeading)
+          .background(.thinMaterial)
+          .clipped()
+          .opacity(usesRegularNavigation ? 1 : 0)
+          .allowsHitTesting(usesRegularNavigation)
+          .accessibilityHidden(!usesRegularNavigation)
+          .disabled(!usesRegularNavigation)
+
+        Divider()
+          .frame(
+            width: usesRegularNavigation
+              ? AurelglyphResponsiveLayout.navigationDividerWidth
+              : 0
+          )
+          .opacity(usesRegularNavigation ? 1 : 0)
+          .accessibilityHidden(true)
+
+        VStack(spacing: 0) {
+          topBar
+          shellContent
+          tabBar
+            .frame(height: usesRegularNavigation ? 0 : nil)
+            .clipped()
+            .opacity(usesRegularNavigation ? 0 : 1)
+            .allowsHitTesting(!usesRegularNavigation)
+            .accessibilityHidden(usesRegularNavigation)
+            .disabled(usesRegularNavigation)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      }
+    }
+  }
+
+  private var compactLayout: some View {
+    VStack(spacing: 0) {
+      topBar
+      shellContent
+      tabBar
+    }
+  }
+
+  @ViewBuilder private var shellContent: some View {
+    if scrollsContent {
+      ScrollView {
+        paddedContent
+      }
+    } else {
+      paddedContent
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+    }
+  }
+
+  private var paddedContent: some View {
+    content
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(16)
+  }
 }
 
 public struct AurelglyphTopBar<Leading: View, Actions: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(\.layoutDirection) private var layoutDirection
   private let title: String
   private let subtitle: String?
   private let leading: Leading
@@ -54,25 +147,39 @@ public struct AurelglyphTopBar<Leading: View, Actions: View>: View {
   }
 
   public var body: some View {
-    HStack(spacing: 12) {
-      leading
-      VStack(alignment: .leading, spacing: 2) {
-        Text(title)
-          .font(AurelglyphTypography.title)
-          .lineLimit(1)
-        if let subtitle {
-          Text(subtitle)
-            .font(AurelglyphTypography.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-        }
+    adaptiveHeaderLayout {
+      HStack(spacing: 0) {
+        leading
       }
-      Spacer(minLength: 12)
+      titleBlock
       actions
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 12)
     .background(.thinMaterial)
+  }
+
+  private var adaptiveHeaderLayout: AurelglyphAdaptiveHeaderLayout {
+    AurelglyphAdaptiveHeaderLayout(
+      leadingItemCount: 2,
+      primarySpacing: 12,
+      trailingSpacing: 8,
+      fallbackSpacing: 10,
+      forceFallback: AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize),
+      layoutDirection: layoutDirection
+    )
+  }
+
+  private var titleBlock: some View {
+    VStack(alignment: .leading, spacing: 2) {
+      Text(title)
+        .font(AurelglyphTypography.title)
+      if let subtitle {
+        Text(subtitle)
+          .font(AurelglyphTypography.caption)
+          .foregroundStyle(.secondary)
+      }
+    }
   }
 }
 
@@ -91,6 +198,7 @@ public struct AurelglyphTabItem: Identifiable, Sendable {
 public struct AurelglyphTabBar: View {
   @Environment(\.aurelglyphTheme) private var theme
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   private let items: [AurelglyphTabItem]
   @Binding private var selection: String
 
@@ -102,32 +210,66 @@ public struct AurelglyphTabBar: View {
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
 
-    HStack(spacing: 8) {
-      ForEach(items) { item in
-        Button {
-          selection = item.id
-        } label: {
-          VStack(spacing: 4) {
-            Image(systemName: item.systemImage)
-              .font(AurelglyphTypography.label)
-            Text(item.title)
-              .font(AurelglyphTypography.monoCaption)
-              .textCase(.uppercase)
-              .lineLimit(1)
+    Group {
+      if AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize) {
+        scrollableItems(palette: palette)
+      } else {
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 8) {
+            ForEach(items) { item in
+              tabButton(item, palette: palette, scrollable: false)
+            }
           }
-          .frame(maxWidth: .infinity)
-          .padding(.vertical, 8)
-          .foregroundStyle(palette.foreground)
-          .background(selection == item.id ? palette.accent.opacity(0.16) : Color.clear)
-          .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+          scrollableItems(palette: palette)
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selection == item.id ? .isSelected : [])
       }
     }
     .padding(.horizontal, 12)
     .padding(.vertical, 8)
     .background(.thinMaterial)
+  }
+
+  private func scrollableItems(palette: AurelglyphPalette) -> some View {
+    ScrollView(.horizontal) {
+      HStack(spacing: 8) {
+        ForEach(items) { item in
+          tabButton(item, palette: palette, scrollable: true)
+        }
+      }
+    }
+    .scrollIndicators(.hidden)
+  }
+
+  private func tabButton(
+    _ item: AurelglyphTabItem,
+    palette: AurelglyphPalette,
+    scrollable: Bool
+  ) -> some View {
+    Button {
+      selection = item.id
+    } label: {
+      VStack(spacing: 4) {
+        Image(systemName: item.systemImage)
+          .font(AurelglyphTypography.label)
+        Text(item.title)
+          .font(AurelglyphTypography.monoCaption)
+          .textCase(.uppercase)
+          .lineLimit(1)
+          .fixedSize(horizontal: true, vertical: false)
+      }
+      .frame(
+        minWidth: AurelglyphResponsiveLayout.minimumInteractiveDimension,
+        maxWidth: scrollable ? nil : .infinity,
+        minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension
+      )
+      .padding(.vertical, 4)
+      .foregroundStyle(palette.foreground)
+      .background(selection == item.id ? palette.accent.opacity(0.16) : Color.clear)
+      .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+      .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .accessibilityAddTraits(selection == item.id ? .isSelected : [])
   }
 }
 
@@ -199,6 +341,8 @@ public struct AurelglyphListSection<Content: View>: View {
 }
 
 public struct AurelglyphListRow<Trailing: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(\.layoutDirection) private var layoutDirection
   private let title: String
   private let subtitle: String?
   private let systemImage: String?
@@ -220,29 +364,46 @@ public struct AurelglyphListRow<Trailing: View>: View {
   }
 
   public var body: some View {
-    HStack(spacing: 12) {
-      if let systemImage {
-        Image(systemName: systemImage)
-          .frame(width: 32, height: 32)
-          .foregroundStyle(.tint)
-          .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-      }
-      VStack(alignment: .leading, spacing: 3) {
-        Text(title)
-          .font(AurelglyphTypography.body)
-          .lineLimit(1)
-        if let subtitle {
-          Text(subtitle)
-            .font(AurelglyphTypography.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-        }
-      }
-      Spacer(minLength: 12)
+    adaptiveRowLayout {
+      rowIdentity
       trailing
     }
     .padding(16)
     .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+  }
+
+  private var adaptiveRowLayout: AurelglyphAdaptiveHeaderLayout {
+    AurelglyphAdaptiveHeaderLayout(
+      leadingItemCount: 1,
+      primarySpacing: 12,
+      trailingSpacing: 8,
+      fallbackSpacing: 10,
+      forceFallback: AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize),
+      layoutDirection: layoutDirection
+    )
+  }
+
+  private var rowIdentity: some View {
+    HStack(alignment: .top, spacing: 12) {
+      if let systemImage {
+        Image(systemName: systemImage)
+          .frame(width: 32, height: 32)
+          .foregroundStyle(.tint)
+          .background(
+            Color.accentColor.opacity(0.12),
+            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+          )
+      }
+      VStack(alignment: .leading, spacing: 3) {
+        Text(title)
+          .font(AurelglyphTypography.body)
+        if let subtitle {
+          Text(subtitle)
+            .font(AurelglyphTypography.caption)
+            .foregroundStyle(.secondary)
+        }
+      }
+    }
   }
 }
 
@@ -261,8 +422,9 @@ public struct AurelglyphSearchField: View {
         .foregroundStyle(.secondary)
       TextField(title, text: $text)
         .font(AurelglyphTypography.body)
+        .frame(minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
     }
-    .padding(12)
+    .padding(.horizontal, 12)
     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     .overlay {
       RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -319,6 +481,8 @@ public struct AurelglyphSwitch: View {
         }
         .toggleStyle(.switch)
         .tint(palette.accentControl)
+        .frame(minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
+        .contentShape(Rectangle())
         .disabled(isDisabled || isLoading || isReadOnly)
         .accessibilityValue(isLoading ? controlCopy.loading : (isOn ? controlCopy.on : controlCopy.off))
         .accessibilityHint(

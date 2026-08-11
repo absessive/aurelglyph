@@ -60,7 +60,7 @@ describe("React package contract", () => {
     expect(source).toContain('export type { ExpandableSectionProps } from "./components/ExpandableSection.js";');
   });
 
-  it("exports the 0.5 interaction, form, feedback, and layout surface", () => {
+  it("exports the interaction, form, feedback, and layout surface", () => {
     const expectedExports = [
       "Autocomplete",
       "Box",

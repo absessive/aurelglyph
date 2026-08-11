@@ -72,6 +72,16 @@ Selection groups expose `init` and `select(id, value)`.
 Use `window.Aurelglyph.destroy(rootElement)` before manually caching or removing
 a subtree with an open interaction.
 
+While open, menu, popover, tooltip, and combobox surfaces stay within the
+intersection of the visual viewport and any clipping scrollport ancestors; the
+controller remeasures on viewport changes and ancestor scrolling, and dismisses
+a surface when its anchor leaves those visible bounds. For shared AppShell
+markup, keep `.ag-app-shell__nav` as a direct child of
+`.ag-app-shell__body`. The stylesheet detects that relationship and switches
+the rail from the shell's own container width rather than the page viewport.
+The body remains in the flexible shell row when the top bar, footer, or both
+are omitted.
+
 ## Sheets, Dialogs, and Drawers
 
 Give a sheet a stable `id`, point opening controls at it with
@@ -256,7 +266,7 @@ contract and rotates with native open state.
 
 ### Controls and feedback
 
-The 0.5 helper set includes:
+The interaction helper set includes:
 
 - `aurelglyph_icon_button` and `aurelglyph_button_group`
 - `aurelglyph_checkbox`, `aurelglyph_radio_group`, `aurelglyph_slider`,

@@ -4,6 +4,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+const nativeMock = vi.hoisted(() => ({
+  anchor: { height: 44, width: 44, x: 24, y: 24 },
+  defaultLayout: { height: 44, width: 100, x: 0, y: 0 },
+  host: { height: 844, width: 390, x: 0, y: 0 },
+  layouts: {} as Record<string, { height: number; width: number; x: number; y: number }>,
+  tooltip: { height: 40, width: 160, x: 0, y: 0 },
+  window: { fontScale: 1, height: 844, scale: 3, width: 390 }
+}));
+
 vi.mock("react-native", async () => {
   const React = await import("react");
 
@@ -34,7 +43,7 @@ vi.mock("react-native", async () => {
     };
   };
 
-  const View = ({
+  const View = React.forwardRef(({
     children,
     onAccessibilityAction,
     onLayout,
@@ -42,10 +51,24 @@ vi.mock("react-native", async () => {
     onStartShouldSetResponder,
     style,
     ...props
-  }: Record<string, unknown> & { children?: ReactNode }) => {
+  }: Record<string, unknown> & { children?: ReactNode }, ref) => {
+    const testID = props.testID as string | undefined;
+    const layout = testID && nativeMock.layouts[testID]
+      ? nativeMock.layouts[testID]
+      : testID === "aurelglyph-overlay-host"
+        ? { height: nativeMock.host.height, width: nativeMock.host.width, x: 0, y: 0 }
+        : props.role === "tooltip"
+          ? nativeMock.tooltip
+          : nativeMock.defaultLayout;
+    React.useImperativeHandle(ref, () => ({
+      measureInWindow: (callback: (x: number, y: number, width: number, height: number) => void) => {
+        const { height, width, x, y } = testID === "aurelglyph-overlay-host" ? nativeMock.host : nativeMock.anchor;
+        callback(x, y, width, height);
+      }
+    }));
     React.useEffect(() => {
-      (onLayout as ((event: unknown) => void) | undefined)?.({ nativeEvent: { layout: { height: 44, width: 100, x: 0, y: 0 } } });
-    }, [onLayout]);
+      (onLayout as ((event: unknown) => void) | undefined)?.({ nativeEvent: { layout } });
+    }, [layout.height, layout.width, layout.x, layout.y, onLayout]);
     return React.createElement("div", {
       ...accessibilityProps(props),
       "data-rn": "View",
@@ -60,7 +83,26 @@ vi.mock("react-native", async () => {
         }
       }
     }, children);
-  };
+  });
+  View.displayName = "MockView";
+
+  const SafeAreaView = ({ children, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
+    "div",
+    { ...accessibilityProps(props), "data-rn": "SafeAreaView", "data-style": JSON.stringify(flattenStyle(style)) },
+    children
+  );
+
+  const KeyboardAvoidingView = ({ behavior, children, keyboardVerticalOffset, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
+    "div",
+    {
+      ...accessibilityProps(props),
+      "data-behavior": behavior as string | undefined,
+      "data-keyboard-offset": String(keyboardVerticalOffset ?? 0),
+      "data-rn": "KeyboardAvoidingView",
+      "data-style": JSON.stringify(flattenStyle(style))
+    },
+    children
+  );
 
   const Text = ({ children, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
     "span",
@@ -80,6 +122,7 @@ vi.mock("react-native", async () => {
     "button",
     {
       ...accessibilityProps(props),
+      "data-hit-slop": props.hitSlop ? JSON.stringify(props.hitSlop) : undefined,
       "data-rn": "Pressable",
       "data-style": JSON.stringify(flattenStyle(typeof style === "function" ? (style as (state: { pressed: boolean }) => unknown)({ pressed: false }) : style)),
       disabled: Boolean(disabled),
@@ -115,9 +158,39 @@ vi.mock("react-native", async () => {
     value: value as string | undefined
   });
 
-  const Modal = ({ animationType, children, onRequestClose, visible }: { animationType?: string; children?: ReactNode; onRequestClose?: () => void; visible?: boolean }) => visible
-    ? React.createElement("div", { "data-animation": animationType, "data-rn": "Modal", onKeyDown: (event: KeyboardEvent) => event.key === "Escape" && onRequestClose?.() }, children)
-    : null;
+  const Modal = ({
+    animationType,
+    children,
+    onRequestClose,
+    onShow,
+    statusBarTranslucent,
+    supportedOrientations,
+    transparent,
+    visible
+  }: {
+    animationType?: string;
+    children?: ReactNode;
+    onRequestClose?: () => void;
+    onShow?: () => void;
+    statusBarTranslucent?: boolean;
+    supportedOrientations?: readonly string[];
+    transparent?: boolean;
+    visible?: boolean;
+  }) => {
+    React.useEffect(() => {
+      if (visible) onShow?.();
+    }, [onShow, visible]);
+    return visible
+      ? React.createElement("div", {
+        "data-animation": animationType,
+        "data-rn": "Modal",
+        "data-status-bar-translucent": String(Boolean(statusBarTranslucent)),
+        "data-supported-orientations": supportedOrientations?.join(","),
+        "data-transparent": String(Boolean(transparent)),
+        onKeyDown: (event: KeyboardEvent) => event.key === "Escape" && onRequestClose?.()
+      }, children)
+      : null;
+  };
 
   const Switch = ({ disabled, onValueChange, value, ...props }: Record<string, unknown>) => React.createElement("button", {
     ...accessibilityProps(props),
@@ -129,9 +202,15 @@ vi.mock("react-native", async () => {
     type: "button"
   });
 
-  const ScrollView = ({ children, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
+  const ScrollView = ({ children, contentContainerStyle, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
     "div",
-    { ...accessibilityProps(props), "data-rn": "ScrollView" },
+    {
+      ...accessibilityProps(props),
+      "data-content-style": JSON.stringify(flattenStyle(contentContainerStyle)),
+      "data-horizontal": String(Boolean(props.horizontal)),
+      "data-rn": "ScrollView",
+      "data-style": JSON.stringify(flattenStyle(style))
+    },
     children
   );
 
@@ -148,12 +227,15 @@ vi.mock("react-native", async () => {
     },
     ActivityIndicator,
     I18nManager: { isRTL: false },
+    KeyboardAvoidingView,
     Modal,
     Pressable,
+    SafeAreaView,
     ScrollView,
     StyleSheet: {
       absoluteFill: { bottom: 0, left: 0, position: "absolute", right: 0, top: 0 },
       create: <T,>(styles: T) => styles,
+      flatten: flattenStyle,
       hairlineWidth: 1
     },
     Switch,
@@ -161,7 +243,7 @@ vi.mock("react-native", async () => {
     TextInput,
     View,
     useColorScheme: () => "dark",
-    useWindowDimensions: () => ({ height: 844, scale: 3, width: 390 })
+    useWindowDimensions: () => ({ ...nativeMock.window })
   };
 });
 
@@ -170,6 +252,7 @@ import {
   ButtonGroup,
   Container,
   Divider,
+  Grid,
   IconButton,
   Progress,
   Spinner
@@ -179,8 +262,9 @@ import { Dialog, Drawer, Popover, Tooltip } from "./overlays.js";
 import { FileUpload, NumberField, RadioGroup, SearchField, Slider, TextField } from "./forms.js";
 import { Pagination, SegmentedControl, TabBar, Tabs } from "./navigation.js";
 import { Icon } from "./icons.js";
+import { AurelglyphOverlayHost } from "./overlay-host.js";
 import { AurelglyphProvider, resolveAurelglyphTheme } from "./theme.js";
-import { Text } from "react-native";
+import { Modal, Text } from "react-native";
 
 type Rendered = { container: HTMLDivElement; rerender: (ui: ReactElement) => void; root: Root };
 const mounted: Rendered[] = [];
@@ -212,12 +296,22 @@ function type(input: HTMLInputElement, value: string): void {
   });
 }
 
+function styleOf(element: Element | null | undefined): Record<string, unknown> {
+  return JSON.parse(element?.getAttribute("data-style") ?? "{}");
+}
+
 afterEach(() => {
   while (mounted.length) {
     const item = mounted.pop()!;
     act(() => item.root.unmount());
     item.container.remove();
   }
+  nativeMock.anchor = { height: 44, width: 44, x: 24, y: 24 };
+  nativeMock.defaultLayout = { height: 44, width: 100, x: 0, y: 0 };
+  nativeMock.host = { height: 844, width: 390, x: 0, y: 0 };
+  nativeMock.layouts = {};
+  nativeMock.tooltip = { height: 40, width: 160, x: 0, y: 0 };
+  nativeMock.window = { fontScale: 1, height: 844, scale: 3, width: 390 };
   vi.restoreAllMocks();
 });
 
@@ -257,6 +351,15 @@ describe("React Native rendered interaction contracts", () => {
 
     rendered.rerender(<Popover accessibilityLabel="Details" onOpenChange={onOpenChange} open><Button>Inspect</Button></Popover>);
     expect(Array.from(rendered.container.querySelectorAll("button")).some((button) => button.textContent === "Inspect")).toBe(true);
+
+    rendered.rerender(
+      <Dialog onOpenChange={onOpenChange} open title="Nested overlay">
+        <Tooltip label="Nested tooltip" visible><IconButton icon={<Text>i</Text>} label="Nested information" /></Tooltip>
+      </Dialog>
+    );
+    const nestedTooltip = rendered.container.querySelector('[role="tooltip"]');
+    expect(nestedTooltip?.closest('[data-rn="Modal"]')).not.toBeNull();
+    expect(rendered.container.querySelectorAll('[data-rn="Modal"]')).toHaveLength(1);
   });
 
   it("augments the real tooltip trigger without nesting another control", () => {
@@ -429,6 +532,265 @@ describe("React Native rendered interaction contracts", () => {
     expect(container.querySelector('button[aria-label="Results, page 1"]')).not.toBeNull();
     expect(container.querySelector('button[aria-label="Royal purple, Theme"]')).not.toBeNull();
     expect(Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "Save")?.getAttribute("aria-description")).toContain("Editing actions");
+  });
+
+  it("bounds dialogs and drawers in compact portrait and landscape while forwarding modal policy", () => {
+    nativeMock.window = { fontScale: 2, height: 568, scale: 2, width: 320 };
+    const rendered = render(
+      <Dialog
+        description="A deliberately long description that must remain reachable when text is enlarged."
+        footer={<><Button>Save calibrated settings</Button><Button variant="secondary">Cancel operation</Button></>}
+        onOpenChange={vi.fn()}
+        open
+        statusBarTranslucent
+        supportedOrientations={["landscape-left"]}
+        title="Responsive system settings"
+        transparent={false}
+      >
+        <Text>Scrollable dialog body</Text>
+      </Dialog>
+    );
+
+    const modal = rendered.container.querySelector('[data-rn="Modal"]');
+    const title = rendered.container.querySelector('[role="dialog"]');
+    const panel = title?.parentElement?.parentElement?.parentElement;
+    const body = panel?.querySelector('[data-rn="ScrollView"]');
+    const footer = panel?.lastElementChild;
+    expect(modal?.getAttribute("data-status-bar-translucent")).toBe("true");
+    expect(modal?.getAttribute("data-supported-orientations")).toBe("landscape-left");
+    expect(modal?.getAttribute("data-transparent")).toBe("false");
+    expect(rendered.container.querySelector('[data-rn="SafeAreaView"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[data-rn="KeyboardAvoidingView"]')?.getAttribute("data-behavior")).toBe("padding");
+    expect(styleOf(panel)).toMatchObject({ flexShrink: 1, maxHeight: "100%", width: "100%" });
+    expect(styleOf(panel?.parentElement).padding).toBe(16);
+    expect(styleOf(body)).toMatchObject({ flexShrink: 1, minHeight: 0 });
+    expect(styleOf(footer).flexWrap).toBe("wrap");
+
+    nativeMock.window = { fontScale: 2, height: 320, scale: 2, width: 568 };
+    rendered.rerender(<Drawer onOpenChange={vi.fn()} open side="end" title="Landscape drawer"><Text>Reachable drawer body</Text></Drawer>);
+    const drawerTitle = rendered.container.querySelector('[role="dialog"]');
+    const drawerPanel = drawerTitle?.parentElement?.parentElement?.parentElement;
+    expect(styleOf(drawerPanel)).toMatchObject({ flexShrink: 1, height: "100%", maxHeight: "100%", width: "86%" });
+    expect(styleOf(drawerPanel?.parentElement).padding).toBe(0);
+    expect(styleOf(drawerPanel?.querySelector('[data-rn="ScrollView"]'))).toMatchObject({ flexShrink: 1, minHeight: 0 });
+  });
+
+  it("keeps menu, combobox, and command results inside bounded shrinking scroll regions", () => {
+    const items = Array.from({ length: 40 }, (_, index) => ({ label: `Action ${index + 1}`, value: String(index + 1) }));
+    const rendered = render(<Menu accessibilityLabel="Actions" items={items} onOpenChange={vi.fn()} open />);
+    const menuList = rendered.container.querySelector('[data-rn="ScrollView"]');
+    expect(styleOf(menuList)).toMatchObject({ flexShrink: 1, minHeight: 0 });
+
+    rendered.rerender(
+      <CommandPalette
+        items={items.map((item) => ({ id: item.value, label: item.label, onSelect: vi.fn() }))}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+    const commandList = rendered.container.querySelector('[data-rn="ScrollView"]');
+    expect(styleOf(commandList)).toMatchObject({ flexShrink: 1, minHeight: 0 });
+    const commandTitle = rendered.container.querySelector('[role="dialog"]');
+    expect(styleOf(commandTitle?.parentElement?.parentElement?.parentElement).maxHeight).toBe("82%");
+
+    rendered.rerender(<Combobox label="Operating mode" options={items} />);
+    click(rendered.container.querySelector('[role="combobox"]')!);
+    const comboList = rendered.container.querySelector('[data-rn="ScrollView"]');
+    expect(styleOf(comboList)).toMatchObject({ flexShrink: 1, minHeight: 0 });
+  });
+
+  it("preserves compact visuals with 44pt touch areas and full-size navigation targets", () => {
+    const { container } = render(
+      <>
+        <Button accessibilityLabel="Compact action" size="sm">Compact</Button>
+        <IconButton icon={<Text>i</Text>} label="Compact icon" size="sm" />
+        <ButtonGroup attached label="Attached actions">
+          <Button accessibilityLabel="Attached compact action" size="sm">One</Button>
+          <Button size="sm">Two</Button>
+        </ButtonGroup>
+        <SegmentedControl items={[{ label: "Quiet", value: "quiet" }, { label: "Active", value: "active" }]} label="Mode" />
+        <Pagination label="Results" onPageChange={vi.fn()} page={1} pageCount={2} />
+      </>
+    );
+
+    for (const label of ["Compact action", "Compact icon", "Results, previous page", "Results, next page"]) {
+      const control = container.querySelector(`button[aria-label="${label}"]`);
+      expect(styleOf(control)).toMatchObject({ minHeight: 44, minWidth: 44 });
+      expect(control?.hasAttribute("data-hit-slop")).toBe(false);
+      expect(styleOf(control?.querySelector('[data-rn="View"]'))).toMatchObject({ bottom: 4, left: 4, right: 4, top: 4 });
+    }
+    const attached = container.querySelector('button[aria-label="Attached compact action"]');
+    expect(styleOf(attached)).toMatchObject({ minHeight: 44, minWidth: 44 });
+    expect(attached?.hasAttribute("data-hit-slop")).toBe(false);
+    expect(styleOf(attached?.querySelector('[data-rn="View"]'))).toMatchObject({ bottom: 4, left: 0, right: 0, top: 4 });
+    expect(styleOf(container.querySelector('button[aria-label="Quiet, Mode"]'))).toMatchObject({ minHeight: 44, minWidth: 44 });
+    expect(styleOf(container.querySelector('button[aria-label="Results, page 1"]'))).toMatchObject({ minHeight: 44, minWidth: 44 });
+  });
+
+  it("resolves responsive Grid columns from its measured split-container width", () => {
+    nativeMock.window = { fontScale: 1, height: 768, scale: 2, width: 1024 };
+    nativeMock.layouts["split-grid"] = { height: 568, width: 320, x: 0, y: 0 };
+    const onLayout = vi.fn();
+    const grid = () => (
+      <Grid
+        columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+        minItemWidth={240}
+        onLayout={onLayout}
+        testID="split-grid"
+      >
+        <Text>One</Text><Text>Two</Text><Text>Three</Text><Text>Four</Text>
+      </Grid>
+    );
+    const rendered = render(grid());
+    const root = rendered.container.querySelector('[data-testid="split-grid"]')!;
+    expect(styleOf(root.children[0]).flexBasis).toBe("100%");
+    expect(onLayout).toHaveBeenCalled();
+
+    nativeMock.layouts["split-grid"] = { height: 320, width: 568, x: 0, y: 0 };
+    rendered.rerender(grid());
+    expect(styleOf(root.children[0]).flexBasis).toBe("50%");
+  });
+
+  it("wraps or scrolls long controls without collapsing large-text labels", () => {
+    nativeMock.window = { fontScale: 2, height: 568, scale: 2, width: 320 };
+    const { container } = render(
+      <>
+        <ButtonGroup label="Long actions" testID="long-actions">
+          <Button accessibilityLabel="First long action">Save all calibrated system settings</Button>
+          <Button accessibilityLabel="Second long action">Cancel the current automation operation</Button>
+        </ButtonGroup>
+        <SegmentedControl
+          items={[
+            { label: "Drafting workspace overview", value: "drafting" },
+            { label: "Infrastructure calibration history", value: "history" },
+            { label: "Archived automation systems", value: "archive" }
+          ]}
+          label="Long mode labels"
+          testID="long-segments"
+        />
+        <TabBar
+          items={Array.from({ length: 7 }, (_, index) => ({ id: String(index), label: `Long destination ${index + 1}` }))}
+          testID="long-tab-bar"
+        />
+      </>
+    );
+
+    expect(styleOf(container.querySelector('[data-testid="long-actions"]')).flexWrap).toBe("wrap");
+    expect(styleOf(container.querySelector('button[aria-label="First long action"]'))).toMatchObject({ flexShrink: 1, maxWidth: "100%", minWidth: 44 });
+    expect(styleOf(container.querySelector('button[aria-label="First long action"] span'))).toMatchObject({ flexShrink: 1, minWidth: 0, textAlign: "center" });
+    expect(styleOf(container.querySelector('[data-testid="long-segments"]')).flexWrap).toBe("wrap");
+    expect(styleOf(container.querySelector('button[aria-label="Drafting workspace overview, Long mode labels"]'))).toMatchObject({ flexBasis: 192, minHeight: 44, minWidth: 44 });
+    const tabScroller = container.querySelector('[data-testid="long-tab-bar"] [data-rn="ScrollView"]');
+    expect(tabScroller?.getAttribute("data-horizontal")).toBe("true");
+    expect(JSON.parse(tabScroller?.getAttribute("data-content-style") ?? "{}").flexGrow).toBe(1);
+    expect(styleOf(container.querySelector('button[aria-label="Primary navigation, Long destination 1"]'))).toMatchObject({ flexBasis: 128, flexShrink: 0, minHeight: 56, minWidth: 128 });
+  });
+
+  it("portals, remeasures, flips, and clamps tooltips without blocking underlying controls", async () => {
+    nativeMock.window = { fontScale: 2, height: 568, scale: 2, width: 320 };
+    nativeMock.host = { height: 524, width: 304, x: 8, y: 24 };
+    nativeMock.anchor = { height: 44, width: 20, x: 292, y: 28 };
+    nativeMock.tooltip = { height: 40, width: 160, x: 0, y: 0 };
+    const onUnderlyingPress = vi.fn();
+    const tooltip = (overlayInsets: { bottom: number; left: number; right: number; top: number }) => (
+      <AurelglyphProvider overlayInsets={overlayInsets}>
+        <Tooltip label="A long calibrated tooltip" placement="right" visible>
+          <IconButton icon={<Text>i</Text>} label="Edge information" />
+        </Tooltip>
+        <Button accessibilityLabel="Underlying action" onPress={onUnderlyingPress}>Underlying action</Button>
+      </AurelglyphProvider>
+    );
+    const rendered = render(tooltip({ bottom: 20, left: 8, right: 8, top: 24 }));
+    let tip = rendered.container.querySelector('[role="tooltip"]');
+    const portraitHost = tip?.closest('[data-testid="aurelglyph-overlay-host"]');
+    expect(portraitHost).not.toBeNull();
+    expect(styleOf(portraitHost?.parentElement)).toMatchObject({
+      elevation: 1000,
+      paddingBottom: 20,
+      paddingLeft: 8,
+      paddingRight: 8,
+      paddingTop: 24,
+      zIndex: 1000
+    });
+    expect(tip?.closest('[data-rn="Modal"]')).toBeNull();
+    expect(styleOf(tip)).toMatchObject({ left: 116, opacity: 1, top: 8 });
+    click(rendered.container.querySelector('button[aria-label="Underlying action"]')!);
+    expect(onUnderlyingPress).toHaveBeenCalledOnce();
+
+    nativeMock.anchor = { height: 44, width: 20, x: 20, y: 100 };
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 120)));
+    tip = rendered.container.querySelector('[role="tooltip"]');
+    expect(styleOf(tip)).toMatchObject({ left: 40, opacity: 1, top: 78 });
+
+    nativeMock.window = { fontScale: 2, height: 320, scale: 2, width: 568 };
+    nativeMock.host = { height: 308, width: 528, x: 20, y: 0 };
+    nativeMock.anchor = { height: 44, width: 20, x: 520, y: 260 };
+    rendered.rerender(tooltip({ bottom: 12, left: 20, right: 20, top: 0 }));
+    tip = rendered.container.querySelector('[role="tooltip"]');
+    expect(styleOf(tip)).toMatchObject({ left: 332, opacity: 1, top: 260 });
+  });
+
+  it("supports explicit tooltip hosts inside consumer-owned native modals", () => {
+    const rendered = render(
+      <AurelglyphProvider>
+        <Modal visible>
+          <AurelglyphOverlayHost insets={{ bottom: 0, left: 0, right: 0, top: 0 }}>
+            <Tooltip label="Modal signal" visible>
+              <IconButton icon={<Text>i</Text>} label="Modal information" />
+            </Tooltip>
+          </AurelglyphOverlayHost>
+        </Modal>
+      </AurelglyphProvider>
+    );
+
+    const tip = rendered.container.querySelector('[role="tooltip"]');
+    expect(tip?.closest('[data-rn="Modal"]')).not.toBeNull();
+    expect(rendered.container.querySelectorAll('[data-testid="aurelglyph-overlay-host"]')).toHaveLength(2);
+
+    rendered.rerender(
+      <AurelglyphProvider overlayHost={false}>
+        <Text>Host supplied by the application</Text>
+      </AurelglyphProvider>
+    );
+    expect(rendered.container.querySelector('[data-testid="aurelglyph-overlay-host"]')).toBeNull();
+  });
+
+  it("keeps consumer button paint on the compact visual control", () => {
+    const { container } = render(
+      <Button
+        accessibilityLabel="Custom compact action"
+        size="sm"
+        style={{
+          backgroundColor: "tomato",
+          borderColor: "navy",
+          borderRadius: 7,
+          borderWidth: 3,
+          elevation: 6,
+          marginTop: 12,
+          shadowColor: "black",
+          shadowOpacity: 0.4
+        }}
+      >
+        Apply
+      </Button>
+    );
+    const target = container.querySelector('button[aria-label="Custom compact action"]');
+    const backdrop = target?.querySelector('[data-rn="View"]');
+    expect(styleOf(target)).toMatchObject({ elevation: 6, marginTop: 12, minHeight: 44, minWidth: 44 });
+    expect(styleOf(target)).not.toHaveProperty("backgroundColor", "tomato");
+    expect(styleOf(backdrop)).toMatchObject({
+      backgroundColor: "tomato",
+      borderColor: "navy",
+      borderRadius: 7,
+      borderWidth: 3,
+      bottom: 4,
+      left: 4,
+      right: 4,
+      shadowColor: "black",
+      shadowOpacity: 0.4,
+      top: 4
+    });
+    expect(styleOf(backdrop)).not.toHaveProperty("elevation");
   });
 
   it("uses the foreground token for light-mode interactive labels on muted surfaces", () => {

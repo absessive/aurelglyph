@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.6.0
+
+- Harden compact portrait, phone landscape, tablet/split-view, and wide-window
+  behavior across Web, React, React Native, SwiftUI, generated Pages, and the
+  static preview: constrained overlays remain reachable, navigation and action
+  groups adapt without clipping, data surfaces scroll deliberately, and native
+  controls preserve platform-sized interaction targets. React Native providers
+  can defer overlay-host ownership to the application, and consumer-owned
+  native modals can install an inner host for correctly layered tooltips.
+  Shared CSS AppShell rails now respond to their own container width and retain
+  the flexible body row when optional chrome is absent. React and Rails
+  anchored surfaces honor nested clipping scrollports as well as the visual
+  viewport, and dismiss
+  rather than detach when their anchor leaves those bounds. React menu keyboard
+  focus no longer scrolls a collision-shifted surface away from its anchor.
+- Expand the real-browser UX gate to reject browser auto-scaling, clipped
+  headings, escaped controls and anchored surfaces, missing responsive viewport
+  metadata, and layout overflow across 44 full mode/viewport audits, 44
+  accessibility-tree audits, 41 additional responsive probes, and desktop,
+  compact, and landscape interaction suites. Each interaction viewport uses an
+  isolated disposable Chrome process so instrumentation from one suite cannot
+  contaminate the next suite's timing or lifecycle. A CDP transport timeout
+  receives one recorded fresh-process retry; product, layout, and accessibility
+  assertions still fail immediately. Interactive text colors switch directly between
+  contrast-verified theme endpoints instead of passing through a nonconformant
+  transition color.
+
 ## 0.5.0
 
 - Add 18 interaction and layout families across CSS, React, React Native,

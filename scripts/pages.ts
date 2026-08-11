@@ -254,6 +254,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     ["components", "components.html", "Components"],
     ["changelog", "changelog.html", "Changelog"]
   ];
+  const accessibleBody = body.replaceAll("<pre><code>", '<pre aria-label="Code example" tabindex="0"><code>');
 
   return `<!doctype html>
 <html lang="en" data-mode="dark" data-theme="royal-purple">
@@ -346,6 +347,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       --color-border-soft: rgba(231, 223, 209, 0.10);
       --color-text: #e7dfd1;
       --color-text-muted: #a59b8b;
+      --color-text-readable-muted: var(--color-text-muted);
       --color-text-subtle: #6e685e;
       --color-shadow: rgba(0, 0, 0, 0.55);
       --color-highlight: rgba(255, 255, 255, 0.06);
@@ -368,6 +370,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       --color-border-soft: rgba(42, 36, 30, 0.14);
       --color-text: #2a241e;
       --color-text-muted: #64594c;
+      --color-text-readable-muted: #584d41;
       --color-text-subtle: #8c7e6c;
       --color-shadow: rgba(42, 36, 30, 0.18);
       --color-highlight: rgba(255, 255, 255, 0.45);
@@ -428,7 +431,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       justify-content: space-between;
       gap: 18px;
       padding: 14px 0 28px;
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       font-size: 0.8rem;
     }
 
@@ -457,6 +460,13 @@ function pageShell(title: string, body: string, active = "index"): string {
       text-transform: uppercase;
     }
 
+    .rail nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 8px;
+    }
+
     .rail-controls {
       display: flex;
       flex-wrap: wrap;
@@ -466,7 +476,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     .mode-toggle {
-      min-height: 36px;
+      min-height: 44px;
       border: 1px solid var(--color-border-soft);
       border-radius: var(--radius-sm);
       padding: 0 11px;
@@ -557,7 +567,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     p,
     li {
       max-width: 760px;
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       font-size: 1rem;
       line-height: 1.7;
     }
@@ -577,7 +587,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     .button {
       display: inline-flex;
       align-items: center;
-      min-height: 42px;
+      min-height: 44px;
       padding: 0 16px;
       border: 1px solid rgba(var(--accent-rgb), 0.42);
       border-radius: var(--radius-sm);
@@ -605,7 +615,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       background: var(--color-surface-2);
       font-family: var(--font-mono);
       font-size: 0.78rem;
-      color: var(--color-text-muted);
+      color: var(--color-text);
     }
 
     .metric strong {
@@ -679,7 +689,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     .support-matrix th {
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       font: 0.72rem/1.35 var(--font-mono);
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -704,7 +714,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     .support-matrix__category {
       display: block;
       margin-top: 3px;
-      color: var(--color-text-subtle);
+      color: var(--color-text-readable-muted);
       font: 0.72rem/1.35 var(--font-mono);
       letter-spacing: 0.04em;
       text-transform: uppercase;
@@ -799,7 +809,7 @@ function pageShell(title: string, body: string, active = "index"): string {
 
     .ag-demo-topbar small,
     .ag-demo-row small {
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
     }
 
     .ag-demo-mobile-body {
@@ -812,7 +822,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       border: 1px solid var(--color-border-soft);
       border-radius: var(--radius-md);
       padding: 12px;
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       background: var(--color-bg-elevated);
     }
 
@@ -851,7 +861,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       border-top: 1px solid var(--color-border-soft);
       border-bottom: 0;
       justify-content: space-around;
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       font-family: var(--font-mono);
       font-size: 0.7rem;
       text-transform: uppercase;
@@ -862,6 +872,202 @@ function pageShell(title: string, body: string, active = "index"): string {
       flex-wrap: wrap;
       align-items: center;
       gap: 12px;
+    }
+
+    .ag-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border: 1px solid rgba(var(--accent-rgb), 0.34);
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.16);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .ag-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(var(--accent-rgb), 0.36);
+      border-radius: 50%;
+      color: var(--color-text);
+      background: rgba(var(--accent-rgb), 0.16);
+      font-family: var(--font-mono);
+    }
+
+    .ag-alert {
+      display: flex;
+      min-width: min(100%, 18rem);
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      color: var(--color-text);
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-alert__dot {
+      width: 8px;
+      height: 8px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: #7fad68;
+    }
+
+    .ag-alert__content,
+    .ag-alert__body {
+      display: block;
+      min-width: 0;
+    }
+
+    .ag-alert__body {
+      margin-top: 2px;
+      color: var(--color-text-readable-muted);
+      font-size: 0.85rem;
+    }
+
+    .ag-segmented {
+      display: flex;
+      max-width: 100%;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 14px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-segmented__item {
+      min-width: 0;
+      min-height: 44px;
+      flex: 1 1 7rem;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 12px;
+      color: var(--color-text);
+      background: transparent;
+      font: 0.75rem/1 var(--font-mono);
+    }
+
+    .ag-segmented__item.is-active {
+      background: rgba(var(--accent-rgb), 0.18);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .ag-metric {
+      display: grid;
+      gap: 4px;
+      width: min(100%, 18rem);
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-metric__label,
+    .ag-metric__value {
+      margin: 0;
+    }
+
+    .ag-metric__label,
+    .ag-metric__delta {
+      color: var(--color-text-readable-muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    .ag-metric__value {
+      color: var(--color-text);
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 400;
+    }
+
+    .ag-progress {
+      overflow: hidden;
+      width: min(100%, 18rem);
+      height: 10px;
+      margin-top: 12px;
+      border-radius: 999px;
+      background: var(--color-border-soft);
+    }
+
+    .ag-progress__bar {
+      display: block;
+      height: 100%;
+      background: var(--accent-300);
+    }
+
+    .ag-command-palette {
+      display: grid;
+      width: min(100%, 30rem);
+      max-width: 100%;
+      gap: 8px;
+      margin-top: 14px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      background: var(--color-bg-elevated);
+    }
+
+    .ag-command-palette__search {
+      display: grid;
+      gap: 6px;
+    }
+
+    .ag-command-palette__label {
+      color: var(--color-text-readable-muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    .ag-command-palette__input,
+    .ag-command-palette__item {
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      color: var(--color-text);
+      background: var(--color-surface);
+      font: inherit;
+    }
+
+    .ag-command-palette__input {
+      padding: 0 12px;
+    }
+
+    .ag-command-palette__list {
+      min-width: 0;
+    }
+
+    .ag-command-palette__item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .ag-command-palette__item-label {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .ag-command-palette__shortcut {
+      color: var(--color-text-readable-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
     }
 
     .ag-demo-button,
@@ -909,7 +1115,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       border-radius: var(--radius-lg);
       padding: 16px;
       background: rgba(var(--accent-rgb), 0.1);
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
     }
 
     .ag-demo-disclosure {
@@ -949,7 +1155,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       margin: 0;
       border-top: 1px solid var(--color-border-soft);
       padding: 0 1rem 1rem;
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       animation: ag-demo-disclosure-reveal var(--duration-base) var(--ease-standard);
     }
 
@@ -1021,7 +1227,7 @@ function pageShell(title: string, body: string, active = "index"): string {
       border: 1px solid var(--color-border-soft);
       border-radius: var(--radius-sm);
       padding: 8px;
-      color: var(--color-text-muted);
+      color: var(--color-text-readable-muted);
       background: rgba(var(--accent-rgb), 0.08);
       font-family: var(--font-mono);
       font-size: 0.72rem;
@@ -1058,6 +1264,27 @@ function pageShell(title: string, body: string, active = "index"): string {
       .rail-controls {
         align-items: flex-start;
         justify-content: flex-start;
+        width: 100%;
+      }
+
+      .rail nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 8px;
+      }
+
+      .hero {
+        padding: 24px;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: clamp(2.35rem, 14vw, 3rem);
+        overflow-wrap: anywhere;
       }
     }
   </style>
@@ -1078,7 +1305,7 @@ function pageShell(title: string, body: string, active = "index"): string {
         <button aria-label="Use light mode" aria-pressed="false" class="mode-toggle" data-mode-toggle type="button">Light mode</button>
       </div>
     </header>
-${body}
+${accessibleBody}
   </main>
   <script>
     (() => {
@@ -1421,7 +1648,7 @@ function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): stri
           <div class="ag-progress" role="progressbar" aria-label="Release readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><span class="ag-progress__bar" style="inline-size: 72%"></span></div>
           <div class="ag-command-palette" role="dialog" aria-label="Command palette">
             <label class="ag-command-palette__search"><span class="ag-command-palette__label">Command palette</span><input class="ag-command-palette__input" placeholder="Type a command" type="search"></label>
-            <div class="ag-command-palette__list" role="listbox"><button class="ag-command-palette__item" role="option" type="button"><span class="ag-command-palette__item-label">Search systems</span><kbd class="ag-command-palette__shortcut">Cmd-K</kbd></button></div>
+            <div class="ag-command-palette__list" role="listbox" aria-label="Commands"><button class="ag-command-palette__item" role="option" type="button"><span class="ag-command-palette__item-label">Search systems</span><kbd class="ag-command-palette__shortcut">Cmd-K</kbd></button></div>
           </div>
         </section>
         <section class="preview-card">
@@ -1471,7 +1698,7 @@ function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): stri
             <span class="ag-demo-badge">Active</span>
             <div class="ag-demo-alert">Alert: generated package outputs are in sync.</div>
             <div class="ag-demo-progress"><span></span></div>
-            <div class="ag-demo-skeleton" aria-label="Skeleton loading preview">
+            <div class="ag-demo-skeleton" aria-label="Skeleton loading preview" role="status">
               <span></span>
               <span style="width: 78%"></span>
               <span style="width: 52%"></span>

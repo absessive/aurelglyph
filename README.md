@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.5.0`
+Current version: `0.6.0`
 
 ## Status
 
@@ -15,11 +15,14 @@ This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
 local workspace paths.
 
-Version 0.5.0 is the interaction-foundations release: overlays, complete choice
-and numeric inputs, loading feedback, and responsive layout primitives now share
-one declared contract across CSS/Web, React, React Native, SwiftUI, and Rails.
-Adapter and browser suites exercise applicable disabled, loading, read-only,
-invalid, keyboard, dismissal, focus, accessibility, and reduced-motion behavior.
+Version 0.6.0 is the responsive-hardening release: compact portrait, phone
+landscape, tablet and split-view, and wide-window layouts now share a verified
+adaptive contract across CSS/Web, React, React Native, SwiftUI, and Rails.
+Constrained overlays remain reachable, native controls preserve platform-sized
+targets, and the browser gate exercises layout, accessibility, interaction, and
+anchored-surface behavior across the supported viewport matrix. Interactive
+text switches directly between contrast-verified theme colors without an
+intermediate low-contrast transition.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -248,7 +251,10 @@ settings lists, status cards, search, and binary controls.
 `AppShell` renders its content as the page's `main` landmark by default. For an
 embedded preview inside an existing `main`, pass `contentAs="div"` to preserve a
 valid landmark structure, and set `TopBar`'s `titleAs` prop to match the
-surrounding heading hierarchy.
+surrounding heading hierarchy. Its optional navigation rail responds to the
+shell's own container width, so narrow split views and embedded shells keep a
+single content column even on a wide page. Omitting an optional top bar or
+footer does not displace the shell's flexible content row.
 
 ```tsx
 <AppShell
@@ -314,7 +320,7 @@ value, `DataTable` and `Pagination` handle bounded result sets, and
 
 #### Interaction Foundations
 
-Use the 0.5 controls for modal work, anchored actions, complete choice and
+Use the interaction controls for modal work, anchored actions, complete choice and
 numeric input, loading feedback, and responsive composition. Interactive
 controls are controlled or uncontrolled where that distinction is meaningful;
 modal components always report dismissal so application state stays canonical.
@@ -572,7 +578,7 @@ export function Settings() {
         <Stack gap={4}>
           <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
           <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
-          <Grid columns={{ base: 1, md: 2 }}>
+          <Grid columns={{ base: 1, md: 2 }} minItemWidth={240}>
             <Button onPress={save}>Save changes</Button>
           </Grid>
         </Stack>
@@ -584,10 +590,17 @@ export function Settings() {
 
 `aurelglyphTheme` remains available for direct token access, while
 `resolveAurelglyphTheme(mode, accent)` returns mode-aware native values.
-Overlays use React Native `Modal`; tooltip behavior combines
-`accessibilityHint` with a press/long-press visual treatment; and the dependency-
-free slider exposes native `adjustable` actions. Hosts supply their preferred
-document picker to `FileUpload` through `onRequestFiles`.
+Overlays use React Native `Modal` inside bounded safe-area and keyboard-aware
+shells; tooltip behavior combines `accessibilityHint` with the provider's
+non-modal, safe-bound overlay host; and the dependency-free slider exposes
+native `adjustable` actions. Responsive grids measure their actual container
+for split-view and nested-panel layouts, while compact controls preserve real
+44-point touch bounds. The overlay host reserves an elevated, non-blocking root
+layer so regular application panels do not cover active tooltips. Set
+`overlayHost={false}` when the application supplies its own hosts, and place an
+`AurelglyphOverlayHost` inside any consumer-owned native `Modal` that contains
+tooltips. Hosts supply their preferred document picker to
+`FileUpload` through `onRequestFiles`.
 
 React Native font-family tokens resolve to native-safe Aurelglyph aliases, not
 CSS stacks. The optional font subpath exposes Metro-compatible static requires
@@ -616,7 +629,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.5.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.0")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
@@ -640,7 +653,7 @@ WorkbenchView()
   )
 ```
 
-The 0.5 components use native bindings and presentations while keeping the
+The interaction components use native bindings and presentations while keeping the
 cross-platform names. Dialogs and drawers also provide view modifiers for
 native presentation:
 
@@ -664,6 +677,30 @@ AurelglyphContainer {
 }
 ```
 
+Responsive SwiftUI containers can separate scroll ownership, supply a
+regular-width navigation rail, and opt horizontal stacks into a compact or
+large-text fallback without maintaining a second screen hierarchy:
+
+```swift
+AurelglyphAppShell(
+  scrollsContent: false,
+  regularNavigationWidth: 248
+) {
+  WorkbenchTopBar()
+} regularNavigation: {
+  SystemsRail()
+} content: {
+  List(systems) { SystemRow(system: $0) }
+} tabBar: {
+  WorkbenchTabBar()
+}
+
+AurelglyphStack(axis: .horizontal, compactAxis: .vertical) {
+  PrimaryAction()
+  SecondaryAction()
+}
+```
+
 Use the native typography adapter for SwiftUI font roles:
 
 ```swift
@@ -682,10 +719,11 @@ Text("Calibrated systems")
   .font(AurelglyphTypography.display(size: 48, relativeTo: .largeTitle))
 ```
 
-Custom typography methods preserve the requested baseline while scaling
-relative to the supplied Dynamic Type role. The generic `font` factory uses
-role-specific defaults: large title for display, title 3 for editorial serif,
-body for UI/body, and caption for mono.
+Packaged custom faces preserve the requested baseline while scaling relative to
+the supplied Dynamic Type role. If a face is unavailable, its native fallback
+preserves the Dynamic Type role. The generic `font` factory uses role-specific
+defaults: large title for display, title 3 for editorial serif, body for
+UI/body, and caption for mono.
 
 The Swift package does not bundle the web `.woff2` font assets. It keeps the
 font-family token strings available for reference, and bundles Apple-platform
@@ -870,6 +908,7 @@ npm run check:components
 npm test
 npm run test:rails
 npm run test:swift
+npm run test:ux
 npm run typecheck
 npm run version:check
 npm run version:sync -- "Describe the changelog item"
@@ -877,6 +916,21 @@ npm run verify
 ```
 
 No lint script exists yet. Add one before introducing lintable source rules.
+
+`npm run test:ux` builds the React example and drives real headless Chrome. The
+responsive matrix covers 320×568 compact portrait, 568×320 phone landscape,
+768×1024 tablet, 1024×768 laptop/split view, and 1920×1080 wide layouts. It runs
+44 full mode/viewport and accessibility-tree audits, 41 additional responsive
+probes, and desktop, compact, and landscape interaction suites. The gate fails
+on browser auto-scaling, document overflow, clipped headings, off-screen
+controls, undersized web targets, invalid accessibility relationships, or open
+overlay surfaces that escape the visual viewport or a clipping scrollport.
+Anchored menu keyboard checks also verify that roving focus remains stable after
+viewport collision correction. Desktop, compact, and landscape interaction
+suites use isolated disposable Chrome processes so each lifecycle is measured
+independently from prior interaction, accessibility, and screenshot
+instrumentation. CDP transport timeouts receive one recorded fresh-process
+retry, while product and accessibility assertions fail immediately.
 
 ## Versioning
 

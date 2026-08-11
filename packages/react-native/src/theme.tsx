@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo, type ReactElement, type ReactNode } from "react";
-import { useColorScheme } from "react-native";
+import { useColorScheme, type Insets } from "react-native";
 import { aurelglyphTheme } from "@aurelglyph/tokens/react-native";
+
+import { AurelglyphOverlayHost } from "./overlay-host.js";
 
 export type AurelglyphMode = "dark" | "light";
 export type AurelglyphModePreference = AurelglyphMode | "system";
@@ -100,17 +102,25 @@ export type AurelglyphProviderProps = {
   children: ReactNode;
   mode?: AurelglyphModePreference;
   accent?: AurelglyphAccent;
+  overlayHost?: boolean;
+  overlayInsets?: Partial<Insets>;
 };
 
 export function AurelglyphProvider({
   accent = "royal-purple",
   children,
-  mode = "system"
+  mode = "system",
+  overlayHost = true,
+  overlayInsets
 }: AurelglyphProviderProps): ReactElement {
   const systemMode = useColorScheme();
   const resolvedMode: AurelglyphMode = mode === "system" ? (systemMode === "light" ? "light" : "dark") : mode;
   const value = useMemo(() => resolveAurelglyphTheme(resolvedMode, accent), [accent, resolvedMode]);
-  return <AurelglyphThemeContext.Provider value={value}>{children}</AurelglyphThemeContext.Provider>;
+  return (
+    <AurelglyphThemeContext.Provider value={value}>
+      {overlayHost ? <AurelglyphOverlayHost insets={overlayInsets}>{children}</AurelglyphOverlayHost> : children}
+    </AurelglyphThemeContext.Provider>
+  );
 }
 
 export function useAurelglyphTheme(): AurelglyphNativeTheme {

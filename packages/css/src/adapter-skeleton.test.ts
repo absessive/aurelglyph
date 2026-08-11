@@ -63,6 +63,7 @@ describe("platform adapter skeletons", () => {
     expect(built).toContain(source.trim());
     expect(built).toContain("Shared component classes used by the React and Rails adapters.");
     expect(built).toContain(".ag-app-shell");
+    expect(built).toContain(".ag-app-shell__body:has(> .ag-app-shell__nav)");
     expect(built).toContain(".ag-card");
     expect(built).toContain(".ag-list-row");
     expect(built).toContain(".ag-tab-bar");
@@ -201,6 +202,7 @@ describe("platform adapter skeletons", () => {
     expect(copiedCss).toContain('url("aurelglyph/atkinson-hyperlegible-400.woff2")');
     expect(copiedCss).toContain("Shared component classes used by the React and Rails adapters.");
     expect(copiedCss).toContain(".ag-app-shell");
+    expect(copiedCss).toContain(".ag-app-shell__body:has(> .ag-app-shell__nav)");
     expect(copiedCss).toContain(".ag-card");
     expect(copiedCss).toContain(".ag-list-row");
     expect(copiedCss).toContain(".ag-tab-bar");

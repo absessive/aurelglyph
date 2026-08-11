@@ -22,7 +22,11 @@ export function AppShell({
   return (
     <div className={classNames} {...props}>
       {topBar ? <div className="ag-app-shell__top">{topBar}</div> : null}
-      <div className="ag-app-shell__body">
+      <div
+        className={["ag-app-shell__body", navigation ? "ag-app-shell__body--with-navigation" : undefined]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {navigation ? <aside className="ag-app-shell__nav">{navigation}</aside> : null}
         <Content className="ag-app-shell__content">{children}</Content>
       </div>

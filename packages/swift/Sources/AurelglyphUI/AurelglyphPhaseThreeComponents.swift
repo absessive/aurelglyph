@@ -217,24 +217,29 @@ public struct AurelglyphDataTable: View {
   }
 
   public var body: some View {
-    Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 10) {
-      GridRow {
-        ForEach(headers, id: \.self) { header in
-          Text(header)
-            .font(AurelglyphTypography.monoCaption)
-            .foregroundStyle(.secondary)
-        }
-      }
-      ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+    ScrollView(.horizontal) {
+      Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 10) {
         GridRow {
-          ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
-            Text(cell)
-              .font(AurelglyphTypography.caption)
+          ForEach(Array(headers.enumerated()), id: \.offset) { _, header in
+            Text(header)
+              .font(AurelglyphTypography.monoCaption)
+              .foregroundStyle(.secondary)
+              .fixedSize(horizontal: true, vertical: false)
+          }
+        }
+        ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+          GridRow {
+            ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
+              Text(cell)
+                .font(AurelglyphTypography.caption)
+                .fixedSize(horizontal: true, vertical: false)
+            }
           }
         }
       }
+      .padding(16)
     }
-    .padding(16)
+    .scrollIndicators(.visible)
     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
   }
 }

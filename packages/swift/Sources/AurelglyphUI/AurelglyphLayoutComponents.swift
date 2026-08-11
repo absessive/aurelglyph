@@ -89,36 +89,73 @@ public enum AurelglyphStackAlignment: Sendable {
 
 /// A token-friendly stack that can switch axes without changing its content API.
 public struct AurelglyphStack<Content: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   private let axis: AurelglyphAxis
+  private let compactAxis: AurelglyphAxis?
   private let alignment: AurelglyphStackAlignment
   private let spacing: CGFloat
   private let content: Content
 
   public init(
     axis: AurelglyphAxis = .vertical,
+    compactAxis: AurelglyphAxis? = nil,
     alignment: AurelglyphStackAlignment = .start,
     spacing: CGFloat = 16,
     @ViewBuilder content: () -> Content
   ) {
     self.axis = axis
+    self.compactAxis = compactAxis
     self.alignment = alignment
     self.spacing = spacing
     self.content = content()
   }
 
   public var body: some View {
-    layout {
+    let resolvedAxis = Self.resolvedAxis(
+      axis: axis,
+      compactAxis: compactAxis,
+      isCompactWidth: horizontalSizeClass == .compact,
+      usesAccessibilitySize: dynamicTypeSize.isAccessibilitySize
+    )
+
+    let adaptiveLayout = AurelglyphAdaptiveLayout(
+      primary: layout(for: axis),
+      fallback: fallbackLayout,
+      fittingAxis: fittingAxis,
+      forceFallback: resolvedAxis != axis
+    )
+    return adaptiveLayout {
       content
     }
   }
 
-  private var layout: AnyLayout {
+  private func layout(for axis: AurelglyphAxis) -> AnyLayout {
     switch axis {
     case .horizontal:
       AnyLayout(HStackLayout(alignment: verticalAlignment, spacing: spacing))
     case .vertical:
       AnyLayout(VStackLayout(alignment: horizontalAlignment, spacing: spacing))
     }
+  }
+
+  private var fallbackLayout: AnyLayout? {
+    guard let compactAxis, compactAxis != axis else { return nil }
+    return layout(for: compactAxis)
+  }
+
+  private var fittingAxis: Axis {
+    axis == .horizontal ? .horizontal : .vertical
+  }
+
+  static func resolvedAxis(
+    axis: AurelglyphAxis,
+    compactAxis: AurelglyphAxis?,
+    isCompactWidth: Bool,
+    usesAccessibilitySize: Bool
+  ) -> AurelglyphAxis {
+    guard isCompactWidth || usesAccessibilitySize else { return axis }
+    return compactAxis ?? axis
   }
 
   private var horizontalAlignment: HorizontalAlignment {

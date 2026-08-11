@@ -10,7 +10,14 @@ import {
 } from "react";
 
 import { Icon, type AurelglyphIconName } from "./Icon.js";
-import { edgeEnabledIndex, focusAt, nextEnabledIndex, useControllableState, useDismissLayer } from "./foundation.js";
+import {
+  edgeEnabledIndex,
+  focusAt,
+  nextEnabledIndex,
+  useControllableState,
+  useDismissLayer,
+  useViewportShift
+} from "./foundation.js";
 
 export type MenuItem = {
   disabled?: boolean;
@@ -52,6 +59,7 @@ export function Menu({
   const menuId = id ?? `ag-menu-${generatedId}`;
   const triggerId = `${menuId}-trigger`;
   const rootRef = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const typeaheadRef = useRef("");
   const typeaheadTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -68,11 +76,17 @@ export function Menu({
     onDismiss: (reason) => close(reason === "escape"),
     refs: [rootRef]
   });
+  useViewportShift({
+    anchorRef: triggerRef,
+    enabled: isOpen,
+    onAnchorHidden: () => close(false),
+    ref: surfaceRef
+  });
 
   useEffect(() => {
     if (!isOpen || !rootRef.current) return;
     const first = edgeEnabledIndex(items.length, (index) => Boolean(items[index]?.disabled), "first");
-    if (first >= 0) queueMicrotask(() => rootRef.current && focusAt(rootRef.current, "[role='menuitem']", first));
+    if (first >= 0) queueMicrotask(() => rootRef.current && focusAt(rootRef.current, "[role='menuitem']", first, { preventScroll: true }));
   }, [isOpen]);
 
   useEffect(
@@ -87,7 +101,7 @@ export function Menu({
     queueMicrotask(() => {
       if (!rootRef.current) return;
       const target = edgeEnabledIndex(items.length, (index) => Boolean(items[index]?.disabled), edge);
-      if (target >= 0) focusAt(rootRef.current, "[role='menuitem']", target);
+      if (target >= 0) focusAt(rootRef.current, "[role='menuitem']", target, { preventScroll: true });
     });
   };
 
@@ -137,7 +151,7 @@ export function Menu({
 
     if (target < 0 || !rootRef.current) return;
     event.preventDefault();
-    focusAt(rootRef.current, "[role='menuitem']", target);
+    focusAt(rootRef.current, "[role='menuitem']", target, { preventScroll: true });
   };
 
   const selectItem = (item: MenuItem): void => {
@@ -179,6 +193,7 @@ export function Menu({
         className="ag-menu__surface"
         hidden={!isOpen}
         id={menuId + "-surface"}
+        ref={surfaceRef}
         role="menu"
       >
         {items.map((item, index) => (

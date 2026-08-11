@@ -34,6 +34,7 @@ public struct AurelglyphNavigationStack<Content: View>: View {
 }
 
 public struct AurelglyphToolbar<Content: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   private let content: Content
 
   public init(@ViewBuilder content: () -> Content) {
@@ -41,23 +42,41 @@ public struct AurelglyphToolbar<Content: View>: View {
   }
 
   public var body: some View {
-    HStack(spacing: 8) {
+    adaptiveLayout {
       content
     }
     .padding(8)
     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
   }
+
+  private var adaptiveLayout: AurelglyphAdaptiveLayout {
+    AurelglyphAdaptiveLayout(
+      primary: AnyLayout(HStackLayout(spacing: 8)),
+      fallback: AnyLayout(VStackLayout(alignment: .leading, spacing: 8)),
+      fittingAxis: .horizontal,
+      forceFallback: AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize)
+    )
+  }
 }
 
 public struct AurelglyphSheet<Content: View, Actions: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(\.layoutDirection) private var layoutDirection
   @Environment(\.aurelglyphTheme) private var theme
   @Environment(\.colorScheme) private var colorScheme
   private let title: String
+  private let scrollsContent: Bool
   private let content: Content
   private let actions: Actions
 
-  public init(_ title: String, @ViewBuilder content: () -> Content, @ViewBuilder actions: () -> Actions) {
+  public init(
+    _ title: String,
+    scrollsContent: Bool = true,
+    @ViewBuilder content: () -> Content,
+    @ViewBuilder actions: () -> Actions
+  ) {
     self.title = title
+    self.scrollsContent = scrollsContent
     self.content = content()
     self.actions = actions()
   }
@@ -66,13 +85,8 @@ public struct AurelglyphSheet<Content: View, Actions: View>: View {
     let palette = theme.palette(for: colorScheme)
 
     VStack(alignment: .leading, spacing: 16) {
-      HStack {
-        Text(title)
-          .font(AurelglyphTypography.title)
-        Spacer()
-        actions
-      }
-      content
+      sheetHeader
+      sheetContent
     }
     .padding(20)
     .foregroundStyle(palette.foreground)
@@ -82,18 +96,52 @@ public struct AurelglyphSheet<Content: View, Actions: View>: View {
         .stroke(palette.border, lineWidth: 1)
     }
   }
+
+  private var sheetHeader: some View {
+    adaptiveHeaderLayout {
+      Text(title)
+        .font(AurelglyphTypography.title)
+      actions
+    }
+  }
+
+  private var adaptiveHeaderLayout: AurelglyphAdaptiveHeaderLayout {
+    AurelglyphAdaptiveHeaderLayout(
+      leadingItemCount: 1,
+      primarySpacing: 12,
+      trailingSpacing: 8,
+      fallbackSpacing: 10,
+      forceFallback: AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize),
+      layoutDirection: layoutDirection
+    )
+  }
+
+  @ViewBuilder private var sheetContent: some View {
+    if scrollsContent {
+      ScrollView {
+        content
+          .frame(maxWidth: .infinity, alignment: .leading)
+      }
+      .frame(maxHeight: 480)
+      .scrollIndicators(.visible)
+    } else {
+      content
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+  }
 }
 
 private struct AurelglyphSheetPresenter<SheetContent: View, Actions: View>: ViewModifier {
   @Binding var isPresented: Bool
   let title: String
   let allowsInteractiveDismiss: Bool
+  let scrollsContent: Bool
   let sheetContent: SheetContent
   let actions: Actions
 
   func body(content: Content) -> some View {
     content.sheet(isPresented: $isPresented) {
-      AurelglyphSheet(title) {
+      AurelglyphSheet(title, scrollsContent: scrollsContent) {
         sheetContent
       } actions: {
         actions
@@ -110,6 +158,7 @@ public extension View {
     isPresented: Binding<Bool>,
     title: String,
     allowsInteractiveDismiss: Bool = true,
+    scrollsContent: Bool = true,
     @ViewBuilder content: () -> SheetContent,
     @ViewBuilder actions: () -> Actions
   ) -> some View {
@@ -118,6 +167,7 @@ public extension View {
         isPresented: isPresented,
         title: title,
         allowsInteractiveDismiss: allowsInteractiveDismiss,
+        scrollsContent: scrollsContent,
         sheetContent: content(),
         actions: actions()
       )
@@ -128,6 +178,7 @@ public extension View {
 public struct AurelglyphSegmentedControl: View {
   @Environment(\.aurelglyphTheme) private var theme
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   private let items: [AurelglyphSegmentedItem]
   @Binding private var selection: String
 
@@ -139,30 +190,67 @@ public struct AurelglyphSegmentedControl: View {
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
 
-    HStack(spacing: 4) {
-      ForEach(items) { item in
-        Button {
-          selection = item.id
-        } label: {
-          Text(item.title)
-            .font(AurelglyphTypography.label)
-            .foregroundStyle(palette.foreground)
-            .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .background(selection == item.id ? palette.accent.opacity(0.18) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    Group {
+      if AurelglyphResponsiveLayout.prefersStackedLayout(for: dynamicTypeSize) {
+        scrollableItems(palette: palette)
+      } else {
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 4) {
+            ForEach(items) { item in
+              segmentButton(item, palette: palette, scrollable: false)
+            }
+          }
+          .padding(4)
+
+          scrollableItems(palette: palette)
         }
-        .buttonStyle(.plain)
-        .disabled(item.isDisabled)
-        .opacity(item.isDisabled ? 0.52 : 1)
-        .accessibilityAddTraits(selection == item.id ? .isSelected : [])
       }
     }
-    .padding(4)
     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     .onAppear(perform: normalizeSelection)
     .onChange(of: items) { _, _ in normalizeSelection() }
     .onChange(of: selection) { _, _ in normalizeSelection() }
+  }
+
+  private func scrollableItems(palette: AurelglyphPalette) -> some View {
+    ScrollView(.horizontal) {
+      HStack(spacing: 4) {
+        ForEach(items) { item in
+          segmentButton(item, palette: palette, scrollable: true)
+        }
+      }
+      .padding(4)
+    }
+    .scrollIndicators(.hidden)
+  }
+
+  private func segmentButton(
+    _ item: AurelglyphSegmentedItem,
+    palette: AurelglyphPalette,
+    scrollable: Bool
+  ) -> some View {
+    Button {
+      selection = item.id
+    } label: {
+      Text(item.title)
+        .font(AurelglyphTypography.label)
+        .foregroundStyle(palette.foreground)
+        .lineLimit(1)
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(.horizontal, 12)
+        .frame(
+          minWidth: AurelglyphResponsiveLayout.minimumInteractiveDimension,
+          maxWidth: scrollable ? nil : .infinity,
+          minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension
+        )
+        .background(selection == item.id ? palette.accent.opacity(0.18) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .disabled(item.isDisabled)
+    .opacity(item.isDisabled ? 0.52 : 1)
+    .accessibilityAddTraits(selection == item.id ? .isSelected : [])
   }
 
   private func normalizeSelection() {
@@ -219,6 +307,8 @@ public struct AurelglyphSelect: View {
         .pickerStyle(.menu)
         .foregroundStyle(palette.foreground)
         .tint(palette.accent)
+        .frame(minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
+        .contentShape(Rectangle())
         .disabled(isDisabled || isLoading || isReadOnly)
         .accessibilityValue(
           isLoading

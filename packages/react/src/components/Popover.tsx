@@ -7,7 +7,7 @@ import {
   type ReactNode
 } from "react";
 
-import { useControllableState, useDismissLayer } from "./foundation.js";
+import { useControllableState, useDismissLayer, useViewportShift } from "./foundation.js";
 
 export type PopoverPlacement = "top" | "right" | "bottom" | "left";
 
@@ -41,6 +41,7 @@ export function Popover({
   const popoverId = id ?? `ag-popover-${generatedId}`;
   const panelId = `${popoverId}-panel`;
   const rootRef = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setOpen] = useControllableState({ defaultValue: defaultOpen, onChange: onOpenChange, value: open });
 
@@ -51,6 +52,12 @@ export function Popover({
       if (reason === "escape") queueMicrotask(() => triggerRef.current?.focus());
     },
     refs: [rootRef]
+  });
+  useViewportShift({
+    anchorRef: triggerRef,
+    enabled: isOpen,
+    onAnchorHidden: () => setOpen(false),
+    ref: surfaceRef
   });
 
   return (
@@ -78,7 +85,7 @@ export function Popover({
       >
         {trigger}
       </button>
-      <div aria-label={label} className="ag-popover__surface" hidden={!isOpen} id={panelId} role="dialog">
+      <div aria-label={label} className="ag-popover__surface" hidden={!isOpen} id={panelId} ref={surfaceRef} role="dialog">
         {children}
       </div>
     </div>
