@@ -156,7 +156,8 @@ describe("component manifest", () => {
     const manifest = JSON.parse(await read("component-manifest.json")) as Record<string, unknown>;
     const schema = JSON.parse(await read("schemas/component-manifest.schema.json")) as JsonSchema;
     const firstComponent = (manifest.components as Array<Record<string, unknown>>)[0];
-    const { rails: _rails, ...incompleteEvidence } = firstComponent.evidence as Record<string, string>;
+    const incompleteEvidence = { ...(firstComponent.evidence as Record<string, string>) };
+    delete incompleteEvidence.rails;
     const manifestWithoutSchema = { ...manifest };
     delete manifestWithoutSchema.$schema;
     const invalidManifests = [

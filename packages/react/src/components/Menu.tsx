@@ -59,12 +59,14 @@ export function Menu({
   const menuId = id ?? `ag-menu-${generatedId}`;
   const triggerId = `${menuId}-trigger`;
   const rootRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef(items);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const typeaheadRef = useRef("");
   const typeaheadTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [isOpen, setOpen] = useControllableState({ defaultValue: defaultOpen, onChange: onOpenChange, value: open });
   const classNames = ["ag-menu", className].filter(Boolean).join(" ");
+  itemsRef.current = items;
 
   const close = (restoreFocus: boolean): void => {
     setOpen(false);
@@ -85,7 +87,8 @@ export function Menu({
 
   useEffect(() => {
     if (!isOpen || !rootRef.current) return;
-    const first = edgeEnabledIndex(items.length, (index) => Boolean(items[index]?.disabled), "first");
+    const currentItems = itemsRef.current;
+    const first = edgeEnabledIndex(currentItems.length, (index) => Boolean(currentItems[index]?.disabled), "first");
     if (first >= 0) queueMicrotask(() => rootRef.current && focusAt(rootRef.current, "[role='menuitem']", first, { preventScroll: true }));
   }, [isOpen]);
 

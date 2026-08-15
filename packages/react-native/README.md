@@ -85,7 +85,9 @@ dialog titles, progress indicators, and selection controls expose their
 corresponding native roles and values. Every dialog has a labeled close control
 in addition to back and optional scrim dismissal.
 Interactive labels always use the high-contrast foreground token; the muted
-token is reserved for helper text, descriptions, placeholders, and metadata.
+token is used for ordinary helper text, descriptions, placeholders, and
+metadata. Invalid helper text uses the danger token and a polite live-region
+announcement even when the field does not provide a separate error string.
 Modal transitions automatically disable themselves when the operating system's
 Reduce Motion setting is enabled.
 

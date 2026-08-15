@@ -373,7 +373,7 @@
       if (typeof dialog.close === "function") {
         try {
           dialog.close();
-        } catch (_error) {
+        } catch {
           dialog.removeAttribute("open");
         }
       } else {
@@ -406,7 +406,7 @@
     if (typeof dialog.showModal === "function") {
       try {
         dialog.showModal();
-      } catch (_error) {
+      } catch {
         state.fallback = true;
         dialog.setAttribute("open", "");
         dialog.setAttribute("aria-modal", "true");

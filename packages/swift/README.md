@@ -6,7 +6,7 @@ for iOS 17 and macOS 14 or newer.
 The public Git package lives at the repository root:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.1")
 ```
 
 ```swift

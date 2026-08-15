@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.1
+
+- Add a private React Native 0.86 iOS and Android host that consumes the built
+  adapter as an application dependency, plus renderer coverage, an Android
+  release-bundle and native-configuration smoke check, and a release-mode iOS
+  XCTest contract for consumer-owned modal overlay layering, anchor and
+  viewport remeasurement, clipping, and touch pass-through.
+- Add a zero-warning workspace ESLint flat configuration and include it in the
+  full verification gate, including the packaged Rails interaction controller.
+  Resolve the surfaced React and React Native hook dependencies, and make
+  invalid helper text use the native danger and live announcement treatment
+  even without a separate error string.
+
 ## 0.6.0
 
 - Harden compact portrait, phone landscape, tablet/split-view, and wide-window

@@ -1047,6 +1047,11 @@
     </header>
     <article class="panel markdown">
 <h1>Changelog</h1>
+<h2>0.6.1</h2>
+<ul>
+<li>Add a private React Native 0.86 iOS and Android host that consumes the built adapter as an application dependency, plus renderer coverage, an Android release-bundle and native-configuration smoke check, and a release-mode iOS XCTest contract for consumer-owned modal overlay layering, anchor and viewport remeasurement, clipping, and touch pass-through.</li>
+<li>Add a zero-warning workspace ESLint flat configuration and include it in the full verification gate, including the packaged Rails interaction controller. Resolve the surfaced React and React Native hook dependencies, and make invalid helper text use the native danger and live announcement treatment even without a separate error string.</li>
+</ul>
 <h2>0.6.0</h2>
 <ul>
 <li>Harden compact portrait, phone landscape, tablet/split-view, and wide-window behavior across Web, React, React Native, SwiftUI, generated Pages, and the static preview: constrained overlays remain reachable, navigation and action groups adapt without clipping, data surfaces scroll deliberately, and native controls preserve platform-sized interaction targets. React Native providers can defer overlay-host ownership to the application, and consumer-owned native modals can install an inner host for correctly layered tooltips. Shared CSS AppShell rails now respond to their own container width and retain the flexible body row when optional chrome is absent. React and Rails anchored surfaces honor nested clipping scrollports as well as the visual viewport, and dismiss rather than detach when their anchor leaves those bounds. React menu keyboard focus no longer scrolls a collision-shifted surface away from its anchor.</li>

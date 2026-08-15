@@ -558,5 +558,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.1")
 ```

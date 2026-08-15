@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from "react";
+import { useEffect, useState, type ReactElement, type ReactNode } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -28,8 +28,9 @@ type FieldChromeProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-function FieldChrome({ children, error, helperText, invalid, label, required, style }: FieldChromeProps): ReactElement {
+function FieldChrome({ children, error, helperText, invalid = false, label, required, style }: FieldChromeProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const hasError = invalid || Boolean(error);
   return (
     <View style={[styles.field, style]}>
       {label ? (
@@ -41,8 +42,8 @@ function FieldChrome({ children, error, helperText, invalid, label, required, st
       {children}
       {error || helperText ? (
         <Text
-          accessibilityLiveRegion={error ? "polite" : "none"}
-          style={{ color: error ? theme.colors.danger : theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}
+          accessibilityLiveRegion={hasError ? "polite" : "none"}
+          style={{ color: hasError ? theme.colors.danger : theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}
         >
           {error ?? helperText}
         </Text>

@@ -1,6 +1,6 @@
 {
   "name": "aurelglyph",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "A token-first UX design language and component system for SwiftUI, React, React Native, and Rails.",
   "type": "module",
@@ -14,26 +14,33 @@
     "build:pages": "node --experimental-strip-types scripts/pages.ts",
     "build:tokens": "npm run build -w @aurelglyph/tokens",
     "check:components": "vitest run scripts/component-manifest.test.ts",
+    "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:rails": "npm test -w aurelglyph-rails",
+    "test:react-native-host": "npm test -w @aurelglyph/example-react-native-smoke && npm run test:android -w @aurelglyph/example-react-native-smoke && npm run test:ios -w @aurelglyph/example-react-native-smoke",
     "test:swift": "swift test --package-path packages/swift",
     "test:ux": "npm run build -w @aurelglyph/example-react-vite && node scripts/ux-regression.mjs",
     "test:watch": "vitest",
     "typecheck": "npm run build:tokens && tsc -p tsconfig.base.json --noEmit",
     "version:check": "tsx scripts/versioning.ts check",
     "version:sync": "tsx scripts/versioning.ts sync",
-    "verify": "npm run version:check && npm run build && npm run build:pages && npm test && npm run test:rails && npm run test:swift && npm run typecheck && npm run test:ux"
+    "verify": "npm run version:check && npm run lint && npm run build && npm run build:pages && npm test && npm run test:rails && npm run test:swift && npm run test:react-native-host && npm run typecheck && npm run test:ux"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^22.15.18",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.4.1",
     "axe-core": "^4.12.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^16.5.0",
     "jsdom": "^26.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.67.0",
     "vite": "^6.3.5",
     "vitest": "^3.1.3"
   }

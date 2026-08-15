@@ -36,6 +36,7 @@ vi.mock("react-native", async () => {
       "aria-readonly": props["aria-readonly"] as boolean | undefined,
       "aria-required": props["aria-required"] as boolean | undefined,
       "aria-selected": state.selected as boolean | undefined,
+      "data-live-region": props.accessibilityLiveRegion as string | undefined,
       "data-accessibility-value": value ? JSON.stringify(value) : undefined,
       "data-accessible": props.accessible === false ? "false" : props.accessible === true ? "true" : undefined,
       "data-testid": props.testID as string | undefined,
@@ -68,6 +69,8 @@ vi.mock("react-native", async () => {
     }));
     React.useEffect(() => {
       (onLayout as ((event: unknown) => void) | undefined)?.({ nativeEvent: { layout } });
+      // The scalar dependencies deliberately model native geometry changes; the mock layout object is recreated on every render.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [layout.height, layout.width, layout.x, layout.y, onLayout]);
     return React.createElement("div", {
       ...accessibilityProps(props),
@@ -387,6 +390,16 @@ describe("React Native rendered interaction contracts", () => {
     expect(input.getAttribute("aria-description")).toContain("Name is unavailable");
     expect(input.hasAttribute("aria-invalid")).toBe(false);
     expect(input.disabled).toBe(true);
+  });
+
+  it("announces invalid helper text even when no explicit error is supplied", () => {
+    const { container } = render(
+      <TextField helperText="Use a unique system name" invalid label="Name" value="Ajit" />
+    );
+    const helper = Array.from(container.querySelectorAll('[data-rn="Text"]'))
+      .find((element) => element.textContent === "Use a unique system name");
+    expect(helper?.getAttribute("data-live-region")).toBe("polite");
+    expect(container.querySelector("input")?.getAttribute("aria-description")).toContain("Use a unique system name");
   });
 
   it("resets uncontrolled and controlled command queries across external close", () => {

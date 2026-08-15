@@ -35,7 +35,8 @@ export const workspacePackagePaths = [
   "packages/react-native",
   "packages/swift",
   "packages/rails",
-  "examples/react-vite"
+  "examples/react-vite",
+  "examples/react-native-smoke"
 ] as const;
 
 const versionedArtifacts = [

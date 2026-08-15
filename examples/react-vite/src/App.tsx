@@ -71,7 +71,7 @@ const navItems = [
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.6.0";
+const packageVersion = "0.6.1";
 const iconCatalog = [
   "home",
   "dashboard",

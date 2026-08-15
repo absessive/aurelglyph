@@ -22,7 +22,19 @@ async function createWorkspace(): Promise<string> {
   await writeFile(join(root, "CHANGELOG.md"), "# Changelog\n\n## 1.2.3\n\n- Existing entry\n");
   await writeFile(
     join(root, "package-lock.json"),
-    JSON.stringify({ lockfileVersion: 3, packages: { "": { name: "aurelglyph", version: "0.0.1" } } }, null, 2)
+    JSON.stringify({
+      lockfileVersion: 3,
+      packages: Object.fromEntries([
+        ["", { name: "aurelglyph", version: "0.0.1" }],
+        ...workspacePackagePaths.map((path) => [path, {
+          name: path.replace("/", "-"),
+          version: "0.0.1",
+          ...(path === "examples/react-native-smoke"
+            ? { dependencies: { "@aurelglyph/react-native": "0.0.1" } }
+            : {})
+        }])
+      ])
+    }, null, 2)
   );
 
   for (const path of workspacePackagePaths) {
@@ -30,7 +42,14 @@ async function createWorkspace(): Promise<string> {
     await import("node:fs/promises").then(({ mkdir }) => mkdir(directory, { recursive: true }));
     await writeFile(
       join(directory, "package.json"),
-      JSON.stringify({ name: path.replace("/", "-"), version: "0.0.1", private: true }, null, 2)
+      JSON.stringify({
+        name: path.replace("/", "-"),
+        version: "0.0.1",
+        private: true,
+        ...(path === "examples/react-native-smoke"
+          ? { dependencies: { "@aurelglyph/react-native": "0.0.1" } }
+          : {})
+      }, null, 2)
     );
   }
 
@@ -78,13 +97,20 @@ describe("workspace versioning", () => {
     const result = await checkWorkspaceVersions(root);
     const packageLock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8")) as {
       version: string;
-      packages: { "": { version: string } };
+      packages: Record<string, { dependencies?: Record<string, string>; version: string }>;
     };
+    const reactNativeHost = JSON.parse(
+      await readFile(join(root, "examples/react-native-smoke/package.json"), "utf8")
+    ) as { dependencies: Record<string, string>; version: string };
 
     expect(result.ok).toBe(true);
     expect(result.mismatches).toEqual([]);
     expect(packageLock.version).toBe("1.2.3");
     expect(packageLock.packages[""].version).toBe("1.2.3");
+    expect(packageLock.packages["examples/react-native-smoke"].version).toBe("1.2.3");
+    expect(packageLock.packages["examples/react-native-smoke"].dependencies?.["@aurelglyph/react-native"]).toBe("1.2.3");
+    expect(reactNativeHost.version).toBe("1.2.3");
+    expect(reactNativeHost.dependencies["@aurelglyph/react-native"]).toBe("1.2.3");
     await expect(readFile(join(root, "preview/index.html"), "utf8")).resolves.toContain("v1.2.3");
     await expect(readFile(join(root, "examples/react-vite/src/App.tsx"), "utf8")).resolves.toContain('"1.2.3"');
     await expect(readFile(join(root, "README.md"), "utf8")).resolves.toContain("`1.2.3`");

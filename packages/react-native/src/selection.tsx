@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
 
 import { labelForValue, useControllableState, type ControlStateProps } from "./foundation.js";
 import { Icon } from "./icons.js";
 import { Dialog, type OverlayOpenChangeDetails } from "./overlays.js";
-import { Button } from "./primitives.js";
 import { useAurelglyphTheme } from "./theme.js";
 
 export type MenuPlacement = "top" | "bottom" | "center";
@@ -303,17 +302,17 @@ export function CommandPalette({
   const [internalQuery, setInternalQuery] = useState(defaultQuery);
   const query = controlledQuery ?? internalQuery;
   const wasOpen = useRef(open);
-  const setQuery = (next: string): void => {
+  const setQuery = useCallback((next: string): void => {
     if (controlledQuery === undefined) setInternalQuery(next);
     onQueryChange?.(next);
-  };
+  }, [controlledQuery, onQueryChange]);
   useEffect(() => {
     if (controlledQuery !== undefined) setInternalQuery(controlledQuery);
   }, [controlledQuery]);
   useEffect(() => {
     if (wasOpen.current && !open) setQuery("");
     wasOpen.current = open;
-  }, [open]);
+  }, [open, setQuery]);
   const results = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     if (!needle) return items;

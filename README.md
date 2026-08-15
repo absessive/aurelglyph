@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.6.0`
+Current version: `0.6.1`
 
 ## Status
 
@@ -15,14 +15,12 @@ This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
 local workspace paths.
 
-Version 0.6.0 is the responsive-hardening release: compact portrait, phone
-landscape, tablet and split-view, and wide-window layouts now share a verified
-adaptive contract across CSS/Web, React, React Native, SwiftUI, and Rails.
-Constrained overlays remain reachable, native controls preserve platform-sized
-targets, and the browser gate exercises layout, accessibility, interaction, and
-anchored-surface behavior across the supported viewport matrix. Interactive
-text switches directly between contrast-verified theme colors without an
-intermediate low-contrast transition.
+Version 0.6.1 adds a real React Native 0.86 integration host and makes linting a
+first-class release gate. The host verifies consumer-owned modal overlays in a
+renderer, an Android production bundle, and release-mode iOS XCTest, while the
+workspace ESLint configuration covers React, React Native, Rails JavaScript,
+and hook correctness with zero warnings allowed. Invalid native helper text now
+uses the danger and live-announcement treatment consistently.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -620,6 +618,12 @@ const strongLabel = { fontFamily: aurelglyphFontFamilies.uiBold };
 Bare React Native apps can link the same files from the package's
 `assets/fonts` directory.
 
+The private `examples/react-native-smoke` workspace is a real React Native 0.86
+iOS and Android host for adapter integration work. Its native iOS UI contract
+opens a consumer-owned `Modal` and verifies overlay-host layering,
+remeasurement, viewport clamping, and touch pass-through against a release
+Hermes bundle.
+
 ### SwiftUI
 
 The workspace root exposes a Swift Package named `AurelglyphUI`. Its target
@@ -629,7 +633,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.1")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
@@ -821,6 +825,18 @@ Run the React example:
 npm run dev -w @aurelglyph/example-react-vite
 ```
 
+Run the React Native smoke host's renderer test, or its native iOS simulator
+contract:
+
+```bash
+npm test -w @aurelglyph/example-react-native-smoke
+npm run test:android -w @aurelglyph/example-react-native-smoke
+npm run test:ios -w @aurelglyph/example-react-native-smoke
+```
+
+See `examples/react-native-smoke/README.md` for CocoaPods setup and manual iOS
+and Android launch commands.
+
 Open the static preview:
 
 ```bash
@@ -901,12 +917,14 @@ base path before uploading `examples/react-vite/dist/`.
 
 ```bash
 npm install
+npm run lint
 npm run build:assets
 npm run build
 npm run build:pages
 npm run check:components
 npm test
 npm run test:rails
+npm run test:react-native-host
 npm run test:swift
 npm run test:ux
 npm run typecheck
@@ -915,7 +933,15 @@ npm run version:sync -- "Describe the changelog item"
 npm run verify
 ```
 
-No lint script exists yet. Add one before introducing lintable source rules.
+`npm run lint` applies the workspace ESLint flat configuration to JavaScript,
+TypeScript, React, and React Native source, including React Hooks correctness,
+with zero warnings allowed. Generated artifacts, vendored native outputs, and
+build directories are excluded.
+
+`npm run test:react-native-host` runs the Jest renderer contract, validates the
+Android native project and production bundle, and runs the native iOS XCTest
+contract. The iOS check requires Xcode, CocoaPods, and an installed Simulator
+runtime; a full Android Gradle build requires an Android SDK and compatible JDK.
 
 `npm run test:ux` builds the React example and drives real headless Chrome. The
 responsive matrix covers 320×568 compact portrait, 568×320 phone landscape,
