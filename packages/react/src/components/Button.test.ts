@@ -464,5 +464,18 @@ describe("interaction foundation styles", () => {
     expect(css).toContain('.ag-checkbox__input[data-indeterminate="true"] + .ag-checkbox__box');
     expect(css).toContain("cursor: not-allowed;");
     expect(css).toContain("text-decoration: none;");
+    expect(css).toMatch(/\.ag-segmented__item\.is-active,[\s\S]*?border-color: var\(--ag-color-semantic-focus\);/u);
+    expect(css).toMatch(/\.ag-tab-bar__item\.is-active,[\s\S]*?border-bottom-color: var\(--ag-color-semantic-focus\);/u);
+    expect(css).toContain("box-shadow: inset 3px 0 0 var(--ag-color-semantic-focus);");
+  });
+
+  it("keeps quiet button hover and pressed feedback distinct without changing disabled controls", () => {
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+
+    expect(css).toContain(':root[data-appearance="quiet"] .ag-button--primary:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain(':root[data-appearance="quiet"] .ag-button--secondary:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain(':root[data-appearance="quiet"] .ag-button--ghost:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain(':root[data-appearance="quiet"] .ag-button--danger:hover:not(:disabled):not([aria-disabled="true"])');
+    expect(css).toContain(':root[data-appearance="quiet"] .ag-button:active:not(:disabled):not([aria-disabled="true"])');
   });
 });

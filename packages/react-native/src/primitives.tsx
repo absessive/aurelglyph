@@ -118,7 +118,7 @@ export function Button({
   const theme = useAurelglyphTheme();
   const attachedOrientation = useContext(ButtonGroupVisualContext);
   const unavailable = disabled || loading;
-  const palette = buttonPalette(variant, theme.colors);
+  const palette = buttonPalette(variant, theme.colors, theme.appearance);
   const height = size === "sm" ? 36 : size === "lg" ? 52 : 44;
   const visualInset = size === "sm" ? 4 : 0;
   const visualInsetX = attachedOrientation === "horizontal" ? 0 : visualInset;
@@ -181,12 +181,22 @@ export function Button({
   );
 }
 
-function buttonPalette(variant: ButtonVariant, colors: ReturnType<typeof useAurelglyphTheme>["colors"]): {
+function buttonPalette(
+  variant: ButtonVariant,
+  colors: ReturnType<typeof useAurelglyphTheme>["colors"],
+  appearance: ReturnType<typeof useAurelglyphTheme>["appearance"]
+): {
   background: string;
   border: string;
   text: string;
 } {
-  if (variant === "primary") return { background: colors.accent, border: colors.accentStrong, text: colors.accentForeground };
+  if (variant === "primary") {
+    return {
+      background: colors.accent,
+      border: appearance === "quiet" ? colors.accent : colors.accentStrong,
+      text: colors.accentForeground
+    };
+  }
   if (variant === "danger") return { background: colors.dangerControl, border: colors.danger, text: colors.dangerForeground };
   if (variant === "ghost") return { background: "transparent", border: "transparent", text: colors.text };
   return { background: colors.surfaceMuted, border: colors.borderStrong, text: colors.text };
@@ -304,6 +314,7 @@ export type SurfaceProps = ViewProps & {
 
 export function Surface({ children, elevation = "flat", padding = 4, style, ...props }: SurfaceProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const effect = elevation === "floating" ? theme.effects.floating : theme.effects.raised;
   return (
     <View
       style={[
@@ -314,10 +325,10 @@ export function Surface({ children, elevation = "flat", padding = 4, style, ...p
           borderWidth: StyleSheet.hairlineWidth,
           padding: theme.space[padding],
           shadowColor: theme.colors.shadow,
-          shadowOffset: { height: elevation === "floating" ? 12 : 6, width: 0 },
-          shadowOpacity: elevation === "flat" ? 0 : elevation === "floating" ? 0.38 : 0.22,
-          shadowRadius: elevation === "floating" ? 24 : 12,
-          elevation: elevation === "flat" ? 0 : elevation === "floating" ? 12 : 4
+          shadowOffset: { height: effect.offsetY, width: 0 },
+          shadowOpacity: elevation === "flat" ? 0 : effect.opacity,
+          shadowRadius: effect.radius,
+          elevation: elevation === "flat" ? 0 : effect.elevation
         },
         style
       ]}
@@ -449,7 +460,14 @@ export function Progress({ label = "Progress", max = 100, min = 0, showValue = f
         style={{ backgroundColor: theme.colors.surfaceStrong, borderRadius: theme.radii.pill, height: 6, overflow: "hidden" }}
       >
         {indeterminate ? (
-          <View style={{ backgroundColor: theme.colors.accent, height: 6, opacity: 0.62, width: "45%" }} />
+          <View
+            style={{
+              backgroundColor: theme.colors.accent,
+              height: 6,
+              opacity: theme.appearance === "quiet" ? 1 : 0.62,
+              width: "45%"
+            }}
+          />
         ) : (
           <View style={{ backgroundColor: theme.colors.accent, height: 6, width: `${percent}%` }} />
         )}

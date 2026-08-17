@@ -29,6 +29,8 @@ export function Tabs({
   ...props
 }: TabsProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const accentInk = theme.appearance === "quiet" && theme.mode === "dark" ? theme.colors.focus : theme.colors.accentStrong;
+  const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accent;
   const firstEnabled = items.find((item) => !item.disabled)?.id ?? "";
   const [selected, setSelected] = useControllableState({ defaultValue: defaultValue ?? firstEnabled, onChange: onValueChange, value });
   const active = items.find((item) => item.id === selected && !item.disabled) ?? items.find((item) => !item.disabled);
@@ -50,13 +52,13 @@ export function Tabs({
                 style={({ pressed }) => [
                   styles.tab,
                   {
-                    borderBottomColor: isSelected ? theme.colors.accent : "transparent",
+                    borderBottomColor: isSelected ? selectionIndicator : "transparent",
                     opacity: unavailable ? 0.48 : pressed ? 0.74 : 1
                   }
                 ]}
               >
                 <Text style={{ color: theme.colors.text, flexShrink: 1, fontFamily: theme.fonts.ui, fontWeight: isSelected ? "600" : "400" }}>{item.label}</Text>
-                {item.badge ? <Text style={{ color: theme.colors.accentStrong, fontFamily: theme.fonts.mono, fontSize: 10 }}>{item.badge}</Text> : null}
+                {item.badge ? <Text style={{ color: accentInk, fontFamily: theme.fonts.mono, fontSize: 10 }}>{item.badge}</Text> : null}
               </Pressable>
             );
           })}
@@ -90,6 +92,7 @@ export function SegmentedControl({
   ...props
 }: SegmentedControlProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accent;
   const { fontScale } = useWindowDimensions();
   const segmentMinWidth = Math.min(192, 96 * (Number.isFinite(fontScale) ? Math.max(1, fontScale) : 1));
   const firstEnabled = items.find((item) => !item.disabled)?.value ?? "";
@@ -116,7 +119,7 @@ export function SegmentedControl({
               styles.segment,
               {
                 backgroundColor: checked ? theme.colors.surface : "transparent",
-                borderColor: checked ? theme.colors.accent : "transparent",
+                borderColor: checked ? selectionIndicator : "transparent",
                 borderRadius: theme.radii.xs,
                 flexBasis: segmentMinWidth,
                 opacity: unavailable ? 0.48 : pressed ? 0.76 : 1
@@ -152,6 +155,7 @@ export function Pagination({
   ...props
 }: PaginationProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accentStrong;
   const count = Number.isFinite(pageCount) && pageCount >= 1 ? Math.floor(pageCount) : 1;
   const current = Number.isFinite(page) ? Math.floor(clamp(page, 1, count)) : 1;
   const siblings = Number.isFinite(siblingCount) && siblingCount >= 0 ? Math.floor(siblingCount) : 1;
@@ -175,7 +179,7 @@ export function Pagination({
             styles.page,
             {
               backgroundColor: item === current ? theme.colors.accent : theme.colors.surfaceMuted,
-              borderColor: item === current ? theme.colors.accentStrong : theme.colors.borderStrong,
+              borderColor: item === current ? selectionIndicator : theme.colors.borderStrong,
               borderRadius: theme.radii.xs,
               opacity: unavailable ? 0.48 : pressed ? 0.76 : 1
             }
@@ -212,6 +216,8 @@ export function TabBar({
   ...props
 }: TabBarProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const accentInk = theme.appearance === "quiet" && theme.mode === "dark" ? theme.colors.focus : theme.colors.accentStrong;
+  const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accent;
   const { fontScale } = useWindowDimensions();
   const tabItemMinWidth = Math.min(144, 64 * (Number.isFinite(fontScale) ? Math.max(1, fontScale) : 1));
   const firstEnabled = items.find((item) => !item.disabled)?.id ?? "";
@@ -240,8 +246,8 @@ export function TabBar({
             >
               {item.icon}
               <Text style={{ color: theme.colors.text, flexShrink: 1, fontFamily: theme.fonts.ui, fontSize: 12, fontWeight: isSelected ? "600" : "400", textAlign: "center" }}>{item.label}</Text>
-              {item.badge ? <Text style={{ color: theme.colors.accentStrong, flexShrink: 1, fontFamily: theme.fonts.mono, fontSize: 9, textAlign: "center" }}>{item.badge}</Text> : null}
-              <View accessible={false} style={[styles.tabBarIndicator, { backgroundColor: isSelected ? theme.colors.accent : "transparent" }]} />
+              {item.badge ? <Text style={{ color: accentInk, flexShrink: 1, fontFamily: theme.fonts.mono, fontSize: 9, textAlign: "center" }}>{item.badge}</Text> : null}
+              <View accessible={false} style={[styles.tabBarIndicator, { backgroundColor: isSelected ? selectionIndicator : "transparent" }]} />
             </Pressable>
           );
         })}

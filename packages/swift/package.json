@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/swift",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "license": "MIT",
   "files": [
@@ -14,6 +14,6 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.6.1"
+    "@aurelglyph/tokens": "0.7.0"
   }
 }

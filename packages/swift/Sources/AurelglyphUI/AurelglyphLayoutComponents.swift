@@ -14,13 +14,13 @@ public struct AurelglyphSurface<Content: View>: View {
   @Environment(\.colorScheme) private var colorScheme
   private let level: AurelglyphSurfaceLevel
   private let padding: CGFloat
-  private let cornerRadius: CGFloat
+  private let cornerRadius: CGFloat?
   private let content: Content
 
   public init(
     level: AurelglyphSurfaceLevel = .base,
     padding: CGFloat = 16,
-    cornerRadius: CGFloat = 18,
+    cornerRadius: CGFloat? = nil,
     @ViewBuilder content: () -> Content
   ) {
     self.level = level
@@ -31,14 +31,15 @@ public struct AurelglyphSurface<Content: View>: View {
 
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
+    let resolvedCornerRadius = cornerRadius ?? theme.surfaceCornerRadius
 
     content
       .padding(padding)
       .frame(maxWidth: .infinity, alignment: .leading)
       .foregroundStyle(palette.foreground)
-      .background(background(palette), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+      .background(background(palette), in: RoundedRectangle(cornerRadius: resolvedCornerRadius, style: .continuous))
       .overlay {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        RoundedRectangle(cornerRadius: resolvedCornerRadius, style: .continuous)
           .stroke(palette.border, lineWidth: 1)
       }
   }
@@ -57,15 +58,16 @@ public struct AurelglyphSurface<Content: View>: View {
 /// A lightweight bordered layout box. Unlike `AurelglyphSurface`, its default
 /// background is transparent so grouping content does not imply elevation.
 public struct AurelglyphBox<Content: View>: View {
+  @Environment(\.aurelglyphTheme) private var theme
   private let level: AurelglyphSurfaceLevel
   private let padding: CGFloat
-  private let cornerRadius: CGFloat
+  private let cornerRadius: CGFloat?
   private let content: Content
 
   public init(
     level: AurelglyphSurfaceLevel = .flat,
     padding: CGFloat = 16,
-    cornerRadius: CGFloat = 12,
+    cornerRadius: CGFloat? = nil,
     @ViewBuilder content: () -> Content
   ) {
     self.level = level
@@ -75,7 +77,7 @@ public struct AurelglyphBox<Content: View>: View {
   }
 
   public var body: some View {
-    AurelglyphSurface(level: level, padding: padding, cornerRadius: cornerRadius) {
+    AurelglyphSurface(level: level, padding: padding, cornerRadius: cornerRadius ?? theme.boxCornerRadius) {
       content
     }
   }

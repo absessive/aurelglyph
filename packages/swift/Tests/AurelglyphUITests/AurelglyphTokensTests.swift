@@ -10,6 +10,14 @@ import SwiftUI
   #expect(AurelglyphTokens.colorModeDarkBackground == "#0d0d0b")
 }
 
+@Test func exposesGeneratedQuietAppearanceTokens() {
+  #expect(AurelglyphTokens.colorAppearanceQuietModeLightSurface == "#ffffff")
+  #expect(AurelglyphTokens.colorAppearanceQuietModeDarkSurface == "#1d1d1e")
+  #expect(AurelglyphTokens.colorAppearanceQuietModeLightBorderSoft == "#85847e")
+  #expect(AurelglyphTokens.colorAppearanceQuietModeDarkBorderSoft == "#7b7975")
+  #expect(AurelglyphTokens.colorAppearanceQuietAccent500 == "#7967cf")
+}
+
 @Test func exposesCuratedIconContract() {
   #expect(AurelglyphIcon.allCases.count == 105)
   #expect(AurelglyphIcon.creditCard.rawValue == "credit-card")

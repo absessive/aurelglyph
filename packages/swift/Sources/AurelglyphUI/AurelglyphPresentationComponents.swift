@@ -49,6 +49,7 @@ public struct AurelglyphDialog<Content: View, Actions: View>: View {
 
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
+    let cornerRadius = theme.resolvedPanelCornerRadius(24)
 
     if isPresented {
       VStack(alignment: .leading, spacing: 20) {
@@ -93,10 +94,10 @@ public struct AurelglyphDialog<Content: View, Actions: View>: View {
       .foregroundStyle(palette.foreground)
       .background(palette.backgroundElevated)
       .overlay {
-        RoundedRectangle(cornerRadius: 24, style: .continuous)
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
           .stroke(palette.border, lineWidth: 1)
       }
-      .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+      .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
       .accessibilityElement(children: .contain)
       .accessibilityAddTraits(.isModal)
     }

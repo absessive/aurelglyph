@@ -52,7 +52,7 @@ public struct AurelglyphTabs<Content: View>: View {
       content
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .aurelglyphPanelBackground(cornerRadius: 18)
     }
   }
 }
@@ -103,7 +103,7 @@ public struct AurelglyphToast<Content: View>: View {
       }
     }
     .padding(14)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 16)
   }
 }
 
@@ -203,7 +203,7 @@ public struct AurelglyphMetric: View {
       }
     }
     .padding(16)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 18)
   }
 }
 
@@ -240,7 +240,7 @@ public struct AurelglyphDataTable: View {
       .padding(16)
     }
     .scrollIndicators(.visible)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 18)
   }
 }
 
@@ -348,6 +348,12 @@ public struct AurelglyphPagination: View {
                       page == normalizedPage ? palette.accent.opacity(0.18) : Color.clear,
                       in: RoundedRectangle(cornerRadius: 8, style: .continuous)
                     )
+                    .overlay {
+                      if page == normalizedPage {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                          .stroke(palette.focus, lineWidth: 2)
+                      }
+                    }
                 }
                 .buttonStyle(.plain)
                 .disabled(isDisabled)
@@ -481,6 +487,7 @@ public struct AurelglyphCommandPalette: View {
 
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
+    let cornerRadius = theme.resolvedPanelCornerRadius(24)
     let currentQuery = queryBinding.wrappedValue
     let results = Self.filteredItems(items, query: currentQuery)
     let activeItem = results.indices.contains(activeIndex) && !results[activeIndex].isDisabled
@@ -622,9 +629,9 @@ public struct AurelglyphCommandPalette: View {
     }
     .padding(16)
     .foregroundStyle(palette.foreground)
-    .background(palette.backgroundElevated, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    .background(palette.backgroundElevated, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     .overlay {
-      RoundedRectangle(cornerRadius: 24, style: .continuous)
+      RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         .stroke(palette.border, lineWidth: 1)
     }
     .onAppear {

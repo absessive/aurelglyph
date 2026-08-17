@@ -1,10 +1,12 @@
 export { aurelglyphTheme, AurelglyphProvider, resolveAurelglyphTheme, useAurelglyphTheme } from "./theme.js";
 export type {
   AurelglyphAccent,
+  AurelglyphAppearance,
   AurelglyphMode,
   AurelglyphModePreference,
   AurelglyphNativeTheme,
-  AurelglyphProviderProps
+  AurelglyphProviderProps,
+  ResolvedAurelglyphNativeTheme
 } from "./theme.js";
 export type { ControlStateProps } from "./foundation.js";
 export { AurelglyphOverlayHost } from "./overlay-host.js";

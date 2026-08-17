@@ -111,6 +111,7 @@ describe("GitHub Pages generator", () => {
     expect(index).toContain("Version 1.2.3");
     expect(index).toContain("Shared design tokens and components for apps across web, React Native, Rails, and SwiftUI.");
     expect(index).toContain("Shared source files");
+    expect(index).toContain("button:focus-visible");
 
     expect(usage).toContain("<title>Aurelglyph Usage</title>");
     expect(usage).toContain("npm install @aurelglyph/css@1.2.3 @aurelglyph/react@1.2.3");
@@ -124,7 +125,9 @@ describe("GitHub Pages generator", () => {
     expect(usage).toContain("AurelglyphIcon.creditCard");
     expect(usage).toContain("AurelglyphFontRegistry.registerFonts");
     expect(usage).toContain("AurelglyphTypography.displayLarge");
-    expect(usage).toContain("AurelglyphTheme(mode: .system, accent: .royalPurple)");
+    expect(usage).toContain("AurelglyphTheme(mode: .system, accent: .royalPurple, appearance: .quiet)");
+    expect(usage).toContain('data-appearance="quiet"');
+    expect(usage).toContain('AurelglyphProvider appearance="quiet"');
     expect(usage).toContain("AurelglyphCombobox");
     expect(usage).toContain("does not bundle the web WOFF2 files");
     expect(usage).toContain("Apple-platform TTF files");
@@ -194,6 +197,10 @@ describe("GitHub Pages generator", () => {
     expect(components).toContain("@media (prefers-reduced-motion: reduce)");
     expect(components).toContain(".ag-demo-disclosure summary::after {\n        transition: none;");
     expect(components).toContain(".ag-demo-disclosure p {\n        animation: none;");
+    expect(components).toContain(".ag-segmented__item.is-active {\n      border-color: var(--color-focus);");
+    expect(components).toContain("font-size: clamp(1.5rem, 8vw, 3rem);");
+    expect(components).toContain(".markdown h1:first-child {");
+    expect(components).toContain("overflow-wrap: normal;");
 
     expect(changelog).toContain("<title>Aurelglyph Changelog</title>");
     expect(changelog).toContain("<h1>Changelog</h1>");

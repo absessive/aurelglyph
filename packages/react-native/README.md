@@ -12,8 +12,10 @@ React Native itself.
 
 ## Theme provider
 
-Wrap the app once. `system` follows the device appearance; dark mode and the
-`royal-purple` accent remain the Aurelglyph showcase defaults.
+Wrap the app once. `system` follows the device appearance. The default
+`atelier` appearance retains the layered Aurelglyph surfaces and selected
+accent; `quiet` uses flatter near-white/charcoal surfaces, smaller radii, lower
+elevation, and one restrained violet signal palette.
 
 ```tsx
 import {
@@ -26,7 +28,7 @@ import {
 
 export function Settings() {
   return (
-    <AurelglyphProvider mode="system" accent="royal-purple">
+    <AurelglyphProvider appearance="quiet" mode="system" accent="royal-purple">
       <Surface elevation="raised">
         <Stack gap={4}>
           <TextField label="System name" value="Workbench" />
@@ -39,9 +41,15 @@ export function Settings() {
 ```
 
 The generated `aurelglyphTheme` object is still exported for direct token
-access. `resolveAurelglyphTheme(mode, accent)` returns native numeric spacing
-and radius values plus mode-aware semantic colors. Components never hardcode
-their own palette.
+access. `resolveAurelglyphTheme(mode, accent, appearance)` returns native
+numeric spacing, radius, and elevation values plus mode-aware semantic colors.
+In quiet mode, filled controls use the contrast-verified control accent while
+compact badge text and selection indicators use the lighter/darker focus signal
+appropriate to the resolved mode; consumer components should preserve that
+role distinction instead of using `accentStrong` as small text.
+The appearance argument defaults to `atelier`; in `quiet`, the accent selection
+is retained for lossless switching but rendered controls use the reduced signal
+palette. Components never hardcode their own palette.
 
 ## Components
 

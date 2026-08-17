@@ -71,6 +71,42 @@
   --ag-color-mode-light-text-subtle: #8c7e6c;
   --ag-color-mode-light-shadow: rgba(42, 36, 30, 0.18);
   --ag-color-mode-light-highlight: rgba(255, 255, 255, 0.45);
+  --ag-color-appearance-quiet-mode-dark-background: #131314;
+  --ag-color-appearance-quiet-mode-dark-background-elevated: #1a1a1b;
+  --ag-color-appearance-quiet-mode-dark-surface: #1d1d1e;
+  --ag-color-appearance-quiet-mode-dark-surface-2: #252526;
+  --ag-color-appearance-quiet-mode-dark-surface-3: #2b2b2d;
+  --ag-color-appearance-quiet-mode-dark-border: #85847e;
+  --ag-color-appearance-quiet-mode-dark-border-soft: #7b7975;
+  --ag-color-appearance-quiet-mode-dark-text: #f2f0ed;
+  --ag-color-appearance-quiet-mode-dark-text-muted: #b1afa9;
+  --ag-color-appearance-quiet-mode-dark-text-subtle: #96948f;
+  --ag-color-appearance-quiet-mode-dark-chart-grid: #7b7975;
+  --ag-color-appearance-quiet-mode-dark-shadow: rgba(0, 0, 0, 0.32);
+  --ag-color-appearance-quiet-mode-dark-highlight: rgba(255, 255, 255, 0.04);
+  --ag-color-appearance-quiet-mode-dark-overlay: rgba(19, 19, 20, 0.64);
+  --ag-color-appearance-quiet-mode-light-background: #fafaf9;
+  --ag-color-appearance-quiet-mode-light-background-elevated: #ffffff;
+  --ag-color-appearance-quiet-mode-light-surface: #ffffff;
+  --ag-color-appearance-quiet-mode-light-surface-2: #f2f2ef;
+  --ag-color-appearance-quiet-mode-light-surface-3: #e8e8e4;
+  --ag-color-appearance-quiet-mode-light-border: #77766f;
+  --ag-color-appearance-quiet-mode-light-border-soft: #85847e;
+  --ag-color-appearance-quiet-mode-light-text: #292927;
+  --ag-color-appearance-quiet-mode-light-text-muted: #666560;
+  --ag-color-appearance-quiet-mode-light-text-subtle: #666560;
+  --ag-color-appearance-quiet-mode-light-chart-grid: #85847e;
+  --ag-color-appearance-quiet-mode-light-shadow: rgba(38, 38, 35, 0.12);
+  --ag-color-appearance-quiet-mode-light-highlight: rgba(255, 255, 255, 0.72);
+  --ag-color-appearance-quiet-mode-light-overlay: rgba(29, 29, 27, 0.32);
+  --ag-color-appearance-quiet-accent-50: #f1efff;
+  --ag-color-appearance-quiet-accent-100: #e1dcff;
+  --ag-color-appearance-quiet-accent-200: #c8bef4;
+  --ag-color-appearance-quiet-accent-300: #a99aef;
+  --ag-color-appearance-quiet-accent-400: #8271d4;
+  --ag-color-appearance-quiet-accent-500: #7967cf;
+  --ag-color-appearance-quiet-accent-600: #493a91;
+  --ag-color-appearance-quiet-accent-rgb: 121, 103, 207;
   --ag-color-accent-amber-50: #f7ead5;
   --ag-color-accent-amber-100: #ecd1a7;
   --ag-color-accent-amber-200: #d9ad6a;
@@ -192,6 +228,22 @@
   --ag-radius-xl: 24px;
   --ag-radius-panel: 28px;
   --ag-radius-pill: 999px;
+  --ag-appearance-quiet-radius-sm: 6px;
+  --ag-appearance-quiet-radius-md: 8px;
+  --ag-appearance-quiet-radius-lg: 12px;
+  --ag-appearance-quiet-radius-xl: 14px;
+  --ag-appearance-quiet-radius-panel: 16px;
+  --ag-appearance-quiet-shadow-panel: 0 1px 2px var(--ag-color-semantic-shadow);
+  --ag-appearance-quiet-shadow-float: 0 8px 24px var(--ag-color-semantic-shadow);
+  --ag-appearance-quiet-shadow-inset: none;
+  --ag-appearance-quiet-elevation-raised-offset-y: 1;
+  --ag-appearance-quiet-elevation-raised-opacity: 0.12;
+  --ag-appearance-quiet-elevation-raised-radius: 3;
+  --ag-appearance-quiet-elevation-raised-native: 1;
+  --ag-appearance-quiet-elevation-floating-offset-y: 8;
+  --ag-appearance-quiet-elevation-floating-opacity: 0.18;
+  --ag-appearance-quiet-elevation-floating-radius: 20;
+  --ag-appearance-quiet-elevation-floating-native: 6;
   --ag-font-family-display: "Libre Baskerville", Georgia, serif;
   --ag-font-family-ui: "Atkinson Hyperlegible", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ag-font-family-body: "Atkinson Hyperlegible", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -239,6 +291,7 @@
 
 :root,
 :root[data-mode="dark"] {
+  color-scheme: dark;
   --ag-color-semantic-background: var(--ag-color-mode-dark-background);
   --ag-color-semantic-background-elevated: var(--ag-color-mode-dark-background-elevated);
   --ag-color-semantic-foreground: var(--ag-color-mode-dark-text);
@@ -266,6 +319,7 @@
 }
 
 :root[data-mode="light"] {
+  color-scheme: light;
   --ag-color-semantic-background: var(--ag-color-mode-light-background);
   --ag-color-semantic-background-elevated: var(--ag-color-mode-light-background-elevated);
   --ag-color-semantic-foreground: var(--ag-color-mode-light-text);
@@ -373,6 +427,74 @@
   --ag-color-semantic-focus: var(--ag-accent-500);
 }
 
+:root[data-appearance="quiet"] {
+  --ag-accent-50: var(--ag-color-appearance-quiet-accent-50);
+  --ag-accent-100: var(--ag-color-appearance-quiet-accent-100);
+  --ag-accent-200: var(--ag-color-appearance-quiet-accent-200);
+  --ag-accent-300: var(--ag-color-appearance-quiet-accent-300);
+  --ag-accent-400: var(--ag-color-appearance-quiet-accent-400);
+  --ag-accent-500: var(--ag-color-appearance-quiet-accent-500);
+  --ag-accent-600: var(--ag-color-appearance-quiet-accent-600);
+  --ag-accent-rgb: var(--ag-color-appearance-quiet-accent-rgb);
+  --ag-radius-sm: var(--ag-appearance-quiet-radius-sm);
+  --ag-radius-md: var(--ag-appearance-quiet-radius-md);
+  --ag-radius-lg: var(--ag-appearance-quiet-radius-lg);
+  --ag-radius-xl: var(--ag-appearance-quiet-radius-xl);
+  --ag-radius-panel: var(--ag-appearance-quiet-radius-panel);
+  --ag-shadow-panel: var(--ag-appearance-quiet-shadow-panel);
+  --ag-shadow-float: var(--ag-appearance-quiet-shadow-float);
+  --ag-shadow-inset: var(--ag-appearance-quiet-shadow-inset);
+  --ag-color-semantic-accent-foreground: #ffffff;
+  --ag-color-semantic-accent-control: var(--ag-accent-500);
+  --ag-color-semantic-accent-control-strong: var(--ag-accent-600);
+  --ag-color-semantic-accent-muted: rgba(var(--ag-accent-rgb), 0.10);
+}
+
+:root[data-appearance="quiet"],
+:root[data-appearance="quiet"][data-mode="dark"] {
+  --ag-color-semantic-background: var(--ag-color-appearance-quiet-mode-dark-background);
+  --ag-color-semantic-background-elevated: var(--ag-color-appearance-quiet-mode-dark-background-elevated);
+  --ag-color-semantic-foreground: var(--ag-color-appearance-quiet-mode-dark-text);
+  --ag-color-semantic-surface: var(--ag-color-appearance-quiet-mode-dark-surface);
+  --ag-color-semantic-surface-muted: var(--ag-color-appearance-quiet-mode-dark-surface-2);
+  --ag-color-semantic-surface-strong: var(--ag-color-appearance-quiet-mode-dark-surface-3);
+  --ag-color-semantic-border: var(--ag-color-appearance-quiet-mode-dark-border-soft);
+  --ag-color-semantic-border-strong: var(--ag-color-appearance-quiet-mode-dark-border);
+  --ag-color-semantic-muted: var(--ag-color-appearance-quiet-mode-dark-text-muted);
+  --ag-color-semantic-subtle: var(--ag-color-appearance-quiet-mode-dark-text-subtle);
+  --ag-color-semantic-disabled: var(--ag-color-appearance-quiet-mode-dark-text-subtle);
+  --ag-color-semantic-highlight: var(--ag-color-appearance-quiet-mode-dark-highlight);
+  --ag-color-semantic-shadow: var(--ag-color-appearance-quiet-mode-dark-shadow);
+  --ag-color-semantic-overlay: var(--ag-color-appearance-quiet-mode-dark-overlay);
+  --ag-color-semantic-accent: var(--ag-accent-200);
+  --ag-color-semantic-focus: var(--ag-accent-300);
+  --ag-color-chart-primary: var(--ag-accent-300);
+  --ag-color-chart-secondary: var(--ag-accent-200);
+  --ag-color-chart-grid: var(--ag-color-appearance-quiet-mode-dark-chart-grid);
+}
+
+:root[data-appearance="quiet"][data-mode="light"] {
+  --ag-color-semantic-background: var(--ag-color-appearance-quiet-mode-light-background);
+  --ag-color-semantic-background-elevated: var(--ag-color-appearance-quiet-mode-light-background-elevated);
+  --ag-color-semantic-foreground: var(--ag-color-appearance-quiet-mode-light-text);
+  --ag-color-semantic-surface: var(--ag-color-appearance-quiet-mode-light-surface);
+  --ag-color-semantic-surface-muted: var(--ag-color-appearance-quiet-mode-light-surface-2);
+  --ag-color-semantic-surface-strong: var(--ag-color-appearance-quiet-mode-light-surface-3);
+  --ag-color-semantic-border: var(--ag-color-appearance-quiet-mode-light-border-soft);
+  --ag-color-semantic-border-strong: var(--ag-color-appearance-quiet-mode-light-border);
+  --ag-color-semantic-muted: var(--ag-color-appearance-quiet-mode-light-text-muted);
+  --ag-color-semantic-subtle: var(--ag-color-appearance-quiet-mode-light-text-subtle);
+  --ag-color-semantic-disabled: var(--ag-color-appearance-quiet-mode-light-text-subtle);
+  --ag-color-semantic-highlight: var(--ag-color-appearance-quiet-mode-light-highlight);
+  --ag-color-semantic-shadow: var(--ag-color-appearance-quiet-mode-light-shadow);
+  --ag-color-semantic-overlay: var(--ag-color-appearance-quiet-mode-light-overlay);
+  --ag-color-semantic-accent: var(--ag-accent-600);
+  --ag-color-semantic-focus: var(--ag-accent-500);
+  --ag-color-chart-primary: var(--ag-accent-600);
+  --ag-color-chart-secondary: var(--ag-accent-500);
+  --ag-color-chart-grid: var(--ag-color-appearance-quiet-mode-light-chart-grid);
+}
+
 /* Shared component classes used by the React and Rails adapters. */
 .ag-icon {
   display: inline-flex;
@@ -437,6 +559,10 @@
   box-shadow:
     var(--ag-shadow-inset),
     0 12px 30px rgba(var(--ag-accent-rgb), 0.1);
+}
+
+.ag-button:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(0);
 }
 
 .ag-button:disabled,
@@ -867,6 +993,7 @@
   min-width: 0;
   justify-items: center;
   gap: var(--ag-space-1);
+  border-bottom: 2px solid transparent;
   border-radius: var(--ag-radius-sm);
   padding: var(--ag-space-2);
   color: var(--ag-color-semantic-muted);
@@ -875,6 +1002,7 @@
 
 .ag-tab-bar__item.is-active,
 .ag-tab-bar__item[data-active="true"] {
+  border-bottom-color: var(--ag-color-semantic-focus);
   color: var(--ag-color-semantic-foreground);
   background: rgba(var(--ag-accent-rgb), 0.14);
 }
@@ -984,6 +1112,7 @@
 .ag-list-row.is-selected,
 .ag-list-row[data-selected="true"] {
   background: rgba(var(--ag-accent-rgb), 0.12);
+  box-shadow: inset 3px 0 0 var(--ag-color-semantic-focus);
 }
 
 .ag-list-row__icon {
@@ -1291,7 +1420,7 @@
 .ag-tabs__tab {
   min-width: 0;
   min-height: 2rem;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: var(--ag-radius-sm);
   padding: var(--ag-space-2) var(--ag-space-3);
   color: var(--ag-color-semantic-foreground);
@@ -1305,6 +1434,7 @@
 
 .ag-segmented__item.is-active,
 .ag-tabs__tab.is-active {
+  border-color: var(--ag-color-semantic-focus);
   color: var(--ag-color-semantic-foreground);
   background: rgba(var(--ag-accent-rgb), 0.16);
   box-shadow: var(--ag-shadow-inset);
@@ -1751,6 +1881,10 @@
 .ag-command-palette__item:focus-visible:not(:disabled):not([aria-disabled="true"]),
 .ag-command-palette__item.is-active:not(:disabled):not([aria-disabled="true"]) {
   background: rgba(var(--ag-accent-rgb), 0.14);
+}
+
+.ag-command-palette__item.is-active:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: inset 3px 0 0 var(--ag-color-semantic-focus);
 }
 
 .ag-command-palette__empty {
@@ -2494,6 +2628,11 @@
   background: rgba(var(--ag-accent-rgb), 0.14);
 }
 
+.ag-combobox__option.is-active,
+.ag-combobox__option[aria-selected="true"] {
+  box-shadow: inset 3px 0 0 var(--ag-color-semantic-focus);
+}
+
 .ag-combobox__option[aria-selected="true"] {
   color: var(--ag-color-semantic-foreground);
   background: rgba(var(--ag-accent-rgb), 0.2);
@@ -2742,6 +2881,94 @@
       )
     );
   }
+}
+
+/* Quiet appearance ------------------------------------------------------ */
+
+:root[data-appearance="quiet"] .ag-button {
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+:root[data-appearance="quiet"] .ag-button:hover:not(:disabled):not([aria-disabled="true"]) {
+  transform: none;
+  border-color: var(--ag-color-semantic-border-strong);
+  box-shadow: none;
+}
+
+:root[data-appearance="quiet"] .ag-button--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--ag-color-semantic-accent-control-strong);
+  background: var(--ag-color-semantic-accent-control-strong);
+}
+
+:root[data-appearance="quiet"] .ag-button--secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--ag-color-semantic-surface-muted);
+}
+
+:root[data-appearance="quiet"] .ag-button--ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: transparent;
+  background: var(--ag-color-semantic-accent-muted);
+}
+
+:root[data-appearance="quiet"] .ag-button--danger:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--ag-color-semantic-danger-control);
+  background: var(--ag-color-semantic-danger-control);
+}
+
+:root[data-appearance="quiet"] .ag-button:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+}
+
+:root[data-appearance="quiet"] .ag-button--primary {
+  background: var(--ag-color-semantic-accent-control);
+  box-shadow: none;
+}
+
+:root[data-appearance="quiet"] .ag-button--secondary,
+:root[data-appearance="quiet"] .ag-disclosure,
+:root[data-appearance="quiet"] .ag-app-shell__top,
+:root[data-appearance="quiet"] .ag-app-shell__footer,
+:root[data-appearance="quiet"] .ag-card,
+:root[data-appearance="quiet"] .ag-avatar,
+:root[data-appearance="quiet"] .ag-list-section,
+:root[data-appearance="quiet"] .ag-alert,
+:root[data-appearance="quiet"] .ag-toast,
+:root[data-appearance="quiet"] .ag-metric,
+:root[data-appearance="quiet"] .ag-surface[data-elevation="raised"] {
+  background: var(--ag-color-semantic-surface);
+  box-shadow: var(--ag-shadow-panel);
+}
+
+:root[data-appearance="quiet"] .ag-upload__target {
+  border-color: var(--ag-color-semantic-border-strong);
+  background: var(--ag-color-semantic-background-elevated);
+  box-shadow: none;
+}
+
+:root[data-appearance="quiet"] .ag-sheet__surface,
+:root[data-appearance="quiet"] .ag-command-palette,
+:root[data-appearance="quiet"] .ag-menu__surface,
+:root[data-appearance="quiet"] .ag-popover__surface,
+:root[data-appearance="quiet"] .ag-tooltip__surface,
+:root[data-appearance="quiet"] .ag-combobox__list,
+:root[data-appearance="quiet"] .ag-surface[data-elevation="floating"] {
+  background: var(--ag-color-semantic-background-elevated);
+  box-shadow: var(--ag-shadow-float);
+}
+
+:root[data-appearance="quiet"] .ag-disclosure::before,
+:root[data-appearance="quiet"] .ag-disclosure::after,
+:root[data-appearance="quiet"] .ag-upload__target::before,
+:root[data-appearance="quiet"] .ag-upload__target::after,
+:root[data-appearance="quiet"] .ag-card::before,
+:root[data-appearance="quiet"] .ag-list-section::before {
+  display: none;
+}
+
+:root[data-appearance="quiet"] .ag-skeleton {
+  background:
+    linear-gradient(90deg, transparent, var(--ag-color-semantic-highlight), transparent),
+    var(--ag-color-semantic-surface-muted);
 }
 
 /* Unified interaction states -------------------------------------------- */

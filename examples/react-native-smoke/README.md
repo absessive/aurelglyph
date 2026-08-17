@@ -4,7 +4,9 @@ This private React Native 0.86 app consumes the built
 `@aurelglyph/react-native` workspace package through the same package entry
 point as an external application. Its focused screen exercises a
 consumer-owned native `Modal`, a modal-local `AurelglyphOverlayHost`, tooltip
-measurement, viewport clamping, and touch pass-through.
+measurement, viewport clamping, and touch pass-through. The host uses the
+`quiet` dark appearance so the native consumer path also verifies its reduced
+palette, radius, and elevation contract.
 
 ## Workspace checks
 

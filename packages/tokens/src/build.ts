@@ -63,6 +63,7 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
 
 :root,
 :root[data-mode="dark"] {
+  color-scheme: dark;
   --ag-color-semantic-background: var(--ag-color-mode-dark-background);
   --ag-color-semantic-background-elevated: var(--ag-color-mode-dark-background-elevated);
   --ag-color-semantic-foreground: var(--ag-color-mode-dark-text);
@@ -90,6 +91,7 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
 }
 
 :root[data-mode="light"] {
+  color-scheme: light;
   --ag-color-semantic-background: var(--ag-color-mode-light-background);
   --ag-color-semantic-background-elevated: var(--ag-color-mode-light-background-elevated);
   --ag-color-semantic-foreground: var(--ag-color-mode-light-text);
@@ -195,6 +197,74 @@ function renderCss(flat: FlatToken[], tree: TokenTree): string {
 :root[data-mode="light"] {
   --ag-color-semantic-accent: var(--ag-accent-600);
   --ag-color-semantic-focus: var(--ag-accent-500);
+}
+
+:root[data-appearance="quiet"] {
+  --ag-accent-50: var(--ag-color-appearance-quiet-accent-50);
+  --ag-accent-100: var(--ag-color-appearance-quiet-accent-100);
+  --ag-accent-200: var(--ag-color-appearance-quiet-accent-200);
+  --ag-accent-300: var(--ag-color-appearance-quiet-accent-300);
+  --ag-accent-400: var(--ag-color-appearance-quiet-accent-400);
+  --ag-accent-500: var(--ag-color-appearance-quiet-accent-500);
+  --ag-accent-600: var(--ag-color-appearance-quiet-accent-600);
+  --ag-accent-rgb: var(--ag-color-appearance-quiet-accent-rgb);
+  --ag-radius-sm: var(--ag-appearance-quiet-radius-sm);
+  --ag-radius-md: var(--ag-appearance-quiet-radius-md);
+  --ag-radius-lg: var(--ag-appearance-quiet-radius-lg);
+  --ag-radius-xl: var(--ag-appearance-quiet-radius-xl);
+  --ag-radius-panel: var(--ag-appearance-quiet-radius-panel);
+  --ag-shadow-panel: var(--ag-appearance-quiet-shadow-panel);
+  --ag-shadow-float: var(--ag-appearance-quiet-shadow-float);
+  --ag-shadow-inset: var(--ag-appearance-quiet-shadow-inset);
+  --ag-color-semantic-accent-foreground: #ffffff;
+  --ag-color-semantic-accent-control: var(--ag-accent-500);
+  --ag-color-semantic-accent-control-strong: var(--ag-accent-600);
+  --ag-color-semantic-accent-muted: rgba(var(--ag-accent-rgb), 0.10);
+}
+
+:root[data-appearance="quiet"],
+:root[data-appearance="quiet"][data-mode="dark"] {
+  --ag-color-semantic-background: var(--ag-color-appearance-quiet-mode-dark-background);
+  --ag-color-semantic-background-elevated: var(--ag-color-appearance-quiet-mode-dark-background-elevated);
+  --ag-color-semantic-foreground: var(--ag-color-appearance-quiet-mode-dark-text);
+  --ag-color-semantic-surface: var(--ag-color-appearance-quiet-mode-dark-surface);
+  --ag-color-semantic-surface-muted: var(--ag-color-appearance-quiet-mode-dark-surface-2);
+  --ag-color-semantic-surface-strong: var(--ag-color-appearance-quiet-mode-dark-surface-3);
+  --ag-color-semantic-border: var(--ag-color-appearance-quiet-mode-dark-border-soft);
+  --ag-color-semantic-border-strong: var(--ag-color-appearance-quiet-mode-dark-border);
+  --ag-color-semantic-muted: var(--ag-color-appearance-quiet-mode-dark-text-muted);
+  --ag-color-semantic-subtle: var(--ag-color-appearance-quiet-mode-dark-text-subtle);
+  --ag-color-semantic-disabled: var(--ag-color-appearance-quiet-mode-dark-text-subtle);
+  --ag-color-semantic-highlight: var(--ag-color-appearance-quiet-mode-dark-highlight);
+  --ag-color-semantic-shadow: var(--ag-color-appearance-quiet-mode-dark-shadow);
+  --ag-color-semantic-overlay: var(--ag-color-appearance-quiet-mode-dark-overlay);
+  --ag-color-semantic-accent: var(--ag-accent-200);
+  --ag-color-semantic-focus: var(--ag-accent-300);
+  --ag-color-chart-primary: var(--ag-accent-300);
+  --ag-color-chart-secondary: var(--ag-accent-200);
+  --ag-color-chart-grid: var(--ag-color-appearance-quiet-mode-dark-chart-grid);
+}
+
+:root[data-appearance="quiet"][data-mode="light"] {
+  --ag-color-semantic-background: var(--ag-color-appearance-quiet-mode-light-background);
+  --ag-color-semantic-background-elevated: var(--ag-color-appearance-quiet-mode-light-background-elevated);
+  --ag-color-semantic-foreground: var(--ag-color-appearance-quiet-mode-light-text);
+  --ag-color-semantic-surface: var(--ag-color-appearance-quiet-mode-light-surface);
+  --ag-color-semantic-surface-muted: var(--ag-color-appearance-quiet-mode-light-surface-2);
+  --ag-color-semantic-surface-strong: var(--ag-color-appearance-quiet-mode-light-surface-3);
+  --ag-color-semantic-border: var(--ag-color-appearance-quiet-mode-light-border-soft);
+  --ag-color-semantic-border-strong: var(--ag-color-appearance-quiet-mode-light-border);
+  --ag-color-semantic-muted: var(--ag-color-appearance-quiet-mode-light-text-muted);
+  --ag-color-semantic-subtle: var(--ag-color-appearance-quiet-mode-light-text-subtle);
+  --ag-color-semantic-disabled: var(--ag-color-appearance-quiet-mode-light-text-subtle);
+  --ag-color-semantic-highlight: var(--ag-color-appearance-quiet-mode-light-highlight);
+  --ag-color-semantic-shadow: var(--ag-color-appearance-quiet-mode-light-shadow);
+  --ag-color-semantic-overlay: var(--ag-color-appearance-quiet-mode-light-overlay);
+  --ag-color-semantic-accent: var(--ag-accent-600);
+  --ag-color-semantic-focus: var(--ag-accent-500);
+  --ag-color-chart-primary: var(--ag-accent-600);
+  --ag-color-chart-secondary: var(--ag-accent-500);
+  --ag-color-chart-grid: var(--ag-color-appearance-quiet-mode-light-chart-grid);
 }
 `;
 }

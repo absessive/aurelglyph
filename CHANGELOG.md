@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.7.0
+
+- Add the opt-in `quiet` appearance across canonical tokens, CSS and React,
+  React Native, SwiftUI, Rails, the live example, generated Pages, and the
+  static preview. Quiet light mode uses near-white neutral surfaces, quiet dark
+  mode uses a compact charcoal scale, both share one restrained violet signal
+  palette, and smaller radii and flatter elevation reduce visual ornament while
+  preserving Aurelglyph typography, semantics, focus, status colors, and
+  accessibility. The existing `atelier` appearance and six accent themes remain
+  the default compatibility contract.
+- Expand unit and real-browser regression coverage for independent quiet
+  light/dark resolution, reduced-accent behavior, responsive layouts, and
+  atelier compatibility across package adapters and consumer previews. Complete
+  the interaction contract with 3:1 quiet control boundaries, explicit
+  selected-state indicators, contrast-safe React Native signal roles,
+  mode-synchronized browser chrome, gallery preference persistence, branded
+  keyboard focus, route announcements, and quiet hover/pressed feedback. Make
+  the native iOS host gate wait for an interactive launch surface and use one
+  bounded fresh-process retry for unresolved simulator automation failures.
+  Re-baseline the public roadmap so shipped 0.7.0 scope is distinct from future
+  catalog, advanced-data, and system-completeness work.
+
 ## 0.6.1
 
 - Add a private React Native 0.86 iOS and Android host that consumes the built

@@ -70,8 +70,9 @@ const navItems = [
 
 const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"] as const;
 const modeOptions = ["dark", "light"] as const;
+const appearanceOptions = ["quiet", "atelier"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.6.1";
+const packageVersion = "0.7.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -182,20 +183,44 @@ const iconCatalog = [
 
 type PageId = (typeof navItems)[number]["id"];
 type ModeOption = (typeof modeOptions)[number];
+type AppearanceOption = (typeof appearanceOptions)[number];
 type ThemeOption = (typeof themeOptions)[number];
+
+function initialOption<Option extends string>(
+  value: string | undefined,
+  options: readonly Option[],
+  fallback: Option
+): Option {
+  return options.includes(value as Option) ? (value as Option) : fallback;
+}
 
 export function App() {
   const [activePage, setActivePage] = useState<PageId>(() => {
     const hash = window.location.hash.replace("#", "");
     return navItems.some((item) => item.id === hash) ? (hash as PageId) : "overview";
   });
-  const [mode, setMode] = useState<ModeOption>("dark");
-  const [theme, setTheme] = useState<ThemeOption>("royal-purple");
+  const [appearance, setAppearance] = useState<AppearanceOption>(() =>
+    initialOption(document.documentElement.dataset.appearance, appearanceOptions, "quiet")
+  );
+  const [mode, setMode] = useState<ModeOption>(() =>
+    initialOption(document.documentElement.dataset.mode, modeOptions, "light")
+  );
+  const [theme, setTheme] = useState<ThemeOption>(() =>
+    initialOption(document.documentElement.dataset.theme, themeOptions, "royal-purple")
+  );
 
   useEffect(() => {
+    document.documentElement.dataset.appearance = appearance;
     document.documentElement.dataset.mode = mode;
     document.documentElement.dataset.theme = theme;
-  }, [mode, theme]);
+    try {
+      localStorage.setItem("aurelglyph-example-appearance", appearance);
+      localStorage.setItem("aurelglyph-example-mode", mode);
+      localStorage.setItem("aurelglyph-example-theme", theme);
+    } catch {
+      // Persistence is an enhancement; the controls still work when storage is unavailable.
+    }
+  }, [appearance, mode, theme]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -213,6 +238,10 @@ export function App() {
     () => navItems.find((item) => item.id === activePage)?.label ?? "Overview",
     [activePage]
   );
+
+  useEffect(() => {
+    document.title = `${pageTitle} · Aurelglyph React example`;
+  }, [pageTitle]);
 
   return (
     <main className="example-shell">
@@ -246,11 +275,21 @@ export function App() {
       </aside>
 
       <div className="example-workbench">
-        <ThemeSwitcher mode={mode} setMode={setMode} setTheme={setTheme} theme={theme} />
+        <p aria-atomic="true" aria-live="polite" className="example-visually-hidden">
+          {pageTitle} page
+        </p>
+        <ThemeSwitcher
+          appearance={appearance}
+          mode={mode}
+          setAppearance={setAppearance}
+          setMode={setMode}
+          setTheme={setTheme}
+          theme={theme}
+        />
 
-        {activePage === "overview" && <OverviewPage mode={mode} theme={theme} />}
+        {activePage === "overview" && <OverviewPage appearance={appearance} mode={mode} theme={theme} />}
         {activePage === "components" && <ComponentsPage />}
-        {activePage === "usage" && <UsagePage mode={mode} theme={theme} />}
+        {activePage === "usage" && <UsagePage appearance={appearance} mode={mode} theme={theme} />}
         {activePage === "changelog" && <ChangelogPage />}
 
         <p className="example-copyright">Copyright 2026 absessive.</p>
@@ -260,12 +299,16 @@ export function App() {
 }
 
 function ThemeSwitcher({
+  appearance,
   mode,
+  setAppearance,
   setMode,
   setTheme,
   theme
 }: {
+  appearance: AppearanceOption;
   mode: ModeOption;
+  setAppearance: (appearance: AppearanceOption) => void;
   setMode: (mode: ModeOption) => void;
   setTheme: (theme: ThemeOption) => void;
   theme: ThemeOption;
@@ -275,8 +318,21 @@ function ThemeSwitcher({
       <div>
         <p className="example-kicker">THEME</p>
         <strong>
-          {mode} · {theme}
+          {appearance} · {mode} · {theme}
         </strong>
+      </div>
+      <div className="example-segmented" aria-label="Appearance" role="group">
+        {appearanceOptions.map((option) => (
+          <button
+            aria-label={`Use ${option} appearance`}
+            aria-pressed={appearance === option}
+            key={option}
+            onClick={() => setAppearance(option)}
+            type="button"
+          >
+            {option}
+          </button>
+        ))}
       </div>
       <div className="example-segmented" aria-label="Mode" role="group">
         {modeOptions.map((option) => (
@@ -290,23 +346,30 @@ function ThemeSwitcher({
           </button>
         ))}
       </div>
-      <div className="example-swatches" aria-label="Accent theme" role="group">
-        {themeOptions.map((option) => (
-          <button
-            aria-label={`Use ${option} theme`}
-            aria-pressed={theme === option}
-            className={`example-swatch example-swatch--${option}`}
-            key={option}
-            onClick={() => setTheme(option)}
-            type="button"
-          />
-        ))}
-      </div>
+      {appearance === "quiet" ? (
+        <p className="example-palette-note">
+          <span aria-hidden="true" />
+          Single signal palette
+        </p>
+      ) : (
+        <div className="example-swatches" aria-label="Accent theme" role="group">
+          {themeOptions.map((option) => (
+            <button
+              aria-label={`Use ${option} theme`}
+              aria-pressed={theme === option}
+              className={`example-swatch example-swatch--${option}`}
+              key={option}
+              onClick={() => setTheme(option)}
+              type="button"
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
-function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
+function OverviewPage({ appearance, mode, theme }: { appearance: AppearanceOption; mode: ModeOption; theme: ThemeOption }) {
   return (
     <>
       <header className="example-hero">
@@ -325,7 +388,7 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
             Mode: {mode}
           </Button>
           <Button icon="search" variant="ghost">
-            Theme: {theme}
+            {appearance === "quiet" ? "Quiet palette" : `Theme: ${theme}`}
           </Button>
         </div>
       </header>
@@ -384,7 +447,7 @@ function OverviewPage({ mode, theme }: { mode: ModeOption; theme: ThemeOption })
                 helpText="Set these attributes once on the root element."
                 label="Theme attributes"
                 name="theme"
-                placeholder="data-mode=&quot;dark&quot; data-theme=&quot;royal-purple&quot;"
+                placeholder={`data-appearance="${appearance}" data-mode="${mode}" data-theme="${theme}"`}
               />
               <TextArea
                 helpText="Import package styles before composing controls."
@@ -818,7 +881,7 @@ function ComponentsPage() {
   );
 }
 
-function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
+function UsagePage({ appearance, mode, theme }: { appearance: AppearanceOption; mode: ModeOption; theme: ThemeOption }) {
   return (
     <section className="example-panel" aria-labelledby="usage-title">
       <div className="example-panel__header">
@@ -831,7 +894,7 @@ function UsagePage({ mode, theme }: { mode: ModeOption; theme: ThemeOption }) {
         <CodeBlock label="React component" code={`import { Button, TextField } from "@aurelglyph/react";\n\n<Button icon="send">Publish</Button>\n<TextField label="Project name" name="project" />`} />
         <CodeBlock label="Rails Git ref" code={`gem "aurelglyph-rails",\n  git: "https://github.com/absessive/aurelglyph",\n  glob: "packages/rails/aurelglyph-rails.gemspec",\n  tag: "v${packageVersion}"`} />
         <CodeBlock label="SwiftPM version" code={`.package(url: "https://github.com/absessive/aurelglyph", exact: "${packageVersion}")\n// or\n.package(url: "https://github.com/absessive/aurelglyph", from: "${packageVersion}")`} />
-        <CodeBlock label="Current theme" code={`<html data-mode="${mode}" data-theme="${theme}">`} />
+        <CodeBlock label="Current theme" code={`<html data-appearance="${appearance}" data-mode="${mode}" data-theme="${theme}">`} />
       </div>
     </section>
   );

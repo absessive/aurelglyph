@@ -131,7 +131,7 @@ Set the theme contract on the root element before rendering or during early app
 startup:
 
 ```html
-<html data-mode="dark" data-theme="royal-purple">
+<html data-appearance="quiet" data-mode="light" data-theme="royal-purple">
 ```
 
 Use React mobile foundations, controls, and icons from `@aurelglyph/react`:
@@ -270,8 +270,11 @@ with semantic variables or the shared `ag-*` component classes:
 </section>
 ```
 
-Supported `data-mode` values are `dark` and `light`. Supported `data-theme`
-values are `royal-purple`, `amber`, `forest`, `deep-blue`, `cyan`, and `steel`.
+Supported `data-appearance` values are `quiet` and `atelier`; omitting it keeps
+the original `atelier` styling. Quiet uses independent near-white and charcoal
+mode surfaces with one restrained violet signal palette. Supported `data-mode`
+values are `dark` and `light`. In atelier, supported `data-theme` values are
+`royal-purple`, `amber`, `forest`, `deep-blue`, `cyan`, and `steel`.
 
 ## React Native
 
@@ -295,7 +298,7 @@ import {
   Surface
 } from "@aurelglyph/react-native";
 
-<AurelglyphProvider accent="royal-purple" mode="system">
+<AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system">
   <Surface elevation="raised">
     <Stack gap={4}>
       <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
@@ -384,10 +387,11 @@ Minimum Rails asset-pipeline setup after the gem is installed:
    dismissal, form-reset support, and Turbo-safe cleanup. The Rails package
    README documents attributes and component events.
 
-4. Set `data-mode` and `data-theme` on the HTML root in your layout:
+4. Set `data-appearance`, `data-mode`, and `data-theme` on the HTML root in your
+   layout:
 
 ```erb
-<html data-mode="dark" data-theme="royal-purple">
+<html data-appearance="quiet" data-mode="light" data-theme="royal-purple">
 ```
 
 5. Use semantic CSS variables in server-rendered views and components.
@@ -458,12 +462,13 @@ let background = AurelglyphTokens.colorModeDarkBackground
 let accent = AurelglyphTokens.colorAccentRoyalPurple300
 ```
 
-Install mode and accent resolution through the SwiftUI environment, then use
-native bindings and presentations with the shared component names:
+Install appearance, mode, and accent resolution through the SwiftUI
+environment, then use native bindings and presentations with the shared
+component names:
 
 ```swift
 WorkbenchView()
-  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple))
+  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple, appearance: .quiet))
 
 AurelglyphContainer {
   AurelglyphStack(spacing: 16) {
@@ -558,5 +563,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.1")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.7.0")
 ```

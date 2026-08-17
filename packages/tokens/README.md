@@ -16,6 +16,22 @@ const background = tokens["color.mode.dark.background"];
 Use `@aurelglyph/tokens/react-native` for the generated native theme and
 `@aurelglyph/tokens/generated.css` for raw CSS variables.
 
+The canonical source also defines the opt-in simplified appearance under
+`color.appearance.quiet.*` and `appearance.quiet.*`:
+
+```ts
+const lightSurface = tokens["color.appearance.quiet.mode.light.surface"];
+const darkSurface = tokens["color.appearance.quiet.mode.dark.surface"];
+const panelRadius = tokens["appearance.quiet.radius.panel"];
+```
+
+Generated CSS applies these values with `data-appearance="quiet"`. Quiet light
+and dark use separate neutral scales but one restrained violet signal palette,
+smaller radii, flatter elevation, contrast-safe control boundaries, and an
+explicit signal shade for selected states. Generated light and dark selectors
+also set the matching browser `color-scheme`. Omitting the attribute preserves
+the original `atelier` contract and its selectable accent themes.
+
 The canonical source is `src/tokens.json`; generated files are rebuilt during
 package preparation.
 

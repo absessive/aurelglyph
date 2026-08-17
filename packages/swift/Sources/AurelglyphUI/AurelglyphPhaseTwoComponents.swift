@@ -46,7 +46,7 @@ public struct AurelglyphToolbar<Content: View>: View {
       content
     }
     .padding(8)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 12)
   }
 
   private var adaptiveLayout: AurelglyphAdaptiveLayout {
@@ -83,6 +83,7 @@ public struct AurelglyphSheet<Content: View, Actions: View>: View {
 
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
+    let cornerRadius = theme.resolvedPanelCornerRadius(24)
 
     VStack(alignment: .leading, spacing: 16) {
       sheetHeader
@@ -90,9 +91,9 @@ public struct AurelglyphSheet<Content: View, Actions: View>: View {
     }
     .padding(20)
     .foregroundStyle(palette.foreground)
-    .background(palette.backgroundElevated, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    .background(palette.backgroundElevated, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     .overlay {
-      RoundedRectangle(cornerRadius: 24, style: .continuous)
+      RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         .stroke(palette.border, lineWidth: 1)
     }
   }
@@ -206,7 +207,7 @@ public struct AurelglyphSegmentedControl: View {
         }
       }
     }
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 12)
     .onAppear(perform: normalizeSelection)
     .onChange(of: items) { _, _ in normalizeSelection() }
     .onChange(of: selection) { _, _ in normalizeSelection() }
@@ -245,6 +246,12 @@ public struct AurelglyphSegmentedControl: View {
         )
         .background(selection == item.id ? palette.accent.opacity(0.18) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay {
+          if selection == item.id {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+              .stroke(palette.focus, lineWidth: 2)
+          }
+        }
         .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -363,7 +370,7 @@ public struct AurelglyphAlert<Content: View>: View {
       }
     }
     .padding(16)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 18)
   }
 }
 
@@ -396,7 +403,7 @@ public struct AurelglyphEmptyState<Actions: View>: View {
     }
     .frame(maxWidth: .infinity, minHeight: 220)
     .padding(24)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    .aurelglyphPanelBackground(cornerRadius: 24)
   }
 }
 

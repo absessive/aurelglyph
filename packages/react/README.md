@@ -19,6 +19,14 @@ import { Button, Card, TextField } from "@aurelglyph/react";
 Import `@aurelglyph/react/styles.css` only when another package already
 provides the tokens and base layer.
 
+Set `data-appearance="quiet"` on the document root for the simplified
+Aurelglyph treatment: near-white or charcoal semantic surfaces, smaller radii,
+flatter elevation, and one restrained violet signal palette. It works with
+both `data-mode="light"` and `data-mode="dark"`. Omit the appearance attribute
+to retain the detailed `atelier` styling and selectable accent themes. Quiet
+controls retain explicit hover and pressed feedback, and tabs, segments,
+selected rows, and active-descendant lists add a 3:1 signal outline or rail.
+
 `Sheet` uses the native modal dialog lifecycle and is controlled by the
 consumer. Pass `onOpenChange` so Escape, backdrop, and native-close requests
 update state while Aurelglyph manages focus entry and restoration:
@@ -136,7 +144,9 @@ feedback and structural patterns.
 
 Additional controls in this release include `IconButton`, `ButtonGroup`,
 `Spinner`, and `Divider`. All component styling remains token-based and supports
-light mode, dark mode, and every Aurelglyph accent theme.
+quiet and atelier appearances in light and dark mode. Atelier exposes every
+Aurelglyph accent theme; quiet intentionally reduces those choices to one
+signal palette.
 
 Responsive shells keep the top bar and footer in view while the main region
 owns available height. Pagination wraps bounded page sets, data tables retain

@@ -27,6 +27,17 @@ Sprockets apps may also require the asset from an application stylesheet:
  */
 ```
 
+Set the shared appearance contract on the document root. `quiet` supports
+independent near-white light and charcoal dark modes with a reduced violet
+signal palette; omit `data-appearance` to keep the original `atelier` styling
+and all selectable accents. The generated stylesheet synchronizes native
+browser chrome with `data-mode` and gives quiet controls and selected states
+contrast-safe boundaries, rails, hover, pressed, and keyboard-focus feedback.
+
+```erb
+<html data-appearance="quiet" data-mode="light" data-theme="royal-purple">
+```
+
 ## Enable Interaction Controllers
 
 The package ships a small framework-neutral controller at `aurelglyph.js` for

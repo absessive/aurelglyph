@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.6.1`
+Current version: `0.7.0`
 
 ## Status
 
@@ -15,12 +15,12 @@ This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
 local workspace paths.
 
-Version 0.6.1 adds a real React Native 0.86 integration host and makes linting a
-first-class release gate. The host verifies consumer-owned modal overlays in a
-renderer, an Android production bundle, and release-mode iOS XCTest, while the
-workspace ESLint configuration covers React, React Native, Rails JavaScript,
-and hook correctness with zero warnings allowed. Invalid native helper text now
-uses the danger and live-announcement treatment consistently.
+Version 0.7.0 adds the opt-in `quiet` appearance: a simpler, flatter Aurelglyph
+surface for white and charcoal backgrounds with a restrained violet signal
+palette, smaller radii, and lighter elevation. The release carries the same
+semantic, responsive, and accessible interaction contract through CSS, React,
+React Native, SwiftUI, Rails, examples, previews, and generated outputs while
+preserving `atelier` as the compatibility default.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -29,7 +29,8 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
 
 - Canonical design tokens
 - Generated CSS, TypeScript, React Native, Swift, and Rails-friendly outputs
-- Theme support for dark mode, light mode, and multiple accent themes
+- Theme support for the detailed `atelier` and simplified `quiet` appearances,
+  each with light and dark modes
 - Phase 1 mobile foundations: app shell, top bar, tab bar, list rows, cards,
   search, switches, buttons, fields, file upload, icons, and expandable sections
 - Phase 2 app controls: navigation stack, toolbar, sheet, segmented control,
@@ -483,11 +484,19 @@ Import the stylesheet:
 @import "@aurelglyph/css";
 ```
 
-Set mode and accent theme on the root element:
+Set appearance, mode, and accent theme on the root element:
 
 ```html
-<html data-mode="dark" data-theme="royal-purple">
+<html data-appearance="quiet" data-mode="light" data-theme="royal-purple">
 ```
+
+Available appearances:
+
+- `atelier` — the original layered, textured Aurelglyph treatment and all six
+  selectable accents; this remains the compatibility default when the
+  attribute is omitted
+- `quiet` — flatter near-white or charcoal surfaces, smaller radii, lighter
+  elevation, and one restrained violet signal palette
 
 Available modes:
 
@@ -571,7 +580,7 @@ import {
 
 export function Settings() {
   return (
-    <AurelglyphProvider accent="royal-purple" mode="system">
+    <AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system">
       <Surface elevation="raised">
         <Stack gap={4}>
           <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
@@ -587,7 +596,10 @@ export function Settings() {
 ```
 
 `aurelglyphTheme` remains available for direct token access, while
-`resolveAurelglyphTheme(mode, accent)` returns mode-aware native values.
+`resolveAurelglyphTheme(mode, accent, appearance)` returns mode- and
+appearance-aware native values. In `quiet`, the selected accent is retained so
+switching back to `atelier` is lossless while rendered controls use the reduced
+violet signal palette.
 Overlays use React Native `Modal` inside bounded safe-area and keyboard-aware
 shells; tooltip behavior combines `accessibilityHint` with the provider's
 non-modal, safe-bound overlay host; and the dependency-free slider exposes
@@ -633,7 +645,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.1")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.7.0")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
@@ -647,13 +659,14 @@ let accent = AurelglyphTokens.colorAccentRoyalPurple300
 ```
 
 Install the shared semantic theme near the application root. `.system` follows
-the device appearance while preserving Aurelglyph's warm light and graphite
-dark palettes:
+the device appearance. Use `.quiet` for near-white light surfaces and compact
+charcoal dark surfaces, or omit `appearance` to retain the original `.atelier`
+treatment:
 
 ```swift
 WorkbenchView()
   .aurelglyphTheme(
-    AurelglyphTheme(mode: .system, accent: .royalPurple)
+    AurelglyphTheme(mode: .system, accent: .royalPurple, appearance: .quiet)
   )
 ```
 
@@ -793,11 +806,25 @@ Rails views can also use the helper installed by the engine:
 
 ## Theme Contract
 
-Aurelglyph uses `data-mode` and `data-theme` attributes for runtime theming:
+Aurelglyph uses `data-appearance`, `data-mode`, and `data-theme` attributes for
+runtime theming:
 
 ```html
-<html data-mode="dark" data-theme="royal-purple">
+<html data-appearance="quiet" data-mode="light" data-theme="royal-purple">
 ```
+
+`atelier` is the original detailed appearance and remains the default when
+`data-appearance` is omitted. `quiet` keeps Aurelglyph's typography, semantic
+roles, precise borders, and accessible focus language while using a reduced
+neutral palette, one violet signal scale, smaller radii, and flatter elevation.
+Both appearances independently support `light` and `dark`; semantic success,
+warning, danger, and info colors remain distinct from the active signal color.
+Forced modes also set the browser `color-scheme`, so native fields, menus, and
+scrollbars follow the same light or dark contract. Quiet control boundaries and
+selected-state rails meet the 3:1 non-text contrast target across its surfaces.
+The React gallery persists appearance, mode, and atelier accent choices before
+rendering, exposes branded keyboard focus on its custom controls, and announces
+client-side page changes.
 
 Components should use semantic variables like
 `--ag-color-semantic-background`, `--ag-color-semantic-surface`,

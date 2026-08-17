@@ -112,7 +112,15 @@ export function Dialog({
                     borderColor: theme.colors.borderStrong,
                     borderRadius: theme.radii.lg,
                     maxWidth,
-                    shadowColor: theme.colors.shadow
+                    shadowColor: theme.colors.shadow,
+                    ...(theme.appearance === "quiet"
+                      ? {
+                          shadowOffset: { height: theme.effects.floating.offsetY, width: 0 },
+                          shadowOpacity: theme.effects.floating.opacity,
+                          shadowRadius: theme.effects.floating.radius,
+                          elevation: theme.effects.floating.elevation
+                        }
+                      : {})
                   },
                   panelStyle
                 ]}

@@ -24,6 +24,8 @@ class AurelglyphRailsTest < Minitest::Test
     helper = view_context
 
     assert_equal "#9358e8", helper.aurelglyph_token("color.accent.royal-purple.300")
+    assert_equal "#fafaf9", helper.aurelglyph_token("color.appearance.quiet.mode.light.background")
+    assert_equal "16px", helper.aurelglyph_token("appearance.quiet.radius.panel")
   end
 
   def test_helper_reports_unknown_tokens

@@ -8,9 +8,11 @@ final class SmokeUITests: XCTestCase {
     XCUIDevice.shared.orientation = .portrait
     app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(app.buttons["Open native modal"].waitForExistence(timeout: 20), "The smoke host did not finish launching")
-    app.buttons["Open native modal"].tap()
-    XCTAssertTrue(app.descendants(matching: .any)["Native modal active"].firstMatch.waitForExistence(timeout: 8), "The native modal did not open")
+    let openModal = app.buttons["Open native modal"]
+    XCTAssertTrue(openModal.waitForExistence(timeout: 20), "The smoke host did not finish launching")
+    XCTAssertTrue(waitUntilHittable(openModal, timeout: 8), "The native modal trigger never became interactive")
+    openModal.tap()
+    XCTAssertTrue(app.descendants(matching: .any)["Native modal active"].firstMatch.waitForExistence(timeout: 15), "The native modal did not open")
   }
 
   func testHostedTooltipStaysInNativeModalAndOverlayDoesNotBlockTouches() {
@@ -66,6 +68,15 @@ final class SmokeUITests: XCTestCase {
     let visibleHost = hosts.allElementsBoundByIndex.first { $0.frame.width > 0 && $0.frame.height > 0 }
     XCTAssertNotNil(visibleHost, "The modal-local overlay host was not exposed", file: file, line: line)
     return visibleHost ?? hosts.firstMatch
+  }
+
+  private func waitUntilHittable(_ element: XCUIElement, timeout: TimeInterval) -> Bool {
+    let predicate = NSPredicate { candidate, _ in
+      guard let candidate = candidate as? XCUIElement else { return false }
+      return candidate.exists && candidate.isHittable
+    }
+    let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+    return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
   }
 
   private func assertInsideModalHost(

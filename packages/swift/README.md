@@ -6,7 +6,7 @@ for iOS 17 and macOS 14 or newer.
 The public Git package lives at the repository root:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.6.1")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.7.0")
 ```
 
 ```swift
@@ -37,15 +37,16 @@ disclosure state changes immediately without the reveal animation when enabled.
 
 ## Theme environment
 
-Install a mode and accent once near the application root. `.system` follows the
-device appearance; light mode uses the warm drafting-paper neutrals rather than
-pure white. Royal purple is the default accent, with amber, forest, deep blue,
-cyan, and steel also available.
+Install an appearance, mode, and accent once near the application root.
+`.system` follows the device appearance. The default `.atelier` appearance uses
+warm drafting-paper and graphite neutrals with all six accents; `.quiet` uses
+near-white and compact charcoal surfaces, smaller radii, flatter elevation, and
+one restrained violet signal palette.
 
 ```swift
 WorkbenchView()
   .aurelglyphTheme(
-    AurelglyphTheme(mode: .system, accent: .royalPurple)
+    AurelglyphTheme(mode: .system, accent: .royalPurple, appearance: .quiet)
   )
 ```
 
@@ -54,6 +55,9 @@ borders, foregrounds, status colors, overlays, and active controls. Existing
 shell components now use this environment instead of forcing a dark background.
 Accent, control-fill, focus, and accent-foreground roles follow the canonical
 mode-specific token mapping rather than reusing one raw accent shade.
+Quiet field boundaries use the contrast-verified neutral boundary role, while
+selected tabs, segments, rows, and pagination add an explicit focus-color rail
+or outline instead of relying on a low-opacity fill alone.
 Interactive labels use the foreground role in both modes, including inactive
 tabs, segmented options, and icon controls; muted text remains reserved for
 supporting descriptions and metadata.

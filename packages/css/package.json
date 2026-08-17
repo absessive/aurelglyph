@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/css",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "license": "MIT",
   "type": "module",
   "style": "dist/index.css",
@@ -23,6 +23,6 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.6.1"
+    "@aurelglyph/tokens": "0.7.0"
   }
 }

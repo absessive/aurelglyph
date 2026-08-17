@@ -27,8 +27,10 @@ describe("React Native theme resolution", () => {
     const theme = resolveAurelglyphTheme();
     expect(theme.mode).toBe("dark");
     expect(theme.accent).toBe("royal-purple");
+    expect(theme.appearance).toBe("atelier");
     expect(theme.colors.background).toBe("#0d0d0b");
     expect(theme.colors.accent).toBe("#562a93");
+    expect(theme.effects.floating).toEqual({ elevation: 12, offsetY: 12, opacity: 0.38, radius: 24 });
   });
 
   it("maps light mode and alternate accents from canonical tokens", () => {
@@ -37,6 +39,42 @@ describe("React Native theme resolution", () => {
     expect(theme.colors.accent).toBe("#334b24");
     expect(theme.colors.text).toBe("#2a241e");
     expect(theme.colors.danger).toBe("#7b352a");
+  });
+
+  it("resolves the quiet appearance independently in light and dark mode", () => {
+    const light = resolveAurelglyphTheme("light", "amber", "quiet");
+    const dark = resolveAurelglyphTheme("dark", "forest", "quiet");
+
+    expect(light.appearance).toBe("quiet");
+    expect(light.colors.background).toBe("#fafaf9");
+    expect(light.colors.surface).toBe("#ffffff");
+    expect(light.colors.accent).toBe("#7967cf");
+    expect(light.radii.panel).toBe(16);
+    expect(light.effects.floating.elevation).toBe(6);
+    expect(dark.colors.background).toBe("#131314");
+    expect(dark.colors.surface).toBe("#1d1d1e");
+    expect(dark.colors.accent).toBe(light.colors.accent);
+    expect(light.colors.accentStrong).toBe("#493a91");
+    expect(dark.colors.accentStrong).toBe(light.colors.accentStrong);
+    expect(contrast(light.colors.accent, light.colors.accentForeground)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(dark.colors.accent, dark.colors.accentForeground)).toBeGreaterThanOrEqual(4.5);
+
+    for (const theme of [light, dark]) {
+      const surfaces = [
+        theme.colors.background,
+        theme.colors.backgroundElevated,
+        theme.colors.surface,
+        theme.colors.surfaceMuted,
+        theme.colors.surfaceStrong
+      ];
+      const accentInk = theme.mode === "dark" ? theme.colors.focus : theme.colors.accentStrong;
+      for (const surface of surfaces) {
+        expect(contrast(theme.colors.border, surface), `${theme.mode} boundary`).toBeGreaterThanOrEqual(3);
+        expect(contrast(theme.colors.borderStrong, surface), `${theme.mode} strong boundary`).toBeGreaterThanOrEqual(3);
+        expect(contrast(theme.colors.accent, surface), `${theme.mode} control fill`).toBeGreaterThanOrEqual(3);
+        expect(contrast(accentInk, surface), `${theme.mode} accent ink`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
   });
 
   it("keeps primary control labels at WCAG AA contrast in every mode and accent", () => {

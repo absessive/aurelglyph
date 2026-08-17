@@ -339,6 +339,32 @@ describe("React Native rendered interaction contracts", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false, { reason: "close" });
   });
 
+  it("reduces dialog elevation only for the quiet appearance", () => {
+    const atelier = render(<Dialog onOpenChange={vi.fn()} open title="Atelier dialog"><Text>Body</Text></Dialog>);
+    const quiet = render(
+      <AurelglyphProvider appearance="quiet" overlayHost={false}>
+        <Dialog onOpenChange={vi.fn()} open title="Quiet dialog"><Text>Body</Text></Dialog>
+      </AurelglyphProvider>
+    );
+    const dialogPaint = (container: HTMLDivElement) =>
+      Array.from(container.querySelectorAll('[data-rn="View"]'))
+        .map(styleOf)
+        .find((style) => style.maxHeight === "100%" && style.width === "100%");
+
+    expect(dialogPaint(atelier.container)).toMatchObject({
+      shadowOffset: { height: 18, width: 0 },
+      shadowOpacity: 0.4,
+      shadowRadius: 40
+    });
+    expect(dialogPaint(atelier.container)).not.toHaveProperty("elevation");
+    expect(dialogPaint(quiet.container)).toMatchObject({
+      elevation: 6,
+      shadowOffset: { height: 8, width: 0 },
+      shadowOpacity: 0.18,
+      shadowRadius: 20
+    });
+  });
+
   it("preserves dialog descendants through drawer, popover, and menu specializations", () => {
     const onOpenChange = vi.fn();
     const rendered = render(
@@ -865,5 +891,51 @@ describe("React Native rendered interaction contracts", () => {
     expect(ghostStyle.color).toBe(light.colors.text);
     expect(closeStyle.color).toBe(light.colors.text);
     expect(helperStyle.color).toBe(light.colors.muted);
+  });
+
+  it("uses contrast-safe quiet paint for selected controls and compact accent text", () => {
+    const quiet = resolveAurelglyphTheme("dark", "royal-purple", "quiet");
+    const { container } = render(
+      <AurelglyphProvider accent="royal-purple" appearance="quiet" mode="dark">
+        <Tabs
+          defaultValue="workbench"
+          items={[
+            { badge: "LIVE", content: <Text>Workbench panel</Text>, id: "workbench", label: "Workbench" },
+            { content: <Text>Systems panel</Text>, id: "systems", label: "Systems" }
+          ]}
+          label="Quiet tabs"
+        />
+        <SegmentedControl
+          defaultValue="quiet"
+          items={[{ label: "Quiet", value: "quiet" }, { label: "Active", value: "active" }]}
+          label="Quiet mode"
+        />
+        <TabBar
+          defaultValue="work"
+          items={[{ badge: "NOW", id: "work", label: "Work" }, { id: "systems", label: "Systems" }]}
+          label="Quiet navigation"
+        />
+        <Button accessibilityLabel="Quiet primary">Publish</Button>
+      </AurelglyphProvider>
+    );
+
+    const selectedTab = container.querySelector('button[aria-label="Quiet tabs, Workbench"]');
+    const selectedSegment = container.querySelector('button[aria-label="Quiet, Quiet mode"]');
+    const selectedTabBar = container.querySelector('button[aria-label="Quiet navigation, Work"]');
+    const primary = container.querySelector('button[aria-label="Quiet primary"]');
+    const badge = Array.from(selectedTab?.querySelectorAll('span[data-rn="Text"]') ?? []).find((node) => node.textContent === "LIVE");
+    const tabBarBadge = Array.from(selectedTabBar?.querySelectorAll('span[data-rn="Text"]') ?? []).find((node) => node.textContent === "NOW");
+    const tabBarIndicator = Array.from(selectedTabBar?.querySelectorAll('[data-rn="View"]') ?? []).at(-1);
+    const primaryBackdrop = primary?.querySelector('[data-rn="View"]');
+
+    expect(styleOf(selectedTab).borderBottomColor).toBe(quiet.colors.focus);
+    expect(styleOf(selectedSegment).borderColor).toBe(quiet.colors.focus);
+    expect(styleOf(badge).color).toBe(quiet.colors.focus);
+    expect(styleOf(tabBarBadge).color).toBe(quiet.colors.focus);
+    expect(styleOf(tabBarIndicator).backgroundColor).toBe(quiet.colors.focus);
+    expect(styleOf(primaryBackdrop)).toMatchObject({
+      backgroundColor: quiet.colors.accent,
+      borderColor: quiet.colors.accent,
+    });
   });
 });

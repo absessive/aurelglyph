@@ -257,7 +257,7 @@ function pageShell(title: string, body: string, active = "index"): string {
   const accessibleBody = body.replaceAll("<pre><code>", '<pre aria-label="Code example" tabindex="0"><code>');
 
   return `<!doctype html>
-<html lang="en" data-mode="dark" data-theme="royal-purple">
+<html lang="en" data-appearance="quiet" data-mode="light" data-theme="royal-purple">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -269,6 +269,8 @@ function pageShell(title: string, body: string, active = "index"): string {
         const storedMode = localStorage.getItem("aurelglyph-mode");
         const preferredMode = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
         document.documentElement.dataset.mode = storedMode === "light" || storedMode === "dark" ? storedMode : preferredMode;
+        const storedAppearance = localStorage.getItem("aurelglyph-appearance");
+        document.documentElement.dataset.appearance = storedAppearance === "atelier" ? "atelier" : "quiet";
       } catch {}
     })();
   </script>
@@ -393,6 +395,65 @@ function pageShell(title: string, body: string, active = "index"): string {
       --accent-rgb: 147, 88, 232;
     }
 
+    :root[data-appearance="quiet"] {
+      --accent-100: #e1dcff;
+      --accent-200: #c8bef4;
+      --accent-300: #a99aef;
+      --accent-400: #8271d4;
+      --accent-500: #7967cf;
+      --accent-600: #493a91;
+      --accent-rgb: 121, 103, 207;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-panel: 16px;
+      --shadow-panel: 0 1px 2px var(--color-shadow);
+      --shadow-inset: none;
+      --color-on-accent: #ffffff;
+    }
+
+    :root[data-appearance="quiet"][data-mode="dark"] {
+      --color-bg: #131314;
+      --color-bg-elevated: #1a1a1b;
+      --color-surface: #1d1d1e;
+      --color-surface-2: #252526;
+      --color-border: #85847e;
+      --color-border-soft: #7b7975;
+      --color-text: #f2f0ed;
+      --color-text-muted: #b1afa9;
+      --color-text-readable-muted: var(--color-text-muted);
+      --color-text-subtle: #96948f;
+      --color-shadow: rgba(0, 0, 0, 0.32);
+      --color-highlight: rgba(255, 255, 255, 0.04);
+      --color-grid-line: transparent;
+      --color-grid-line-soft: transparent;
+      --color-frame-line: transparent;
+      --color-accent-ink: var(--accent-200);
+      --color-accent-ink-muted: var(--accent-200);
+      --color-focus: var(--accent-300);
+    }
+
+    :root[data-appearance="quiet"][data-mode="light"] {
+      --color-bg: #fafaf9;
+      --color-bg-elevated: #ffffff;
+      --color-surface: #ffffff;
+      --color-surface-2: #f2f2ef;
+      --color-border: #77766f;
+      --color-border-soft: #85847e;
+      --color-text: #292927;
+      --color-text-muted: #666560;
+      --color-text-readable-muted: var(--color-text-muted);
+      --color-text-subtle: #666560;
+      --color-shadow: rgba(38, 38, 35, 0.12);
+      --color-highlight: rgba(255, 255, 255, 0.72);
+      --color-grid-line: transparent;
+      --color-grid-line-soft: transparent;
+      --color-frame-line: transparent;
+      --color-accent-ink: var(--accent-600);
+      --color-accent-ink-muted: var(--accent-600);
+      --color-focus: var(--accent-500);
+    }
+
     * { box-sizing: border-box; }
 
     body {
@@ -407,6 +468,10 @@ function pageShell(title: string, body: string, active = "index"): string {
       font-family: var(--font-ui);
     }
 
+    :root[data-appearance="quiet"] body {
+      background: var(--color-bg);
+    }
+
     a {
       color: var(--color-accent-ink);
       text-decoration-color: rgba(var(--accent-rgb), 0.45);
@@ -417,6 +482,16 @@ function pageShell(title: string, body: string, active = "index"): string {
       outline: 2px solid var(--color-focus);
       outline-offset: 4px;
       border-radius: var(--radius-sm);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.12);
     }
 
     .page {
@@ -496,7 +571,8 @@ function pageShell(title: string, body: string, active = "index"): string {
 
     nav a[aria-current="page"] {
       color: var(--color-text);
-      text-decoration-color: var(--accent-300);
+      text-decoration-color: var(--color-focus);
+      text-decoration-thickness: 2px;
     }
 
     .hero,
@@ -526,6 +602,26 @@ function pageShell(title: string, body: string, active = "index"): string {
       border: 1px solid var(--color-frame-line);
       border-radius: calc(var(--radius-panel) - 10px);
       pointer-events: none;
+    }
+
+    :root[data-appearance="quiet"] .dot {
+      box-shadow: none;
+    }
+
+    :root[data-appearance="quiet"] .hero,
+    :root[data-appearance="quiet"] .panel {
+      background: var(--color-surface);
+      box-shadow: var(--shadow-panel);
+    }
+
+    :root[data-appearance="quiet"] .hero::before,
+    :root[data-appearance="quiet"] .panel::before {
+      display: none;
+    }
+
+    :root[data-appearance="quiet"] .mode-toggle {
+      letter-spacing: 0.02em;
+      text-transform: none;
     }
 
     .eyebrow {
@@ -752,7 +848,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     pre code {
-      border: 0;
+      border: 1px solid transparent;
       padding: 0;
       background: transparent;
       font-size: 0.82rem;
@@ -958,6 +1054,7 @@ function pageShell(title: string, body: string, active = "index"): string {
     }
 
     .ag-segmented__item.is-active {
+      border-color: var(--color-focus);
       background: rgba(var(--accent-rgb), 0.18);
       box-shadow: var(--shadow-inset);
     }
@@ -1282,9 +1379,11 @@ function pageShell(title: string, body: string, active = "index"): string {
         padding: 20px;
       }
 
-      h1 {
-        font-size: clamp(2.35rem, 14vw, 3rem);
-        overflow-wrap: anywhere;
+      h1,
+      .markdown h1:first-child {
+        font-size: clamp(1.5rem, 8vw, 3rem);
+        overflow-wrap: normal;
+        word-break: normal;
       }
     }
   </style>
@@ -1302,7 +1401,8 @@ function pageShell(title: string, body: string, active = "index"): string {
             )
             .join("\n          ")}
         </nav>
-        <button aria-label="Use light mode" aria-pressed="false" class="mode-toggle" data-mode-toggle type="button">Light mode</button>
+        <button aria-label="Use light mode" class="mode-toggle" data-mode-toggle type="button">Light mode</button>
+        <button aria-label="Use atelier appearance" class="mode-toggle" data-appearance-toggle type="button">Atelier appearance</button>
       </div>
     </header>
 ${accessibleBody}
@@ -1310,13 +1410,19 @@ ${accessibleBody}
   <script>
     (() => {
       const toggle = document.querySelector("[data-mode-toggle]");
-      if (!(toggle instanceof HTMLButtonElement)) return;
+      const appearanceToggle = document.querySelector("[data-appearance-toggle]");
+      if (!(toggle instanceof HTMLButtonElement) || !(appearanceToggle instanceof HTMLButtonElement)) return;
 
       const updateToggle = () => {
         const light = document.documentElement.dataset.mode === "light";
         toggle.textContent = light ? "Dark mode" : "Light mode";
         toggle.setAttribute("aria-label", light ? "Use dark mode" : "Use light mode");
-        toggle.setAttribute("aria-pressed", String(light));
+      };
+
+      const updateAppearanceToggle = () => {
+        const quiet = document.documentElement.dataset.appearance === "quiet";
+        appearanceToggle.textContent = quiet ? "Atelier appearance" : "Quiet appearance";
+        appearanceToggle.setAttribute("aria-label", quiet ? "Use atelier appearance" : "Use quiet appearance");
       };
 
       toggle.addEventListener("click", () => {
@@ -1326,7 +1432,15 @@ ${accessibleBody}
         updateToggle();
       });
 
+      appearanceToggle.addEventListener("click", () => {
+        const nextAppearance = document.documentElement.dataset.appearance === "quiet" ? "atelier" : "quiet";
+        document.documentElement.dataset.appearance = nextAppearance;
+        try { localStorage.setItem("aurelglyph-appearance", nextAppearance); } catch {}
+        updateAppearanceToggle();
+      });
+
       updateToggle();
+      updateAppearanceToggle();
     })();
   </script>
 </body>
@@ -1430,7 +1544,7 @@ function renderUsage(version: string): string {
       <h2>React Native components</h2>
       <pre><code>import { AurelglyphProvider, Button, Checkbox, Combobox, Stack, Surface } from "@aurelglyph/react-native";
 
-&lt;AurelglyphProvider accent="royal-purple" mode="system"&gt;
+&lt;AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system"&gt;
   &lt;Surface elevation="raised"&gt;
     &lt;Stack gap={4}&gt;
       &lt;Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} /&gt;
@@ -1515,7 +1629,7 @@ Text("Calibrated systems")
       <p>The Swift package does not bundle the web WOFF2 files from <code>@aurelglyph/css</code>. It bundles Apple-platform TTF files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono. Custom methods preserve their requested baseline and scale relative to the supplied Dynamic Type role; the generic role factory uses role-specific defaults. <code>AurelglyphTypography</code> registers and uses each available face independently, with native SwiftUI fallbacks.</p>
       <h2>SwiftUI interaction foundations</h2>
       <pre><code>WorkbenchView()
-  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple))
+  .aurelglyphTheme(AurelglyphTheme(mode: .system, accent: .royalPurple, appearance: .quiet))
 
 AurelglyphContainer {
   AurelglyphStack(spacing: 16) {
@@ -1561,7 +1675,8 @@ AurelglyphNavigationStack("Workbench") {
       <h2>Packaged fonts</h2>
       <p>The CSS package bundles OFL WOFF2 files for Libre Baskerville, Atkinson Hyperlegible, and Space Mono. System UI fonts remain fallbacks.</p>
       <h2>Theme</h2>
-      <pre><code>&lt;html data-mode="dark" data-theme="royal-purple"&gt;</code></pre>
+      <pre><code>&lt;html data-appearance="quiet" data-mode="light" data-theme="royal-purple"&gt;</code></pre>
+      <p>Quiet keeps Aurelglyph typography, semantic roles, and focus treatment with flatter near-white or charcoal surfaces and one restrained violet signal palette. Omit <code>data-appearance</code> to retain the original atelier appearance and all six selectable accents.</p>
     </article>`,
     "usage"
   );

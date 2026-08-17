@@ -147,6 +147,76 @@ describe("token compiler helpers", () => {
     }
 
     expect(contrastRatio(statuses["danger-control-foreground"], statuses["danger-control"])).toBeGreaterThanOrEqual(4.5);
+
+    const quiet = tokens.color.appearance.quiet as unknown as {
+      accent: Record<string, string>;
+      mode: Record<string, Record<string, string>>;
+    };
+    for (const modeName of ["dark", "light"]) {
+      const mode = quiet.mode[modeName]!;
+      const focusShade = modeName === "dark" ? "300" : "500";
+      const textShade = modeName === "dark" ? "200" : "600";
+      for (const surfaceName of surfaceNames) {
+        expect(
+          contrastRatio(mode.border!, mode[surfaceName]!),
+          `quiet ${modeName} strong boundary against ${surfaceName}`
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+          contrastRatio(mode["border-soft"]!, mode[surfaceName]!),
+          `quiet ${modeName} boundary against ${surfaceName}`
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+          contrastRatio(quiet.accent[focusShade]!, mode[surfaceName]!),
+          `quiet ${modeName} focus against ${surfaceName}`
+        ).toBeGreaterThanOrEqual(3);
+      }
+      expect(contrastRatio(quiet.accent[textShade]!, mode["surface-2"]!)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(mode.text!, mode["surface-2"]!)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(mode["text-muted"]!, mode["surface-2"]!)).toBeGreaterThanOrEqual(4.5);
+      for (const surfaceName of surfaceNames) {
+        expect(
+          contrastRatio(mode["text-subtle"]!, mode[surfaceName]!),
+          `quiet ${modeName} subtle text against ${surfaceName}`
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+
+      const quietChartRoles = modeName === "dark"
+        ? {
+            danger: statuses.danger!,
+            grid: mode["chart-grid"]!,
+            positive: statuses.success!,
+            primary: quiet.accent["300"]!,
+            secondary: quiet.accent["200"]!,
+            warning: statuses.warning!
+          }
+        : {
+            danger: statuses["danger-on-light"]!,
+            grid: mode["chart-grid"]!,
+            positive: statuses["success-on-light"]!,
+            primary: quiet.accent["600"]!,
+            secondary: quiet.accent["500"]!,
+            warning: statuses["warning-on-light"]!
+          };
+      for (const surfaceName of surfaceNames) {
+        for (const [roleName, color] of Object.entries(quietChartRoles)) {
+          expect(
+            contrastRatio(color, mode[surfaceName]!),
+            `quiet ${modeName} chart ${roleName} against ${surfaceName}`
+          ).toBeGreaterThanOrEqual(3);
+        }
+
+        for (const statusName of ["success", "warning", "danger", "info"]) {
+          const statusColor = modeName === "dark"
+            ? statuses[statusName]!
+            : statuses[`${statusName}-on-light`]!;
+          expect(
+            contrastRatio(statusColor, mode[surfaceName]!),
+            `quiet ${modeName} ${statusName} against ${surfaceName}`
+          ).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    }
+    expect(contrastRatio("#ffffff", quiet.accent["500"]!)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("escapes generated string literals", async () => {
@@ -211,9 +281,16 @@ describe("token compiler helpers", () => {
 
     expect(reactNative).toContain('"color.chart.primary": "#9358e8"');
     expect(css).toContain("--ag-color-semantic-accent: var(--ag-accent-200);");
+    expect(css).toMatch(/:root,\s*:root\[data-mode="dark"\]\s*\{\s*color-scheme: dark;/u);
+    expect(css).toMatch(/:root\[data-mode="light"\]\s*\{\s*color-scheme: light;/u);
     expect(css).toContain("--ag-color-semantic-focus: var(--ag-accent-500);");
     expect(css).toContain("--ag-color-semantic-accent: var(--ag-accent-600);");
     expect(css).toContain("--ag-color-semantic-success: var(--ag-color-status-success-on-light);");
+    expect(css).toContain(':root[data-appearance="quiet"]');
+    expect(css).toContain("--ag-color-semantic-background: var(--ag-color-appearance-quiet-mode-light-background);");
+    expect(css).toContain("--ag-shadow-float: var(--ag-appearance-quiet-shadow-float);");
+    expect(css).toContain("--ag-color-chart-grid: var(--ag-color-appearance-quiet-mode-dark-chart-grid);");
+    expect(css).toContain("--ag-color-chart-grid: var(--ag-color-appearance-quiet-mode-light-chart-grid);");
     for (const modeName of ["dark", "light"]) {
       for (const roleName of ["primary", "secondary", "grid", "positive", "warning", "danger"]) {
         expect(css).toContain(

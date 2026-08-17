@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-mode="dark" data-theme="royal-purple">
+<html lang="en" data-appearance="quiet" data-mode="light" data-theme="royal-purple">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -117,6 +117,54 @@
         --focus: var(--accent-500);
       }
 
+      :root[data-appearance="quiet"] {
+        --accent-100: #e1dcff;
+        --accent-200: #c8bef4;
+        --accent-300: #a99aef;
+        --accent-400: #8271d4;
+        --accent-500: #7967cf;
+        --accent-600: #493a91;
+        --accent-rgb: 121, 103, 207;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --radius-panel: 16px;
+        --shadow-inset: none;
+        --control-on-accent: #ffffff;
+      }
+
+      :root[data-appearance="quiet"][data-mode="dark"] {
+        --bg: #131314;
+        --bg-elevated: #1a1a1b;
+        --surface: #1d1d1e;
+        --surface-2: #252526;
+        --surface-3: #2b2b2d;
+        --border: #85847e;
+        --border-soft: #7b7975;
+        --text: #f2f0ed;
+        --muted: #b1afa9;
+        --subtle: #96948f;
+        --quiet-shadow: rgba(0, 0, 0, 0.32);
+        --accent-readable: var(--accent-200);
+        --focus: var(--accent-300);
+      }
+
+      :root[data-appearance="quiet"][data-mode="light"] {
+        --bg: #fafaf9;
+        --bg-elevated: #ffffff;
+        --surface: #ffffff;
+        --surface-2: #f2f2ef;
+        --surface-3: #e8e8e4;
+        --border: #77766f;
+        --border-soft: #85847e;
+        --text: #292927;
+        --muted: #666560;
+        --subtle: #666560;
+        --quiet-shadow: rgba(38, 38, 35, 0.12);
+        --accent-readable: var(--accent-600);
+        --focus: var(--accent-500);
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -143,6 +191,46 @@
         background-size: 48px 48px;
         mask-image: linear-gradient(180deg, black, transparent 78%);
         content: "";
+      }
+
+      :root[data-appearance="quiet"] body {
+        background: var(--bg);
+      }
+
+      :root[data-appearance="quiet"] body::before,
+      :root[data-appearance="quiet"] .hero::before,
+      :root[data-appearance="quiet"] .hero::after,
+      :root[data-appearance="quiet"] .panel::before,
+      :root[data-appearance="quiet"] .panel::after,
+      :root[data-appearance="quiet"] .drop::before,
+      :root[data-appearance="quiet"] .drop::after {
+        display: none;
+      }
+
+      :root[data-appearance="quiet"] .rail,
+      :root[data-appearance="quiet"] .hero,
+      :root[data-appearance="quiet"] .panel {
+        background: var(--surface);
+        box-shadow: 0 1px 2px var(--quiet-shadow);
+      }
+
+      :root[data-appearance="quiet"] .panel.media,
+      :root[data-appearance="quiet"] .media-item,
+      :root[data-appearance="quiet"] .contract-card {
+        background: var(--surface-2);
+        box-shadow: none;
+      }
+
+      :root[data-appearance="quiet"] button {
+        background: var(--surface);
+        box-shadow: none;
+        letter-spacing: 0.02em;
+        text-transform: none;
+      }
+
+      :root[data-appearance="quiet"] button.primary {
+        background: var(--accent-500);
+        box-shadow: none;
       }
 
       main {
@@ -676,7 +764,7 @@
       <section class="workbench">
         <header class="hero">
           <div>
-            <p class="kicker">Aurelglyph Static Preview · v0.6.1</p>
+            <p class="kicker">Aurelglyph Static Preview · v0.7.0</p>
             <h1>A shared design language for every app surface.</h1>
             <p class="summary">
               Aurelglyph gives web, mobile, desktop, and Rails apps one token
@@ -686,7 +774,8 @@
           </div>
           <div class="actions">
             <button class="primary" type="button">npm install</button>
-            <button aria-label="Use light mode" aria-pressed="false" data-mode-toggle type="button">Light mode</button>
+            <button aria-label="Use light mode" data-mode-toggle type="button">Light mode</button>
+            <button aria-label="Use atelier appearance" data-appearance-toggle type="button">Atelier appearance</button>
             <button class="ghost" type="button">Component API</button>
           </div>
         </header>
@@ -704,7 +793,7 @@
             </label>
             <label>
               Theme attributes
-              <input placeholder='data-mode="dark" data-theme="royal-purple"' />
+              <input placeholder='data-appearance="quiet" data-mode="light" data-theme="royal-purple"' />
               <span class="help">Set these attributes once on the root element.</span>
             </label>
             <label>
@@ -772,7 +861,8 @@
       (() => {
         const root = document.documentElement;
         const toggle = document.querySelector("[data-mode-toggle]");
-        if (!(toggle instanceof HTMLButtonElement)) return;
+        const appearanceToggle = document.querySelector("[data-appearance-toggle]");
+        if (!(toggle instanceof HTMLButtonElement) || !(appearanceToggle instanceof HTMLButtonElement)) return;
 
         try {
           const storedMode = localStorage.getItem("aurelglyph-preview-mode");
@@ -781,13 +871,20 @@
           } else if (matchMedia("(prefers-color-scheme: light)").matches) {
             root.dataset.mode = "light";
           }
+          const storedAppearance = localStorage.getItem("aurelglyph-preview-appearance");
+          if (storedAppearance === "atelier" || storedAppearance === "quiet") root.dataset.appearance = storedAppearance;
         } catch {}
 
         const updateToggle = () => {
           const light = root.dataset.mode === "light";
           toggle.textContent = light ? "Dark mode" : "Light mode";
           toggle.setAttribute("aria-label", light ? "Use dark mode" : "Use light mode");
-          toggle.setAttribute("aria-pressed", String(light));
+        };
+
+        const updateAppearanceToggle = () => {
+          const quiet = root.dataset.appearance === "quiet";
+          appearanceToggle.textContent = quiet ? "Atelier appearance" : "Quiet appearance";
+          appearanceToggle.setAttribute("aria-label", quiet ? "Use atelier appearance" : "Use quiet appearance");
         };
 
         toggle.addEventListener("click", () => {
@@ -797,7 +894,15 @@
           updateToggle();
         });
 
+        appearanceToggle.addEventListener("click", () => {
+          const nextAppearance = root.dataset.appearance === "quiet" ? "atelier" : "quiet";
+          root.dataset.appearance = nextAppearance;
+          try { localStorage.setItem("aurelglyph-preview-appearance", nextAppearance); } catch {}
+          updateAppearanceToggle();
+        });
+
         updateToggle();
+        updateAppearanceToggle();
       })();
     </script>
   </body>

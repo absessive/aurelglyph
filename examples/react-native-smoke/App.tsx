@@ -49,7 +49,7 @@ function NativeModalSmoke({insets, onClose}: {insets: EdgeInsets; onClose: () =>
           style={[styles.modalCanvas, {backgroundColor: theme.colors.background}]}>
           <View style={styles.modalHeader}>
             <View style={styles.headingGroup}>
-              <Text style={[styles.eyebrow, {color: theme.colors.accentStrong}]}>LIVE · NATIVE WINDOW</Text>
+              <Text style={[styles.eyebrow, {color: theme.colors.focus}]}>LIVE · NATIVE WINDOW</Text>
               <Text style={[styles.modalTitle, {color: theme.colors.text}]}>Overlay host calibration</Text>
             </View>
             <IconButton
@@ -61,11 +61,13 @@ function NativeModalSmoke({insets, onClose}: {insets: EdgeInsets; onClose: () =>
           </View>
 
           <View
+            testID="quiet-modal-panel"
             style={[
               styles.instrumentPanel,
               {
                 backgroundColor: theme.colors.surface,
                 borderColor: theme.colors.border,
+                borderRadius: theme.radii.lg,
               },
             ]}>
             <Text style={[styles.panelLabel, {color: theme.colors.muted}]}>CONSUMER-OWNED MODAL</Text>
@@ -120,15 +122,25 @@ function SmokeWorkbench() {
     <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <StatusBar barStyle="light-content" />
       <View style={[styles.calibrationLine, {borderTopColor: theme.colors.focus}]} />
-      <Text style={[styles.eyebrow, {color: theme.colors.accentStrong}]}>AURELGLYPH · RN 0.86</Text>
+      <Text style={[styles.eyebrow, {color: theme.colors.focus}]}>AURELGLYPH · RN 0.86</Text>
       <Text style={[styles.title, {color: theme.colors.text}]}>Native overlay test host</Text>
       <Text style={[styles.body, {color: theme.colors.muted}]}>A focused runtime surface for modal layering, host measurement, viewport clamping, and pointer passthrough.</Text>
       <View
+        testID="quiet-smoke-status"
         style={[
           styles.statusPanel,
-          {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
+          {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.border,
+            borderRadius: theme.radii.lg,
+            elevation: theme.effects.raised.elevation,
+            shadowColor: theme.colors.shadow,
+            shadowOffset: {height: theme.effects.raised.offsetY, width: 0},
+            shadowOpacity: theme.effects.raised.opacity,
+            shadowRadius: theme.effects.raised.radius,
+          },
         ]}>
-        <View style={[styles.signalDot, {backgroundColor: theme.colors.accent}]} />
+        <View testID="quiet-smoke-signal" style={[styles.signalDot, {backgroundColor: theme.colors.accent}]} />
         <View style={styles.statusCopy}>
           <Text style={[styles.panelLabel, {color: theme.colors.muted}]}>SYSTEMS OPERATIONAL</Text>
           <Text style={[styles.statusText, {color: theme.colors.text}]}>Root overlay host mounted</Text>
@@ -145,7 +157,7 @@ function SmokeWorkbench() {
 function ThemedSmokeHost() {
   const insets = useSafeAreaInsets();
   return (
-    <AurelglyphProvider accent="royal-purple" mode="dark" overlayInsets={insets}>
+    <AurelglyphProvider accent="royal-purple" appearance="quiet" mode="dark" overlayInsets={insets}>
       <SmokeWorkbench />
     </AurelglyphProvider>
   );
@@ -196,7 +208,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   instrumentPanel: {
-    borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
     gap: 18,
     padding: 20,

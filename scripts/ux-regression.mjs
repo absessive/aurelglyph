@@ -522,7 +522,8 @@ async function auditDom(client, context) {
     const clippedHeadings = [...document.querySelectorAll("h1, h2, h3")]
       .filter(visible)
       .filter((element) => element.scrollWidth > element.clientWidth + 1)
-      .map((element) => element.tagName.toLowerCase() + "[" + element.textContent.trim().slice(0, 80) + "]");
+      .map((element) => element.tagName.toLowerCase() + "[" + element.textContent.trim().slice(0, 80)
+        + "] scroll=" + element.scrollWidth + " client=" + element.clientWidth);
     const clippedControls = [...document.querySelectorAll(controlSelector)]
       .filter(visible)
       .filter(isDiscreteTarget)
@@ -772,12 +773,50 @@ async function ensureMode(client, mode, buttonLabel, context) {
   await settleUi(client);
 }
 
+async function ensureAppearance(client, appearance, buttonLabel, context) {
+  if (await evaluate(client, "document.documentElement.dataset.appearance") !== appearance) {
+    await clickButton(client, buttonLabel);
+  }
+  await waitForCondition(
+    client,
+    `document.documentElement.dataset.appearance === ${JSON.stringify(appearance)}`,
+    `${context}: appearance did not change to ${appearance}`
+  );
+  await settleUi(client);
+}
+
 async function runInteractionRegression(client, exampleUrl, viewport, viewportName) {
   const suiteName = `React interaction suite ${viewportName}`;
   reportProgress(suiteName);
   client.setPhase(`${suiteName}: setup`);
   await setViewport(client, viewport);
   await navigate(client, `${exampleUrl}/#components`);
+  const themeFocus = await evaluate(client, `(() => {
+    const button = document.querySelector('button[aria-label="Use quiet appearance"]');
+    button?.focus();
+    if (!button) return null;
+    const buttonStyle = getComputedStyle(button);
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--ag-color-semantic-focus)';
+    document.body.append(probe);
+    const expected = getComputedStyle(probe).color;
+    probe.remove();
+    return {
+      expected,
+      outlineColor: buttonStyle.outlineColor,
+      outlineStyle: buttonStyle.outlineStyle,
+      outlineWidth: buttonStyle.outlineWidth
+    };
+  })()`);
+  invariant(themeFocus, "Theme appearance control was not found");
+  invariant(
+    themeFocus.outlineStyle !== "none" && Number.parseFloat(themeFocus.outlineWidth) >= 2,
+    `Theme control has no visible focus indicator: ${JSON.stringify(themeFocus)}`
+  );
+  invariant(
+    themeFocus.outlineColor === themeFocus.expected,
+    `Theme control focus does not use the semantic focus token: ${JSON.stringify(themeFocus)}`
+  );
   client.setPhase(`${suiteName}: dialog`);
 
   await clickButton(client, "Open dialog");
@@ -942,9 +981,8 @@ async function runExampleRegression(client, exampleUrl, report) {
         const context = `React ${route} ${viewport.name}/${mode}`;
         client.setPhase(`${context}: prepare`);
         reportProgress(context);
-        if (await evaluate(client, "document.documentElement.dataset.mode") !== mode) await clickButton(client, mode);
-        await waitForCondition(client, `document.documentElement.dataset.mode === ${JSON.stringify(mode)}`, `Mode did not change to ${mode}`);
-        await settleUi(client);
+        await ensureAppearance(client, "quiet", "Use quiet appearance", context);
+        await ensureMode(client, mode, mode, context);
         report.audits.push({ context, dom: await auditDom(client, context) });
         await auditAxe(client, context);
         report.accessibility.push({ context, ...(await auditAccessibilityTree(client, context)) });
@@ -957,6 +995,69 @@ async function runExampleRegression(client, exampleUrl, report) {
 
   await setViewport(client, viewports[0]);
   await navigateExampleRoute(client, exampleUrl, "components");
+  const quietTokens = {};
+  await ensureAppearance(client, "quiet", "Use quiet appearance", "React quiet appearance token audit");
+  for (const mode of ["light", "dark"]) {
+    await ensureMode(client, mode, mode, `React quiet appearance ${mode}`);
+    quietTokens[mode] = await evaluate(client, `(() => {
+      const styles = getComputedStyle(document.documentElement);
+      return {
+        accent: styles.getPropertyValue('--ag-accent-rgb').trim(),
+        background: styles.getPropertyValue('--ag-color-semantic-background').trim(),
+        colorScheme: styles.colorScheme,
+        panelRadius: styles.getPropertyValue('--ag-radius-panel').trim(),
+        surface: styles.getPropertyValue('--ag-color-semantic-surface').trim(),
+        text: styles.getPropertyValue('--ag-color-semantic-foreground').trim()
+      };
+    })()`);
+  }
+  invariant(quietTokens.light.background !== quietTokens.dark.background, `Quiet light and dark backgrounds are not independent: ${JSON.stringify(quietTokens)}`);
+  invariant(quietTokens.light.surface !== quietTokens.dark.surface, `Quiet light and dark surfaces are not independent: ${JSON.stringify(quietTokens)}`);
+  invariant(quietTokens.light.text !== quietTokens.dark.text, `Quiet light and dark text is not independent: ${JSON.stringify(quietTokens)}`);
+  invariant(
+    quietTokens.light.colorScheme === "light" && quietTokens.dark.colorScheme === "dark",
+    `Native browser color scheme did not follow the forced Aurelglyph mode: ${JSON.stringify(quietTokens)}`
+  );
+  invariant(quietTokens.light.accent === quietTokens.dark.accent, `Quiet modes do not share their reduced signal palette: ${JSON.stringify(quietTokens)}`);
+  invariant(quietTokens.light.panelRadius === "16px" && quietTokens.dark.panelRadius === "16px", `Quiet panel radius drifted: ${JSON.stringify(quietTokens)}`);
+  const selectedIndicators = await evaluate(client, `(() => {
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--ag-color-semantic-focus)';
+    document.body.append(probe);
+    const expected = getComputedStyle(probe).color;
+    probe.remove();
+    const selectedListRow = document.querySelector('.ag-list-row.is-selected');
+    return {
+      expected,
+      listRowRail: selectedListRow ? getComputedStyle(selectedListRow).boxShadow : '',
+      segmentBorder: getComputedStyle(document.querySelector('.ag-segmented__item.is-active')).borderColor,
+      tabBorder: getComputedStyle(document.querySelector('.ag-tabs__tab.is-active')).borderColor
+    };
+  })()`);
+  invariant(
+    selectedIndicators.segmentBorder === selectedIndicators.expected
+      && selectedIndicators.tabBorder === selectedIndicators.expected
+      && selectedIndicators.listRowRail.includes(selectedIndicators.expected),
+    `Selected controls do not expose the semantic focus indicator: ${JSON.stringify(selectedIndicators)}`
+  );
+  const quietAccents = {};
+  for (const theme of ["royal-purple", "forest"]) {
+    quietAccents[theme] = await evaluate(client, `(() => {
+      document.documentElement.dataset.theme = ${JSON.stringify(theme)};
+      return getComputedStyle(document.documentElement).getPropertyValue('--ag-accent-rgb').trim();
+    })()`);
+  }
+  invariant(new Set(Object.values(quietAccents)).size === 1, `Quiet appearance did not reduce the accent palette: ${JSON.stringify(quietAccents)}`);
+  report.appearances = { quiet: { accents: quietAccents, modes: quietTokens } };
+
+  const atelierContext = "React atelier compatibility desktop/dark";
+  await ensureAppearance(client, "atelier", "Use atelier appearance", atelierContext);
+  await ensureMode(client, "dark", "dark", atelierContext);
+  report.audits.push({ context: atelierContext, dom: await auditDom(client, atelierContext) });
+  await auditAxe(client, atelierContext);
+  report.accessibility.push({ context: atelierContext, ...(await auditAccessibilityTree(client, atelierContext)) });
+  report.screenshots.push(await capture(client, "react-components-desktop-atelier-dark.png"));
+
   const accents = {};
   for (const theme of ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"]) {
     client.setPhase(`React theme ${theme}`);
@@ -967,6 +1068,33 @@ async function runExampleRegression(client, exampleUrl, report) {
   }
   invariant(new Set(Object.values(accents)).size === 6, `Theme accents are not distinct: ${JSON.stringify(accents)}`);
   report.themes = accents;
+
+  await clickButton(client, "Use forest theme");
+  await ensureMode(client, "dark", "dark", "React preference persistence");
+  await waitForCondition(
+    client,
+    "localStorage.getItem('aurelglyph-example-appearance') === 'atelier' && localStorage.getItem('aurelglyph-example-mode') === 'dark' && localStorage.getItem('aurelglyph-example-theme') === 'forest'",
+    "React theme preferences were not persisted"
+  );
+  await navigate(client, `${exampleUrl}/#overview`);
+  const persistedPreferences = await evaluate(client, `({
+    appearance: document.documentElement.dataset.appearance,
+    livePage: document.querySelector('[aria-live="polite"]')?.textContent.trim(),
+    mode: document.documentElement.dataset.mode,
+    theme: document.documentElement.dataset.theme,
+    title: document.title
+  })`);
+  invariant(
+    persistedPreferences.appearance === "atelier"
+      && persistedPreferences.mode === "dark"
+      && persistedPreferences.theme === "forest",
+    `React theme preferences did not survive navigation: ${JSON.stringify(persistedPreferences)}`
+  );
+  invariant(
+    persistedPreferences.title.startsWith("Overview ·") && persistedPreferences.livePage === "Overview page",
+    `React route feedback is incomplete: ${JSON.stringify(persistedPreferences)}`
+  );
+  report.persistence = persistedPreferences;
   report.appShellVariants = await auditOptionalAppShellRows(client);
 }
 
@@ -981,10 +1109,8 @@ async function runStaticRegression(client, staticUrl, report) {
       const context = `Static preview ${viewport.name}/${mode}`;
       client.setPhase(`${context}: prepare`);
       reportProgress(context);
-      const currentMode = await evaluate(client, "document.documentElement.dataset.mode");
-      if (currentMode !== mode) await clickButton(client, mode === "light" ? "Use light mode" : "Use dark mode");
-      await waitForCondition(client, `document.documentElement.dataset.mode === ${JSON.stringify(mode)}`, `Static mode did not change to ${mode}`);
-      await settleUi(client);
+      await ensureAppearance(client, "quiet", "Use quiet appearance", context);
+      await ensureMode(client, mode, mode === "light" ? "Use light mode" : "Use dark mode", context);
       const count = await evaluate(client, "document.querySelector('.contract-count')?.textContent.trim()");
       invariant(count === "18 component families · 5 platform targets · 90 checked claims", `${context}: contract count drifted`);
       report.audits.push({ context, dom: await auditDom(client, context) });
@@ -993,6 +1119,15 @@ async function runStaticRegression(client, staticUrl, report) {
       report.screenshots.push(await capture(client, `static-${viewport.name}-${mode}.png`));
     }
   }
+
+  const atelierContext = "Static preview atelier compatibility desktop/light";
+  await setViewport(client, { height: 1100, mobile: false, width: 1440 });
+  await navigate(client, `${staticUrl}/preview/index.html`);
+  await ensureAppearance(client, "atelier", "Use atelier appearance", atelierContext);
+  await ensureMode(client, "light", "Use light mode", atelierContext);
+  report.audits.push({ context: atelierContext, dom: await auditDom(client, atelierContext) });
+  await auditAxe(client, atelierContext);
+  report.accessibility.push({ context: atelierContext, ...(await auditAccessibilityTree(client, atelierContext)) });
 }
 
 async function runPagesRegression(client, staticUrl, report) {
@@ -1015,6 +1150,7 @@ async function runPagesRegression(client, staticUrl, report) {
         const context = `Pages ${route.name} ${viewport.name}/${mode}`;
         client.setPhase(`${context}: prepare`);
         reportProgress(context);
+        await ensureAppearance(client, "quiet", "Use quiet appearance", context);
         await ensureMode(client, mode, mode === "light" ? "Use light mode" : "Use dark mode", context);
         report.audits.push({ context, dom: await auditDom(client, context) });
         await auditAxe(client, context);
@@ -1025,6 +1161,15 @@ async function runPagesRegression(client, staticUrl, report) {
       }
     }
   }
+
+  const atelierContext = "Pages components atelier compatibility desktop/light";
+  await setViewport(client, viewports[0]);
+  await navigate(client, `${staticUrl}/docs/components.html`);
+  await ensureAppearance(client, "atelier", "Use atelier appearance", atelierContext);
+  await ensureMode(client, "light", "Use light mode", atelierContext);
+  report.audits.push({ context: atelierContext, dom: await auditDom(client, atelierContext) });
+  await auditAxe(client, atelierContext);
+  report.accessibility.push({ context: atelierContext, ...(await auditAccessibilityTree(client, atelierContext)) });
 }
 
 async function runResponsiveRegression(client, exampleUrl, staticUrl, report) {
@@ -1050,6 +1195,7 @@ async function runResponsiveRegression(client, exampleUrl, staticUrl, report) {
       const context = `Responsive React ${route} ${viewport.name}`;
       client.setPhase(`${context}: prepare`);
       reportProgress(context);
+      await ensureAppearance(client, "quiet", "Use quiet appearance", context);
       await ensureMode(client, "dark", "dark", context);
       report.responsive.push({ context, dom: await auditDom(client, context) });
       if (viewport.name === "compact" || route === "components") {
@@ -1065,6 +1211,7 @@ async function runResponsiveRegression(client, exampleUrl, staticUrl, report) {
       const context = `Responsive Pages ${route.name} ${viewport.name}`;
       client.setPhase(`${context}: prepare`);
       reportProgress(context);
+      await ensureAppearance(client, "quiet", "Use quiet appearance", context);
       await ensureMode(client, "dark", "Use dark mode", context);
       report.responsive.push({ context, dom: await auditDom(client, context) });
       if (route.name === "components") {
@@ -1079,6 +1226,7 @@ async function runResponsiveRegression(client, exampleUrl, staticUrl, report) {
     const context = `Responsive static preview ${viewport.name}`;
     client.setPhase(`${context}: prepare`);
     reportProgress(context);
+    await ensureAppearance(client, "quiet", "Use quiet appearance", context);
     await ensureMode(client, "dark", "Use dark mode", context);
     report.responsive.push({ context, dom: await auditDom(client, context) });
     report.screenshots.push(await capture(client, `responsive-static-${viewport.name}.png`));
@@ -1109,6 +1257,7 @@ try {
   const chromeBinary = await findChrome();
   const report = {
     accessibility: [],
+    appearances: {},
     audits: [],
     browser: "not started",
     interactionCdp: [],

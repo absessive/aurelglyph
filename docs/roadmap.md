@@ -8,6 +8,10 @@ and the [Material UI component
 catalog](https://mui.com/material-ui/all-components/). Platform-native behavior,
 accessibility, and the Aurelglyph token language remain part of the contract.
 
+Released milestones below describe shipped work. Planned milestones remain
+unversioned until their scope and cross-platform evidence are ready for a
+release, so roadmap labels do not imply an API or delivery commitment.
+
 ## What “feature complete” means
 
 Aurelglyph is feature complete when a product can be built without importing a
@@ -40,7 +44,25 @@ platform and browser tests for applicable behavior and accessibility.
 - Delivery infrastructure: a machine-readable component manifest, generated
   support matrix, expanded live example, and browser/accessibility regression.
 
-## 0.6.0 — Catalog parity
+## 0.6.x — Responsive and integration hardening
+
+The 0.6 series made the existing catalog production-ready across compact
+portrait, phone landscape, tablet, split-view, and wide layouts. It also added
+the React Native consumer host, native modal overlay contracts, Rails and React
+interaction hardening, typography packaging, and the full lint, native, and
+browser accessibility release gates.
+
+## 0.7.0 — Quiet appearance and UX completeness
+
+0.7.0 adds the opt-in quiet appearance across tokens, CSS, React, React Native,
+SwiftUI, Rails, examples, and generated previews. Near-white and charcoal
+surfaces, a restrained violet signal palette, smaller radii, and flatter
+elevation keep the interface simple while preserving Aurelglyph semantics and
+typography. Contrast-safe control boundaries, selected-state signals,
+keyboard focus, preference persistence, page announcements, responsive checks,
+and atelier compatibility complete the shared UX contract.
+
+## Planned — Catalog expansion
 
 Finish the remaining core Bootstrap and Material UI catalog gaps:
 
@@ -52,7 +74,7 @@ Finish the remaining core Bootstrap and Material UI catalog gaps:
 - Transfer List where it is an appropriate desktop/tablet pattern, with a native
   selection-flow alternative documented for compact mobile surfaces.
 
-## 0.7.0 — Advanced inputs and data
+## Planned — Advanced inputs and data
 
 Cover the component families commonly supplied by larger application suites:
 
@@ -64,7 +86,7 @@ Cover the component families commonly supplied by larger application suites:
 - Attachment list, image preview, upload queue/progress/error/retry/remove, and
   camera/microphone/video permission states.
 
-## 0.8.0 — System completeness
+## Planned — System completeness
 
 Make completeness operational rather than component-count driven:
 

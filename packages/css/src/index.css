@@ -66,6 +66,10 @@ body {
     linear-gradient(180deg, var(--ag-color-semantic-background), var(--ag-color-semantic-background-elevated));
 }
 
+:root[data-appearance="quiet"] body {
+  background: var(--ag-color-semantic-background);
+}
+
 .ag-focus-ring:focus-visible {
   outline: 2px solid var(--ag-color-semantic-focus);
   outline-offset: 2px;

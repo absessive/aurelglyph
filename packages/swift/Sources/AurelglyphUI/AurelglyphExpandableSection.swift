@@ -66,11 +66,7 @@ public struct AurelglyphExpandableSection<Content: View>: View {
       }
     }
     .padding(16)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    .overlay {
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
-        .stroke(.quaternary, lineWidth: 1)
-    }
+    .aurelglyphPanelBackground(cornerRadius: 18, bordered: true)
   }
 
   static func animation(reduceMotion: Bool) -> Animation? {

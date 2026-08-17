@@ -68,7 +68,7 @@ public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: Vie
         navigation
           .frame(width: usesRegularNavigation ? regularNavigationWidth : 0)
           .frame(maxHeight: .infinity, alignment: .topLeading)
-          .background(.thinMaterial)
+          .aurelglyphPanelBackground()
           .clipped()
           .opacity(usesRegularNavigation ? 1 : 0)
           .allowsHitTesting(usesRegularNavigation)
@@ -156,7 +156,7 @@ public struct AurelglyphTopBar<Leading: View, Actions: View>: View {
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 12)
-    .background(.thinMaterial)
+    .aurelglyphPanelBackground()
   }
 
   private var adaptiveHeaderLayout: AurelglyphAdaptiveHeaderLayout {
@@ -226,7 +226,7 @@ public struct AurelglyphTabBar: View {
     }
     .padding(.horizontal, 12)
     .padding(.vertical, 8)
-    .background(.thinMaterial)
+    .aurelglyphPanelBackground()
   }
 
   private func scrollableItems(palette: AurelglyphPalette) -> some View {
@@ -266,6 +266,12 @@ public struct AurelglyphTabBar: View {
       .foregroundStyle(palette.foreground)
       .background(selection == item.id ? palette.accent.opacity(0.16) : Color.clear)
       .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+      .overlay {
+        if selection == item.id {
+          RoundedRectangle(cornerRadius: 8, style: .continuous)
+            .stroke(palette.focus, lineWidth: 2)
+        }
+      }
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -303,11 +309,7 @@ public struct AurelglyphCard<Content: View>: View {
       content
     }
     .padding(16)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    .overlay {
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
-        .stroke(.quaternary, lineWidth: 1)
-    }
+    .aurelglyphPanelBackground(cornerRadius: 18, bordered: true)
   }
 }
 
@@ -332,15 +334,13 @@ public struct AurelglyphListSection<Content: View>: View {
       }
       content
     }
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    .overlay {
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
-        .stroke(.quaternary, lineWidth: 1)
-    }
+    .aurelglyphPanelBackground(cornerRadius: 18, bordered: true)
   }
 }
 
 public struct AurelglyphListRow<Trailing: View>: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.layoutDirection) private var layoutDirection
   private let title: String
@@ -364,12 +364,20 @@ public struct AurelglyphListRow<Trailing: View>: View {
   }
 
   public var body: some View {
+    let palette = theme.palette(for: colorScheme)
     adaptiveRowLayout {
       rowIdentity
       trailing
     }
     .padding(16)
-    .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+    .background(isSelected ? palette.accent.opacity(0.12) : Color.clear)
+    .overlay(alignment: .leading) {
+      if isSelected {
+        Rectangle()
+          .fill(palette.focus)
+          .frame(width: 3)
+      }
+    }
   }
 
   private var adaptiveRowLayout: AurelglyphAdaptiveHeaderLayout {
@@ -425,11 +433,7 @@ public struct AurelglyphSearchField: View {
         .frame(minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
     }
     .padding(.horizontal, 12)
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-    .overlay {
-      RoundedRectangle(cornerRadius: 12, style: .continuous)
-        .stroke(.quaternary, lineWidth: 1)
-    }
+    .aurelglyphPanelBackground(cornerRadius: 12, bordered: true)
   }
 }
 

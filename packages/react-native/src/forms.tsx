@@ -281,7 +281,11 @@ export function Checkbox({
           styles.checkbox,
           {
             backgroundColor: resolved || indeterminate ? theme.colors.accent : theme.colors.backgroundElevated,
-            borderColor: invalid ? theme.colors.danger : resolved || indeterminate ? theme.colors.accentStrong : theme.colors.borderStrong,
+            borderColor: invalid
+              ? theme.colors.danger
+              : resolved || indeterminate
+                ? theme.appearance === "quiet" ? theme.colors.accent : theme.colors.accentStrong
+                : theme.colors.borderStrong,
             borderRadius: theme.radii.xs
           }
         ]}

@@ -6,12 +6,19 @@ import CoreGraphics
 
 @Test func exposesThemeModeAndAccentEnvironmentContract() {
   #expect(AurelglyphColorMode.allCases.map(\.rawValue) == ["system", "light", "dark"])
+  #expect(AurelglyphAppearance.allCases.map(\.rawValue) == ["atelier", "quiet"])
   #expect(AurelglyphAccent.allCases.map(\.rawValue) == [
     "amber", "forest", "royal-purple", "deep-blue", "cyan", "steel"
   ])
   #expect(AurelglyphTheme.standard == AurelglyphTheme(mode: .system, accent: .royalPurple))
   #expect(AurelglyphTheme(mode: .light).preferredColorScheme == .light)
   #expect(AurelglyphTheme(mode: .dark).preferredColorScheme == .dark)
+  #expect(AurelglyphTheme(appearance: .quiet).surfaceCornerRadius == 12)
+  #expect(AurelglyphTheme(appearance: .quiet).boxCornerRadius == 8)
+  #expect(AurelglyphTheme(appearance: .quiet).resolvedPanelCornerRadius(24) == 12)
+  #expect(AurelglyphTheme.standard.resolvedPanelCornerRadius(24) == 24)
+  #expect(AurelglyphPalette.quietOverlayToken(for: .light) == AurelglyphTokens.colorAppearanceQuietModeLightOverlay)
+  #expect(AurelglyphPalette.quietOverlayToken(for: .dark) == AurelglyphTokens.colorAppearanceQuietModeDarkOverlay)
   #expect(AurelglyphTheme.standard.preferredColorScheme == nil)
   #expect(AurelglyphAccent.royalPurple.tokenValue(shade: 200) == AurelglyphTokens.colorAccentRoyalPurple200)
   #expect(AurelglyphAccent.royalPurple.tokenValue(shade: 500) == AurelglyphTokens.colorAccentRoyalPurple500)
