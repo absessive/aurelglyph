@@ -49,6 +49,19 @@ describe("GitHub Actions policy", () => {
     expect(appBuild).not.toContain('getDefaultProguardFile("proguard-android.txt")');
   });
 
+  it("builds the React Native package before every consumer-host gate", async () => {
+    const hostPackage = JSON.parse(
+      await readFile(join(root, "examples/react-native-smoke/package.json"), "utf8")
+    ) as { scripts: Record<string, string> };
+
+    expect(hostPackage.scripts["build:package"]).toBe(
+      "npm run build -w @aurelglyph/react-native"
+    );
+    for (const script of ["test", "test:android", "test:ios"]) {
+      expect(hostPackage.scripts[script]).toMatch(/^npm run build:package && /u);
+    }
+  });
+
   it("grants release write and OIDC privileges only to the jobs that need them", async () => {
     const workflow = await readFile(join(root, ".github/workflows/release.yml"), "utf8");
 

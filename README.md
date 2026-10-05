@@ -917,7 +917,8 @@ npm run test:ios -w @aurelglyph/example-react-native-smoke
 ```
 
 See `examples/react-native-smoke/README.md` for CocoaPods setup and manual iOS
-and Android launch commands.
+and Android launch commands. Each smoke entry point rebuilds the React Native
+package before testing the external-consumer path.
 
 Open the static preview:
 
@@ -1054,7 +1055,9 @@ is missing; later npm versions use trusted publishing.
 `npm run test:react-native-host` runs the Jest renderer contract, validates the
 Android native project by compiling its production bundle and release APK, and
 runs the native iOS XCTest contract, including the selected value announced by
-native Select and Combobox triggers. The iOS check requires Xcode, CocoaPods,
+native Select and Combobox triggers. Every host gate rebuilds the package first,
+preventing ignored local `dist` output from masking source changes. The iOS
+check requires Xcode, CocoaPods,
 and an installed Simulator runtime; the Android check requires an Android SDK
 and JDK 17. The Android host pins Gradle 9.4.1 with checksum verification so the
 native gate uses the reviewed toolchain required by React Native 0.87. Its AGP,

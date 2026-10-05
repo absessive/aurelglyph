@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "build": "npm run build -w @aurelglyph/react-native && tsc -p tsconfig.json --noEmit",
+    "build": "npm run build:package && tsc -p tsconfig.json --noEmit",
+    "build:package": "npm run build -w @aurelglyph/react-native",
     "ios": "react-native run-ios",
     "lint": "eslint --config ../../eslint.config.js . --max-warnings 0",
     "start": "react-native start",
-    "test": "jest --runInBand",
-    "test:android": "node scripts/android-smoke.mjs",
-    "test:ios": "node scripts/ios-smoke.mjs"
+    "test": "npm run build:package && jest --runInBand",
+    "test:android": "npm run build:package && node scripts/android-smoke.mjs",
+    "test:ios": "npm run build:package && node scripts/ios-smoke.mjs"
   },
   "dependencies": {
     "@aurelglyph/react-native": "0.8.0",

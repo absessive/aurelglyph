@@ -80,7 +80,7 @@ final class SmokeUITests: XCTestCase {
       "The light Quiet theme state was not announced"
     )
 
-    let select = app.descendants(matching: .any)["Release channel"].firstMatch
+    let select = app.otherElements["Release channel"].firstMatch
     XCTAssertTrue(scrollUntilHittable(select), "The release-channel select was not reachable")
     select.tap()
     let nightly = app.descendants(matching: .any)["Release channel, Nightly"].firstMatch
@@ -90,10 +90,20 @@ final class SmokeUITests: XCTestCase {
     XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The Beta option was not interactive")
     beta.tap()
     let selectedReleaseChannel = NSPredicate { _, _ in
-      select.exists && select.value as? String == "Beta"
+      let currentSelect = self.app.otherElements["Release channel"].firstMatch
+      return currentSelect.exists && currentSelect.value as? String == "Beta"
     }
-    expectation(for: selectedReleaseChannel, evaluatedWith: select)
-    waitForExpectations(timeout: 5)
+    let selectionExpectation = XCTNSPredicateExpectation(
+      predicate: selectedReleaseChannel,
+      object: app
+    )
+    let selectionResult = XCTWaiter.wait(for: [selectionExpectation], timeout: 5)
+    let currentSelect = app.otherElements["Release channel"].firstMatch
+    XCTAssertEqual(
+      selectionResult,
+      .completed,
+      "The release-channel accessibility value did not update to Beta; observed \(String(describing: currentSelect.value))"
+    )
 
     let operations = app.buttons["Operations"]
     XCTAssertTrue(scrollUntilHittable(operations), "The menu trigger was not reachable")

@@ -22,7 +22,9 @@ npm run lint -w @aurelglyph/example-react-native-smoke
 ```
 
 The Jest check opens the modal in the React Native renderer and verifies that
-the nested overlay host does not intercept the underlying control.
+the nested overlay host does not intercept the underlying control. Each Jest,
+Android, and iOS test command first rebuilds `@aurelglyph/react-native`, so a
+standalone host check cannot consume stale ignored `dist` output.
 
 Build the Android production JavaScript bundle and release APK, including the
 Gradle, Kotlin, autolinking, safe-area-context, and native scaffold paths,

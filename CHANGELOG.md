@@ -46,7 +46,11 @@
   SDK, Kotlin, and AGP 9 compatibility settings with the upstream 0.87 template
   so the explicitly applied Kotlin plugin and native Android build remain valid,
   and resolve the platform-specific Hermes compiler executable from the
-  monorepo's hoisted dependency graph.
+  monorepo's hoisted dependency graph. Make every React Native consumer-host
+  test rebuild the package before bundling so stale ignored artifacts cannot
+  invalidate native regression results, and make the iOS Select assertion
+  re-query the native combobox while reporting its observed accessibility value
+  on failure.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form
