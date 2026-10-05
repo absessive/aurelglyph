@@ -20,13 +20,12 @@ describe("GitHub Actions policy", () => {
   });
 
   it("pins the Android consumer gate to its reviewed Gradle distribution", async () => {
-    const wrapper = await readFile(
-      join(
-        root,
-        "examples/react-native-smoke/android/gradle/wrapper/gradle-wrapper.properties"
-      ),
-      "utf8"
-    );
+    const androidRoot = join(root, "examples/react-native-smoke/android");
+    const [wrapper, properties, build] = await Promise.all([
+      readFile(join(androidRoot, "gradle/wrapper/gradle-wrapper.properties"), "utf8"),
+      readFile(join(androidRoot, "gradle.properties"), "utf8"),
+      readFile(join(androidRoot, "build.gradle"), "utf8")
+    ]);
 
     expect(wrapper).toContain(
       "distributionUrl=https\\://services.gradle.org/distributions/gradle-9.4.1-bin.zip"
@@ -34,6 +33,11 @@ describe("GitHub Actions policy", () => {
     expect(wrapper).toContain(
       "distributionSha256Sum=2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb"
     );
+    expect(properties).toMatch(/^android\.builtInKotlin=false$/mu);
+    expect(properties).toMatch(/^android\.newDsl=false$/mu);
+    expect(build).toContain('buildToolsVersion = "37.0.0"');
+    expect(build).toContain("compileSdkVersion = 37");
+    expect(build).toContain('kotlinVersion = "2.2.0"');
   });
 
   it("grants release write and OIDC privileges only to the jobs that need them", async () => {
