@@ -110,7 +110,8 @@ choice without forcing the keyboard; `Combobox` focuses search by default. Set
 control is nested inside an application-owned `ScrollView`, set that ancestor's
 `keyboardShouldPersistTaps="always"` as well; React Native ancestor responders
 run before the modal's internal option list. Autofocus is applied after native
-modal presentation so its first settled option action remains available.
+input mount and reinforced after modal presentation so its first settled option
+action remains available.
 
 Use `MoreInformation` for optional supporting copy that should not occupy the
 primary working surface. It provides a 44-point accessible trigger and a

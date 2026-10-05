@@ -63,10 +63,12 @@
   contract for application-owned ancestor ScrollViews so they cannot capture
   those keyboard-era touches. Sequence search focus after native modal
   presentation, require the autofocus path to expose a ready software keyboard,
-  synchronize native XCTest typing with each committed React Native value and
-  its controlled filter result so hosted iOS runners cannot outrun a cold
-  keyboard or bridge with the next keystroke, and reject retry-recovered iOS
-  smoke tests as flaky. Give the private React Native host's full renderer
+  request focus at native input mount as well as after presentation, and
+  re-target the already-focused input before native XCTest typing while
+  synchronizing each committed React Native value and its controlled filter
+  result. Hosted iOS runners can no longer outrun a cold keyboard or bridge with
+  the next keystroke. Reject retry-recovered iOS smoke tests as flaky. Give the
+  private React Native host's full renderer
   integration smoke an explicit 15-second ceiling so loaded macOS runners do
   not inherit Jest's generic five-second unit-test budget.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and

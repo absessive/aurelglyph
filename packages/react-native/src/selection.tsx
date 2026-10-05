@@ -215,6 +215,7 @@ export function Combobox({
       >
         <TextInput
           accessibilityLabel={resolvedSearchPlaceholder}
+          autoFocus={autoFocusSearch}
           onChangeText={setQuery}
           placeholder={resolvedSearchPlaceholder}
           placeholderTextColor={theme.colors.subtle}
@@ -367,6 +368,7 @@ export function CommandPalette({
     >
       <TextInput
         accessibilityLabel={resolvedPlaceholder}
+        autoFocus
         onChangeText={setQuery}
         placeholder={resolvedPlaceholder}
         placeholderTextColor={theme.colors.subtle}

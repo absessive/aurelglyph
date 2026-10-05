@@ -649,10 +649,12 @@ focused. Native `Select` leaves optional search unfocused for immediate choice,
 while `Combobox` focuses search by default; `autoFocusSearch` overrides either
 behavior. Application-owned ancestor `ScrollView` instances around searchable
 controls must also set `keyboardShouldPersistTaps="always"`. Autofocus is
-applied after native modal presentation. The native smoke host independently
+requested when the native search input mounts and reinforced after modal
+presentation. The native smoke host independently
 verifies browse-first Select and keyboard-focused Combobox and Command Palette
 activation without retry recovery, waiting for software-keyboard readiness and
-controlled filter results after each accepted search keystroke. Responsive grids
+re-targeting the already-focused native input before verifying controlled filter
+results after each accepted search keystroke. Responsive grids
 measure their actual container for split-view and nested-panel layouts, while
 compact controls preserve real 44-point touch bounds.
 The private host's full renderer integration smoke has a bounded 15-second

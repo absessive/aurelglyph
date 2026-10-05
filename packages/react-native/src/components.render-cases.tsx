@@ -141,6 +141,7 @@ vi.mock("react-native", async () => {
   );
 
   const TextInput = React.forwardRef<{ focus: () => void }, Record<string, unknown>>(({
+    autoFocus,
     defaultValue,
     editable = true,
     onBlur,
@@ -158,6 +159,8 @@ vi.mock("react-native", async () => {
     }), []);
     return React.createElement("input", {
       ...accessibilityProps(props),
+      autoFocus: Boolean(autoFocus),
+      "data-auto-focus": String(Boolean(autoFocus)),
       "data-rn": "TextInput",
       "data-style": JSON.stringify(flattenStyle(style)),
       defaultValue: defaultValue as string | undefined,
@@ -525,6 +528,7 @@ describe("React Native rendered interaction contracts", () => {
   it("resets uncontrolled and controlled command queries across external close", () => {
     const items = [{ id: "sync", label: "Sync systems", onSelect: vi.fn() }];
     const rendered = render(<CommandPalette items={items} onOpenChange={vi.fn()} open />);
+    expect(rendered.container.querySelector("input")?.getAttribute("data-auto-focus")).toBe("true");
     expect(document.activeElement).toBe(rendered.container.querySelector("input"));
     expect(rendered.container.querySelector('button[aria-label="Command palette, Sync systems"]')).not.toBeNull();
     expect(rendered.container.querySelector('[data-accessible="false"][role]')).toBeNull();
@@ -550,10 +554,12 @@ describe("React Native rendered interaction contracts", () => {
     click(rendered.container.querySelector('[role="combobox"]')!);
     expect(rendered.container.querySelector('[data-rn="Modal"]')).not.toBeNull();
     expect(rendered.container.querySelector('button[aria-label="Mode, Quiet"]')).not.toBeNull();
+    expect(rendered.container.querySelector("input")?.getAttribute("data-auto-focus")).toBe("true");
     expect(document.activeElement).toBe(rendered.container.querySelector("input"));
     expect(rendered.container.querySelector('[data-accessible="false"][role]')).toBeNull();
     const unfocused = render(<Combobox autoFocusSearch={false} label="Mode" options={options} />);
     click(unfocused.container.querySelector('[role="combobox"]')!);
+    expect(unfocused.container.querySelector("input")?.getAttribute("data-auto-focus")).toBe("false");
     expect(document.activeElement).not.toBe(unfocused.container.querySelector("input"));
     rendered.rerender(<Combobox disabled label="Mode" options={options} />);
     expect(rendered.container.querySelector('[data-rn="Modal"]')).toBeNull();

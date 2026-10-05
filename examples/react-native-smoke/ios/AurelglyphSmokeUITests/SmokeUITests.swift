@@ -147,6 +147,7 @@ final class SmokeUITests: XCTestCase {
       waitUntilKeyboardReady(timeout: 10),
       "Combobox autofocus did not present a ready software keyboard"
     )
+    optionSearch.tap()
     let stable = app.buttons["Searchable channel, Stable"].firstMatch
     let nightly = app.buttons["Searchable channel, Nightly"].firstMatch
     let beta = app.buttons["Searchable channel, Beta"].firstMatch
@@ -199,6 +200,7 @@ final class SmokeUITests: XCTestCase {
       waitUntilKeyboardReady(timeout: 10),
       "Command Palette autofocus did not present a ready software keyboard"
     )
+    commandSearch.tap()
     let archive = app.buttons["Command palette, Archive systems"].firstMatch
     let synchronize = app.buttons["Command palette, Synchronize systems"].firstMatch
     let applyChanges = app.buttons["Command palette, Apply changes"].firstMatch
