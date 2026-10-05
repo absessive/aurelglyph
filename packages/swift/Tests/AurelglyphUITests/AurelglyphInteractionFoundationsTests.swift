@@ -576,14 +576,14 @@ private func relativeLuminance(_ hex: String) -> Double {
     return 0
   }
 
-  let components = [
-    Double((value >> 16) & 0xff) / 255,
-    Double((value >> 8) & 0xff) / 255,
-    Double(value & 0xff) / 255
-  ].map { component in
-    component <= 0.04045
-      ? component / 12.92
-      : pow((component + 0.055) / 1.055, 2.4)
+  let red = Double((value >> 16) & 0xff) / 255.0
+  let green = Double((value >> 8) & 0xff) / 255.0
+  let blue = Double(value & 0xff) / 255.0
+  let components = [red, green, blue].map { component -> Double in
+    if component <= 0.04045 {
+      return component / 12.92
+    }
+    return pow((component + 0.055) / 1.055, 2.4)
   }
 
   return components[0] * 0.2126 + components[1] * 0.7152 + components[2] * 0.0722

@@ -54,7 +54,21 @@ async function pack(directory) {
     ["pack", ".", "--ignore-scripts", "--json", "--pack-destination", temporaryRoot],
     { cwd: join(root, directory) }
   );
-  const [result] = JSON.parse(output);
+  let result;
+  for (let index = output.lastIndexOf("["); index >= 0; index = output.lastIndexOf("[", index - 1)) {
+    try {
+      const parsed = JSON.parse(output.slice(index).trim());
+      if (Array.isArray(parsed) && parsed[0]?.filename) {
+        [result] = parsed;
+        break;
+      }
+    } catch {
+      // npm 10 may print workspace lifecycle output before its final JSON payload.
+    }
+  }
+  if (!result) {
+    throw new Error(`npm pack did not return a package result:\n${output}`);
+  }
   return { ...result, tarball: join(temporaryRoot, result.filename) };
 }
 
