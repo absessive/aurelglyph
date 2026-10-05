@@ -75,11 +75,11 @@ native modal window, moves after anchor and viewport changes, and leaves the
 underlying action hittable. It also covers the theme controls, Select/Menu
 interaction, disabled rows, single-tap Combobox and Command Palette actions
 after post-presentation autofocus accepts input, and More Information
-presentation. Each autofocus search keystroke is synchronized with both its
-committed native value and the resulting controlled filter state so a cold
-bridge cannot hide or manufacture a focus failure. The gate rejects
-retry-recovered tests as flaky. Xcode and an installed iOS Simulator runtime are
-required.
+presentation. Autofocus must first expose a ready software keyboard, and each
+search keystroke is synchronized with both its committed native value and the
+resulting controlled filter state so a cold keyboard or bridge cannot hide or
+manufacture a focus failure. The gate rejects retry-recovered tests as flaky.
+Xcode and an installed iOS Simulator runtime are required.
 
 ## Manual hosts
 

@@ -143,6 +143,10 @@ final class SmokeUITests: XCTestCase {
 
     let optionSearch = app.textFields["Search options"].firstMatch
     XCTAssertTrue(waitUntilHittable(optionSearch, timeout: 5), "Combobox search was not ready")
+    XCTAssertTrue(
+      waitUntilKeyboardReady(timeout: 10),
+      "Combobox autofocus did not present a ready software keyboard"
+    )
     let stable = app.buttons["Searchable channel, Stable"].firstMatch
     let nightly = app.buttons["Searchable channel, Nightly"].firstMatch
     let beta = app.buttons["Searchable channel, Beta"].firstMatch
@@ -191,6 +195,10 @@ final class SmokeUITests: XCTestCase {
 
     let commandSearch = app.textFields["Search commands"].firstMatch
     XCTAssertTrue(waitUntilHittable(commandSearch, timeout: 5), "Command Palette search was not ready")
+    XCTAssertTrue(
+      waitUntilKeyboardReady(timeout: 10),
+      "Command Palette autofocus did not present a ready software keyboard"
+    )
     let archive = app.buttons["Command palette, Archive systems"].firstMatch
     let synchronize = app.buttons["Command palette, Synchronize systems"].firstMatch
     let applyChanges = app.buttons["Command palette, Apply changes"].firstMatch
@@ -253,6 +261,12 @@ final class SmokeUITests: XCTestCase {
     }
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
     return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+  }
+
+  private func waitUntilKeyboardReady(timeout: TimeInterval) -> Bool {
+    let keyboard = app.keyboards.firstMatch
+    guard keyboard.waitForExistence(timeout: timeout) else { return false }
+    return keyboard.keys.firstMatch.waitForExistence(timeout: timeout)
   }
 
   private func typeTextSynchronously(

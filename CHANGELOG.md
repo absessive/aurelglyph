@@ -62,9 +62,10 @@
   activation checks, and document the matching `keyboardShouldPersistTaps`
   contract for application-owned ancestor ScrollViews so they cannot capture
   those keyboard-era touches. Sequence search focus after native modal
-  presentation, synchronize native XCTest typing with each committed React
-  Native value and its controlled filter result so hosted iOS runners cannot
-  outrun a cold bridge with the next keystroke, and reject retry-recovered iOS
+  presentation, require the autofocus path to expose a ready software keyboard,
+  synchronize native XCTest typing with each committed React Native value and
+  its controlled filter result so hosted iOS runners cannot outrun a cold
+  keyboard or bridge with the next keystroke, and reject retry-recovered iOS
   smoke tests as flaky.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
