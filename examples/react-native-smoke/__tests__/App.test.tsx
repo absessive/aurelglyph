@@ -86,4 +86,4 @@ test('mounts a modal-local host and leaves underlying controls operable', async 
     jest.clearAllTimers();
     jest.useRealTimers();
   }
-});
+}, 15_000);

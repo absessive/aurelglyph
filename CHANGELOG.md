@@ -66,7 +66,9 @@
   synchronize native XCTest typing with each committed React Native value and
   its controlled filter result so hosted iOS runners cannot outrun a cold
   keyboard or bridge with the next keystroke, and reject retry-recovered iOS
-  smoke tests as flaky.
+  smoke tests as flaky. Give the private React Native host's full renderer
+  integration smoke an explicit 15-second ceiling so loaded macOS runners do
+  not inherit Jest's generic five-second unit-test budget.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

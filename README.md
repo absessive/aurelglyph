@@ -655,6 +655,9 @@ activation without retry recovery, waiting for software-keyboard readiness and
 controlled filter results after each accepted search keystroke. Responsive grids
 measure their actual container for split-view and nested-panel layouts, while
 compact controls preserve real 44-point touch bounds.
+The private host's full renderer integration smoke has a bounded 15-second
+budget for loaded macOS CI runners; its interaction and styling assertions are
+unchanged.
 The overlay host reserves an elevated, non-blocking root
 layer so regular application panels do not cover active tooltips. Set
 `overlayHost={false}` when the application supplies its own hosts, and place an
