@@ -78,11 +78,13 @@
 - Make React Native-owned state, action, selection, file, pagination, and modal
   copy replaceable through a scoped control-copy provider while retaining
   component-level overrides. Keep Switch descriptions and read-only state on
-  the focused native control. Document and enforce the RN 0.87 source-RNCore
-  CocoaPods workaround, and bundle clean consumers against both RN 0.86 and
-  0.87. Expand the native host across theme, Select/Menu, disabled-row, and More
-  Information interactions. Bound SwiftUI More Information content in a
-  scrollable region and verify long copy at an accessibility text size.
+  the focused native control, and expose Select and Combobox selections as the
+  trigger's native accessibility value. Document and enforce the RN 0.87
+  source-RNCore CocoaPods workaround, and bundle clean consumers against both
+  RN 0.86 and 0.87. Expand the native host across theme, Select/Menu,
+  disabled-row, and More Information interactions. Bound SwiftUI More
+  Information content in a scrollable region and verify long copy at an
+  accessibility text size.
 - Theme dropdown surfaces end to end. Web and Rails selects retain native form,
   validation, keyboard, and no-script behavior while progressively adopting the
   standards-based customizable picker with Aurelglyph surfaces, focus rails,

@@ -544,6 +544,32 @@ describe("React Native rendered interaction contracts", () => {
     expect(rendered.container.querySelector('[role="combobox"]')?.getAttribute("aria-disabled")).toBe("true");
   });
 
+  it("exposes the current combobox selection through its native accessibility value", () => {
+    const onValueChange = vi.fn();
+    const options = [
+      { label: "Stable", value: "stable" },
+      { label: "Beta", value: "beta" }
+    ];
+    const empty = render(<Select label="Release channel" options={options} />);
+    expect(JSON.parse(empty.container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
+      .toEqual({ text: "Select an option" });
+    empty.rerender(<Select label="Release channel" loading options={options} />);
+    expect(JSON.parse(empty.container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
+      .toEqual({ text: "Loading…" });
+
+    const { container } = render(
+      <Select defaultValue="stable" label="Release channel" onValueChange={onValueChange} options={options} />
+    );
+
+    expect(JSON.parse(container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
+      .toEqual({ text: "Stable" });
+    click(container.querySelector('[role="combobox"]')!);
+    click(container.querySelector('[role="option"][aria-label="Release channel, Beta"]')!);
+    expect(onValueChange).toHaveBeenLastCalledWith("beta");
+    expect(JSON.parse(container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
+      .toEqual({ text: "Beta" });
+  });
+
   it("composes NumberField blur with internal numeric commit", () => {
     const onBlur = vi.fn();
     const onValueChange = vi.fn();

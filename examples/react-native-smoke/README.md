@@ -8,7 +8,8 @@ measurement, viewport clamping, and touch pass-through. The host uses the
 `quiet` dark appearance so the native consumer path also verifies its reduced
 palette, radius, and elevation contract. Focused native checks also switch
 between light/dark and atelier/quiet, operate themed Select and Menu surfaces,
-verify disabled rows, and present and dismiss More Information.
+verify disabled rows and the Select trigger's announced value, and present and
+dismiss More Information.
 
 ## Workspace checks
 

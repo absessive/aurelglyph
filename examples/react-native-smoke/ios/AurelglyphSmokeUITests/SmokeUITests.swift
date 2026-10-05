@@ -89,10 +89,11 @@ final class SmokeUITests: XCTestCase {
     let beta = app.descendants(matching: .any)["Release channel, Beta"].firstMatch
     XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The Beta option was not interactive")
     beta.tap()
-    XCTAssertTrue(
-      app.descendants(matching: .any)["Channel: Beta"].firstMatch.waitForExistence(timeout: 5),
-      "The selected release channel was not announced"
-    )
+    let selectedReleaseChannel = NSPredicate { _, _ in
+      select.exists && select.value as? String == "Beta"
+    }
+    expectation(for: selectedReleaseChannel, evaluatedWith: select)
+    waitForExpectations(timeout: 5)
 
     let operations = app.buttons["Operations"]
     XCTAssertTrue(scrollUntilHittable(operations), "The menu trigger was not reachable")

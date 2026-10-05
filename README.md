@@ -1053,7 +1053,8 @@ is missing; later npm versions use trusted publishing.
 
 `npm run test:react-native-host` runs the Jest renderer contract, validates the
 Android native project by compiling its production bundle and release APK, and
-runs the native iOS XCTest contract. The iOS check requires Xcode, CocoaPods,
+runs the native iOS XCTest contract, including the selected value announced by
+native Select and Combobox triggers. The iOS check requires Xcode, CocoaPods,
 and an installed Simulator runtime; the Android check requires an Android SDK
 and JDK 17. The Android host pins Gradle 9.4.1 with checksum verification so the
 native gate uses the reviewed toolchain required by React Native 0.87. Its AGP,

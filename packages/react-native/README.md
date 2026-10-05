@@ -128,6 +128,8 @@ increment/decrement actions; individual tabs, radios, checkboxes, menu items,
 dialog titles, progress indicators, and selection controls expose their
 corresponding native roles and values. Every dialog has a labeled close control
 in addition to back and optional scrim dismissal.
+Select and Combobox triggers expose their current option as a native
+accessibility value, so the selection is announced with the control itself.
 Interactive labels always use the high-contrast foreground token; the muted
 token is used for ordinary helper text, descriptions, placeholders, and
 metadata. Invalid helper text uses the danger token and a polite live-region

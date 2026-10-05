@@ -147,6 +147,11 @@ export function Combobox({
   const [selected, setSelected] = useControllableState({ defaultValue, onChange: onValueChange, value });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const displayedValue = selected
+    ? labelForValue(options, selected)
+    : loading
+      ? controlCopy.loadingSelection
+      : resolvedPlaceholder;
   const unavailable = disabled || loading || readOnly;
   const isInvalid = invalid || Boolean(error);
   useEffect(() => {
@@ -169,6 +174,7 @@ export function Combobox({
         accessibilityLabel={[label, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(", ")}
         accessibilityRole="combobox"
         accessibilityState={{ busy: loading, disabled: unavailable, expanded: open && !unavailable }}
+        accessibilityValue={{ text: displayedValue }}
         disabled={unavailable}
         onPress={() => {
           if (!unavailable) setOpen(true);
@@ -184,7 +190,7 @@ export function Combobox({
         ]}
       >
         <Text style={{ color: selected ? theme.colors.text : theme.colors.muted, flex: 1, flexShrink: 1, fontFamily: theme.fonts.ui, minWidth: 0 }}>
-          {selected ? labelForValue(options, selected) : loading ? controlCopy.loadingSelection : resolvedPlaceholder}
+          {displayedValue}
         </Text>
         <Icon color={theme.colors.muted} name="chevron-down" size={16} />
       </Pressable>
