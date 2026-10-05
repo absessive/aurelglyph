@@ -26,6 +26,10 @@ exceptions, and controlled provenance-enabled publication. The simplified
 `quiet` appearance and detailed `atelier` appearance remain available in light
 and dark modes across every adapter.
 
+The Rails adapter supports maintained Ruby 3.3+; the workspace uses Ruby 3.4.
+That floor keeps its Rails dependency graph on patched interpreter and Nokogiri
+lines.
+
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
 Supported toolchains, browsers, semantic-versioning guarantees, release gates,
@@ -1008,6 +1012,7 @@ npm run test:browsers
 npm run test:ux
 npm run typecheck
 npm run security:check
+npm run security:ruby
 npm run pack:check
 npm run pack:gem
 npm run version:check
@@ -1028,6 +1033,9 @@ build directories are excluded.
 `npm run security:check` accepts only time-bounded private-tooling exceptions
 whose advisory identity, affected range, severity, and installed dependency
 path exactly match the reviewed policy. Changed or stale fingerprints fail.
+`npm run security:ruby` updates the Ruby advisory database and rejects known
+vulnerabilities in the active Bundler lockfile; both Rails matrix locks run it
+in hosted CI.
 
 `npm run pack:check` installs packed adapters into clean strict-peer consumers
 and compiles SSR and type contracts against React 19.1/19.2 and React Native

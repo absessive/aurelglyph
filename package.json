@@ -23,6 +23,7 @@
     "pack:check": "npm run build && node scripts/package-smoke.mjs",
     "pack:gem": "node scripts/gem-smoke.mjs",
     "security:check": "node scripts/security-audit.mjs",
+    "security:ruby": "ruby scripts/ruby-runtime-check.rb && bundle exec bundler-audit check --update",
     "test": "npm run build && vitest run",
     "test:unit": "vitest run",
     "test:browsers": "npm run build -w @aurelglyph/example-react-vite && node scripts/browser-fallback.mjs",
@@ -36,7 +37,7 @@
     "version:check": "tsx scripts/versioning.ts check",
     "version:release-check": "tsx scripts/versioning.ts release-check",
     "version:sync": "tsx scripts/versioning.ts sync",
-    "verify": "npm run version:check && npm run lint && npm run build && npm run build:pages && npm run test:unit && npm run test:rails && npm run test:swift && npm run test:swift-host && npm run test:react-native-host && npm run typecheck && npm run test:ux && npm run test:browsers && npm run security:check && npm run pack:check && npm run pack:gem",
+    "verify": "npm run version:check && npm run lint && npm run build && npm run build:pages && npm run test:unit && npm run test:rails && npm run test:swift && npm run test:swift-host && npm run test:react-native-host && npm run typecheck && npm run test:ux && npm run test:browsers && npm run security:check && npm run security:ruby && npm run pack:check && npm run pack:gem",
     "verify:release": "npm run version:release-check && npm run verify"
   },
   "devDependencies": {

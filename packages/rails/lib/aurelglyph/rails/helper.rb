@@ -2,6 +2,7 @@
 
 require "bigdecimal"
 require "json"
+require "uri"
 require "action_view"
 require "securerandom"
 require_relative "interaction_helper"

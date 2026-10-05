@@ -13,8 +13,12 @@ range after validating their own supported platforms.
 | React | React 19.1 and 19.2; client components in React Server Component applications |
 | React Native | React Native 0.86 and 0.87; iOS 15.1+ and Android API 24+ consumer hosts |
 | SwiftUI | Swift tools 5.9+, iOS 17+, and macOS 14+ |
-| Rails | Rails 7.2 on Ruby 3.1+; Rails 8.1 on Ruby 3.4+ |
+| Rails | Rails 7.2 on Ruby 3.3+; Rails 8.1 on Ruby 3.4+ |
 | Workspace tooling | Node 22.13+ and npm 10+ |
+
+Ruby 3.3 is the Rails adapter floor because Ruby 3.2 is end-of-life. Aurelglyph
+does not claim production support for an interpreter line that no longer
+receives security fixes.
 
 The full web accessibility and responsive suite runs in Chromium. A smaller
 cross-browser contract runs in Chromium, Firefox, and WebKit for native select
@@ -29,7 +33,7 @@ native project into a release APK through Gradle.
 
 Clean-consumer package tests install React 19.1 and 19.2 plus React Native 0.86
 and 0.87 with normal strict peer resolution. The Rails CI matrix executes the
-same package suite against Rails 7.2/Ruby 3.1 and Rails 8.1/Ruby 3.4. Broader
+same package suite against Rails 7.2/Ruby 3.3 and Rails 8.1/Ruby 3.4. Broader
 versions admitted by package metadata are install-compatible ranges, not an
 untested release-matrix claim.
 

@@ -29,6 +29,8 @@ class AurelglyphRailsGemspecTest < Minitest::Test
     assert_equal "https://github.com/absessive/aurelglyph/issues", @spec.metadata.fetch("bug_tracker_uri")
     assert_equal "https://github.com/absessive/aurelglyph/blob/main/CHANGELOG.md", @spec.metadata.fetch("changelog_uri")
     refute @spec.files.any? { |path| File.directory?(File.join(@package_root, path)) }
+    refute @spec.required_ruby_version.satisfied_by?(Gem::Version.new("3.2.11"))
+    assert @spec.required_ruby_version.satisfied_by?(Gem::Version.new("3.3.0"))
 
     actionview = @spec.runtime_dependencies.find { |dependency| dependency.name == "actionview" }
     refute_nil actionview

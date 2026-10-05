@@ -3,6 +3,11 @@
 ActionView-safe Aurelglyph component helpers, generated design tokens and CSS,
 and dependency-free interaction controllers for Rails applications.
 
+Requires Ruby 3.3 or newer. Rails 7.2 is validated on Ruby 3.3 and Rails 8.1 on
+Ruby 3.4.
+The adapter loads its standard-library dependencies explicitly and does not
+depend on Ruby-version-specific default require order.
+
 ## Install from Git
 
 ```ruby

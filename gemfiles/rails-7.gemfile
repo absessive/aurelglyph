@@ -1,9 +1,10 @@
 source "https://rubygems.org"
 
-ruby "~> 3.1.0"
+ruby "~> 3.3.0"
 
 gemspec path: "../packages/rails"
 
+gem "bundler-audit", "~> 0.9", require: false
 gem "actionview", ">= 7.0", "< 8.0"
 gem "minitest", "~> 5.25"
 gem "railties", ">= 7.0", "< 8.0"

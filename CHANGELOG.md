@@ -31,6 +31,16 @@
   CI reuses its explicit build through the non-duplicating unit-test entry.
   Consumer documentation labels 0.8.0 as a GitHub/source release so registry
   install examples cannot be mistaken for already-published packages.
+  Raise the Rails adapter floor to maintained Ruby 3.3 and lock its Rails 7 and
+  default development graphs to patched Nokogiri 1.19.4; end-of-life Ruby 3.2
+  and earlier are no longer claimed as secure supported runtimes.
+  Add Bundler advisory checks to both Rails matrix jobs and the local release
+  contract so future Ruby lockfile vulnerabilities fail before publication.
+  Pin the workspace to current Ruby 3.4.11, run the Rails 7 floor on Ruby 3.3,
+  reject stale interpreter patches in the security gate, and assert the public
+  gem rejects Ruby 3.2 while accepting Ruby 3.3. Load Ruby's URI library
+  explicitly before Action View helpers so the Rails 7 contract is independent
+  of removed interpreter-default side effects.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

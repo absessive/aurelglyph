@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.description = "Aurelglyph Rails provides ActionView-safe components, generated design assets, and dependency-free interaction controllers."
   spec.homepage = "https://github.com/absessive/aurelglyph"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.1"
+  spec.required_ruby_version = ">= 3.3"
   spec.metadata = {
     "bug_tracker_uri" => "https://github.com/absessive/aurelglyph/issues",
     "changelog_uri" => "https://github.com/absessive/aurelglyph/blob/main/CHANGELOG.md",
