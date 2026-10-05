@@ -1962,6 +1962,15 @@
     return Array.from(group.querySelectorAll(selectionItemSelector)).filter((item) => !isDisabledControl(item));
   }
 
+  function isRightToLeft(element) {
+    const directionRoot = element.closest("[dir]");
+    const explicitDirection = directionRoot && directionRoot.getAttribute("dir");
+    if (explicitDirection && explicitDirection.toLowerCase() === "rtl") return true;
+    if (explicitDirection && explicitDirection.toLowerCase() === "ltr") return false;
+    const view = element.ownerDocument.defaultView;
+    return Boolean(view && view.getComputedStyle(element).direction === "rtl");
+  }
+
   function selectGroupItem(group, item, reason) {
     if (!item || isDisabledControl(item) || group.getAttribute("data-disabled") === "true") return false;
     const kind = group.getAttribute("data-aurelglyph-selection-group") || "selection";
@@ -2054,8 +2063,12 @@
       if (!items.length) return;
       let target = null;
       const index = items.indexOf(item);
-      if (["ArrowRight", "ArrowDown"].includes(event.key)) target = items[(index + 1) % items.length];
-      else if (["ArrowLeft", "ArrowUp"].includes(event.key)) target = items[(index - 1 + items.length) % items.length];
+      if (["ArrowRight", "ArrowLeft"].includes(event.key)) {
+        const physicalOffset = event.key === "ArrowRight" ? 1 : -1;
+        const offset = isRightToLeft(group) ? -physicalOffset : physicalOffset;
+        target = items[(index + offset + items.length) % items.length];
+      } else if (event.key === "ArrowDown") target = items[(index + 1) % items.length];
+      else if (event.key === "ArrowUp") target = items[(index - 1 + items.length) % items.length];
       else if (event.key === "Home") target = items[0];
       else if (event.key === "End") target = items[items.length - 1];
       if (target) {

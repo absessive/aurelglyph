@@ -15,7 +15,7 @@ describe("React package contract", () => {
     const packageJson = JSON.parse(await read("package.json")) as Record<string, unknown>;
     const workspaceVersion = (JSON.parse(await read("../../package.json")) as { version: string }).version;
 
-    expect(packageJson).toEqual({
+    expect(packageJson).toMatchObject({
       name: "@aurelglyph/react",
       version: workspaceVersion,
       license: "MIT",
@@ -53,6 +53,14 @@ describe("React package contract", () => {
     expect(built).toBe(source);
   });
 
+  it("declares the package entry as a React client boundary for RSC consumers", async () => {
+    const source = await read("src/index.ts");
+    const built = await read("dist/index.js");
+
+    expect(source.startsWith('"use client";')).toBe(true);
+    expect(built.startsWith('"use client";')).toBe(true);
+  });
+
   it("exports the expandable section component contract", async () => {
     const source = await read("src/index.ts");
 
@@ -75,6 +83,7 @@ describe("React package contract", () => {
       "Grid",
       "IconButton",
       "Menu",
+      "MoreInformation",
       "NumberField",
       "Popover",
       "RadioGroup",

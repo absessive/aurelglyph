@@ -6,12 +6,17 @@ for iOS 17 and macOS 14 or newer.
 The public Git package lives at the repository root:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.7.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.0")
 ```
 
 ```swift
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
+
+`examples/swiftui-smoke` is a real iOS consumer of that root package. Its UI
+tests cover light/dark atelier and quiet surfaces plus select/menu opening,
+enabled-item traversal, dismissal, focus restoration, empty state, and exposed
+accessibility values before a release is tagged.
 
 Register the packaged OFL TTF files before using the typography roles:
 
@@ -83,9 +88,11 @@ read-only, error, mixed, and per-option disabled states. Labels, values, selecte
 traits, modal traits, help hints, and dismissal controls are included in the
 component accessibility contract. Interactive targets retain a minimum 44-point
 hit area on iOS. Control errors are announced with the focused field, and built-in
-dialog, drawer, pagination, command-palette, and combobox copy can be overridden
-for localization. Shared state phrases and generated labels can be replaced once
-per hierarchy with `.aurelglyphControlCopy(AurelglyphControlCopy(...))`.
+dialog, drawer, pagination, command-palette, combobox, select, and menu copy can
+be overridden for localization. This includes dropdown placeholders, empty
+states, expanded/collapsed values, hints, and generated option-group labels.
+Shared state phrases and generated labels can be replaced once per hierarchy
+with `.aurelglyphControlCopy(AurelglyphControlCopy(...))`.
 
 ## Responsive behavior
 
@@ -193,6 +200,14 @@ the presenter isolates modal focus, handles Escape, and moves initial focus to
 the close control.
 The existing `AurelglyphSheet` surface can now be presented natively with
 `.aurelglyphSheet(isPresented:title:content:actions:)`.
+
+`AurelglyphMenu` (`AurelglyphDropdown`) and `AurelglyphSelect` use SwiftUI
+popover presentation with package-owned, tokenized content. Their option and
+action rows therefore preserve Aurelglyph surfaces, borders, radii, selection
+rails, semantic danger treatment, and quiet light/dark palettes instead of
+delegating the visible list to an unstyled system menu. The trigger restores
+focus after dismissal; Arrow Up/Down, Home, End, Escape, Return, and Space retain
+native-equivalent keyboard operation while disabled rows are skipped.
 
 `AurelglyphPagination` now accepts a `Binding<Int>` and emits page changes.
 `AurelglyphCommandPalette` accepts a query binding, filters titles and keywords,

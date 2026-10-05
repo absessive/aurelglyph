@@ -945,9 +945,21 @@ async function runInteractionRegression(client, exampleUrl, viewport, viewportNa
     return Boolean(input);
   })()`);
   invariant(combobox, "Combobox was not found");
-  await waitForCondition(client, "Boolean([...document.querySelectorAll('[role=option]')].find((option) => option.textContent.includes('Forest')))" , "Combobox did not filter options");
+  await waitForCondition(
+    client,
+    "document.querySelector('input[role=combobox]').value === 'Forest'",
+    "Controlled Combobox did not retain the typed query"
+  );
+  const filteredComboboxOptions = await evaluate(client, `(() =>
+    [...document.querySelectorAll('.ag-combobox__list:not([hidden]) [role=option]')]
+      .map((option) => option.textContent.trim())
+  )()`);
+  invariant(
+    filteredComboboxOptions.length === 1 && filteredComboboxOptions[0].includes("Forest"),
+    `Combobox did not filter to Forest: ${filteredComboboxOptions.join(", ")}`
+  );
   await assertWithinViewport(client, ".ag-combobox__list:not([hidden])", "Combobox listbox");
-  await evaluate(client, "[...document.querySelectorAll('[role=option]')].find((option) => option.textContent.includes('Forest')).click()");
+  await evaluate(client, "document.querySelector('.ag-combobox__list:not([hidden]) [role=option]').click()");
   invariant(await evaluate(client, "document.querySelector('input[name=components-accent]').value === 'forest'"), "Combobox selection did not update");
 
   client.setPhase(`${suiteName}: reduced motion`);
@@ -994,7 +1006,17 @@ async function runExampleRegression(client, exampleUrl, report) {
   }
 
   await setViewport(client, viewports[0]);
+  await navigateExampleRoute(client, exampleUrl, "changelog");
+  const releaseSummary = await evaluate(client, "document.querySelector('.example-copy')?.textContent.replace(/\\s+/g, ' ').trim()");
+  invariant(
+    releaseSummary?.includes("Adds 19 interaction-foundation families across five platform targets"),
+    `React release summary drifted from the component manifest: ${releaseSummary}`
+  );
   await navigateExampleRoute(client, exampleUrl, "components");
+  invariant(
+    await evaluate(client, "Boolean(document.querySelector('button[aria-label=\"Component coverage information\"]'))"),
+    "React component gallery does not expose More Information"
+  );
   const quietTokens = {};
   await ensureAppearance(client, "quiet", "Use quiet appearance", "React quiet appearance token audit");
   for (const mode of ["light", "dark"]) {
@@ -1029,7 +1051,7 @@ async function runExampleRegression(client, exampleUrl, report) {
     const selectedListRow = document.querySelector('.ag-list-row.is-selected');
     return {
       expected,
-      listRowRail: selectedListRow ? getComputedStyle(selectedListRow).boxShadow : '',
+      listRowRail: selectedListRow ? getComputedStyle(selectedListRow).borderInlineStartColor : '',
       segmentBorder: getComputedStyle(document.querySelector('.ag-segmented__item.is-active')).borderColor,
       tabBorder: getComputedStyle(document.querySelector('.ag-tabs__tab.is-active')).borderColor
     };
@@ -1037,8 +1059,61 @@ async function runExampleRegression(client, exampleUrl, report) {
   invariant(
     selectedIndicators.segmentBorder === selectedIndicators.expected
       && selectedIndicators.tabBorder === selectedIndicators.expected
-      && selectedIndicators.listRowRail.includes(selectedIndicators.expected),
+      && selectedIndicators.listRowRail === selectedIndicators.expected,
     `Selected controls do not expose the semantic focus indicator: ${JSON.stringify(selectedIndicators)}`
+  );
+  const selectPicker = await evaluate(client, `(() => {
+    const select = document.querySelector('.ag-select__input');
+    if (!select) return null;
+    const supportsCustomPicker = CSS.supports('appearance', 'base-select');
+    const option = select.options[0];
+    const selectedOption = select.selectedOptions[0] ?? option;
+    const focusProbe = document.createElement('span');
+    focusProbe.style.color = 'var(--ag-color-semantic-focus)';
+    document.body.append(focusProbe);
+    const expectedFocus = getComputedStyle(focusProbe).color;
+    focusProbe.remove();
+    const selectStyle = getComputedStyle(select);
+    const optionStyle = getComputedStyle(option);
+    const selectedOptionStyle = getComputedStyle(selectedOption);
+    const pickerStyle = supportsCustomPicker ? getComputedStyle(select, '::picker(select)') : null;
+    return {
+      expectedFocus,
+      optionBackground: optionStyle.backgroundColor,
+      optionColor: optionStyle.color,
+      pickerAppearance: pickerStyle?.appearance ?? '',
+      pickerBackground: pickerStyle?.backgroundColor ?? '',
+      pickerBorder: pickerStyle?.borderTopColor ?? '',
+      selectedBackground: selectedOptionStyle.backgroundColor,
+      selectedRail: selectedOptionStyle.borderInlineStartColor,
+      selectAppearance: selectStyle.appearance,
+      supportsCustomPicker
+    };
+  })()`);
+  invariant(selectPicker, "The Select control is missing from the component gallery");
+  if (selectPicker.supportsCustomPicker) {
+    invariant(
+      selectPicker.selectAppearance === "base-select" && selectPicker.pickerAppearance === "base-select",
+      `The native Select did not opt into the customizable picker contract: ${JSON.stringify(selectPicker)}`
+    );
+    invariant(
+      selectPicker.pickerBackground !== "rgba(0, 0, 0, 0)" && selectPicker.pickerBorder !== "rgba(0, 0, 0, 0)",
+      `The customizable Select picker did not resolve themed surface and border paint: ${JSON.stringify(selectPicker)}`
+    );
+    invariant(
+      selectPicker.selectedBackground !== "rgba(0, 0, 0, 0)"
+        && selectPicker.selectedRail === selectPicker.expectedFocus,
+      `The customizable Select selected option did not resolve themed state paint: ${JSON.stringify(selectPicker)}`
+    );
+  } else {
+    invariant(
+      selectPicker.optionBackground !== "rgba(0, 0, 0, 0)",
+      `The native Select fallback did not resolve a mode-aware option background: ${JSON.stringify(selectPicker)}`
+    );
+  }
+  invariant(
+    selectPicker.optionColor !== "rgba(0, 0, 0, 0)",
+    `The Select did not resolve a mode-aware option foreground: ${JSON.stringify(selectPicker)}`
   );
   const quietAccents = {};
   for (const theme of ["royal-purple", "forest"]) {
@@ -1112,7 +1187,7 @@ async function runStaticRegression(client, staticUrl, report) {
       await ensureAppearance(client, "quiet", "Use quiet appearance", context);
       await ensureMode(client, mode, mode === "light" ? "Use light mode" : "Use dark mode", context);
       const count = await evaluate(client, "document.querySelector('.contract-count')?.textContent.trim()");
-      invariant(count === "18 component families · 5 platform targets · 90 checked claims", `${context}: contract count drifted`);
+      invariant(count === "19 component families · 5 platform targets · 95 checked claims", `${context}: contract count drifted`);
       report.audits.push({ context, dom: await auditDom(client, context) });
       await auditAxe(client, context);
       report.accessibility.push({ context, ...(await auditAccessibilityTree(client, context)) });

@@ -83,6 +83,7 @@
         --radius-lg: 18px;
         --radius-panel: 28px;
         --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        --popup-shadow: rgba(0, 0, 0, 0.55);
         --grid-line: rgba(231, 223, 209, 0.035);
         --grid-line-soft: rgba(231, 223, 209, 0.03);
         --hero-sheen: rgba(231, 223, 209, 0.035);
@@ -109,6 +110,7 @@
         --muted: #64594c;
         --subtle: #8c7e6c;
         --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        --popup-shadow: rgba(42, 36, 30, 0.18);
         --grid-line: rgba(42, 36, 30, 0.055);
         --grid-line-soft: rgba(42, 36, 30, 0.04);
         --hero-sheen: rgba(42, 36, 30, 0.045);
@@ -145,6 +147,7 @@
         --muted: #b1afa9;
         --subtle: #96948f;
         --quiet-shadow: rgba(0, 0, 0, 0.32);
+        --popup-shadow: var(--quiet-shadow);
         --accent-readable: var(--accent-200);
         --focus: var(--accent-300);
       }
@@ -161,6 +164,7 @@
         --muted: #666560;
         --subtle: #666560;
         --quiet-shadow: rgba(38, 38, 35, 0.12);
+        --popup-shadow: var(--quiet-shadow);
         --accent-readable: var(--accent-600);
         --focus: var(--accent-500);
       }
@@ -460,6 +464,7 @@
       button:focus-visible,
       a:focus-visible,
       input:focus-visible,
+      select:focus-visible,
       textarea:focus-visible {
         outline: 2px solid var(--focus);
         outline-offset: 3px;
@@ -513,6 +518,7 @@
       }
 
       input,
+      select,
       textarea {
         width: 100%;
         border: 1px solid var(--border-soft);
@@ -523,6 +529,58 @@
           linear-gradient(180deg, rgba(0, 0, 0, 0.06), transparent),
           var(--bg-elevated);
         font: 16px/1.5 var(--font-ui);
+      }
+
+      select option,
+      select optgroup {
+        color: var(--text);
+        background: var(--bg-elevated);
+        font: inherit;
+      }
+
+      @supports (appearance: base-select) {
+        select,
+        select::picker(select) {
+          appearance: base-select;
+        }
+
+        select {
+          cursor: pointer;
+        }
+
+        select::picker(select) {
+          max-height: min(18rem, calc(100dvh - 1rem));
+          overflow: auto;
+          margin-block: 4px;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          padding: 8px;
+          color: var(--text);
+          background: var(--bg-elevated);
+          box-shadow: 0 28px 90px var(--popup-shadow);
+        }
+
+        select option {
+          min-height: 44px;
+          border-radius: var(--radius-sm);
+          padding: 10px 12px;
+          background: transparent;
+        }
+
+        select option:hover,
+        select option:focus-visible {
+          background: rgba(var(--accent-rgb), 0.14);
+        }
+
+        select option:checked {
+          background: rgba(var(--accent-rgb), 0.2);
+          box-shadow: inset 3px 0 0 var(--focus);
+        }
+
+        select option::checkmark,
+        select::picker-icon {
+          color: var(--focus);
+        }
       }
 
       textarea {
@@ -764,7 +822,7 @@
       <section class="workbench">
         <header class="hero">
           <div>
-            <p class="kicker">Aurelglyph Static Preview · v0.7.0</p>
+            <p class="kicker">Aurelglyph Static Preview · v0.8.0</p>
             <h1>A shared design language for every app surface.</h1>
             <p class="summary">
               Aurelglyph gives web, mobile, desktop, and Rails apps one token
@@ -797,6 +855,15 @@
               <span class="help">Set these attributes once on the root element.</span>
             </label>
             <label>
+              Release channel
+              <select aria-label="Release channel">
+                <option selected>Stable</option>
+                <option>Preview</option>
+                <option disabled>Internal</option>
+              </select>
+              <span class="help">The native picker keeps its semantics and adopts the active Aurelglyph appearance.</span>
+            </label>
+            <label>
               Usage
               <textarea placeholder="Import @aurelglyph/css once, then compose Dialog, Menu, Combobox, Checkbox, Grid, and the rest of the shared component contract."></textarea>
               <span class="help">Use semantic variables and package components instead of one-off styles.</span>
@@ -815,7 +882,7 @@
             </div>
             <div class="media-list">
               <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-12v3m0 11v3m8.5-8.5h-3m-11 0h-3m14.4-5.9-2.1 2.1M8.2 15.8l-2.1 2.1m0-11.8 2.1 2.1m7.6 7.6 2.1 2.1" /></svg></span><span><strong>Design tokens</strong><small>Color, type, spacing, radius, motion.</small></span></div>
-              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 17.5V20h2.5L18.8 8.7l-2.5-2.5L5 17.5Zm10-10 2.5 2.5" /></svg></span><span><strong>Component adapters</strong><small>18 interaction foundations across five targets.</small></span></div>
+              <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 17.5V20h2.5L18.8 8.7l-2.5-2.5L5 17.5Zm10-10 2.5 2.5" /></svg></span><span><strong>Component adapters</strong><small>19 interaction foundations across five targets.</small></span></div>
               <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z" /></svg></span><span><strong>Platform outputs</strong><small>CSS, TypeScript, Swift, Ruby, native.</small></span></div>
               <div class="media-item"><span class="icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg></span><span><strong>Release checks</strong><small>Version sync, build, tests, typecheck.</small></span></div>
             </div>
@@ -834,11 +901,11 @@
             </div>
             <p>Each family is backed by CSS/Web, React, React Native, SwiftUI, and Rails implementation evidence.</p>
           </div>
-          <p class="contract-count">18 component families · 5 platform targets · 90 checked claims</p>
+          <p class="contract-count">19 component families · 5 platform targets · 95 checked claims</p>
           <div class="contract-grid">
             <article class="contract-card">
               <strong>Overlays</strong>
-              <span>Dialog · Drawer · Menu / Dropdown · Popover · Tooltip</span>
+              <span>Dialog · Drawer · Menu / Dropdown · Popover · Tooltip · More Information</span>
             </article>
             <article class="contract-card">
               <strong>Actions</strong>

@@ -343,6 +343,10 @@ class AurelglyphRailsTest < Minitest::Test
     popover = helper.aurelglyph_popover(trigger: "Filters", label: "Filter systems", id: "filters") do
       helper.content_tag(:button, "Apply", data: { aurelglyph_popover_dismiss: true })
     end
+    more_information = helper.aurelglyph_more_information(
+      label: "Project name information",
+      id: "project-name-information"
+    ) { "Use a short operational name." }
     disabled_popover = helper.aurelglyph_popover(
       trigger: "Unavailable filters",
       label: "Unavailable filters",
@@ -373,6 +377,14 @@ class AurelglyphRailsTest < Minitest::Test
     assert_includes popover, 'data-aurelglyph-popover=""'
     assert_includes popover, 'aria-haspopup="dialog"'
     assert_includes popover, 'role="dialog"'
+    assert_includes more_information, 'class="ag-popover ag-more-information"'
+    assert_includes more_information, 'class="ag-popover__trigger ag-more-information__trigger"'
+    assert_includes more_information, 'aria-label="Project name information"'
+    assert_includes more_information, 'aria-expanded="false"'
+    assert_includes more_information, 'aria-hidden="true"'
+    assert_includes more_information, '>More information</span>'
+    assert_includes more_information, 'class="ag-more-information__content"'
+    assert_includes more_information, 'Use a short operational name.'
     assert_includes popover, 'data-aurelglyph-popover-dismiss="true"'
     disabled_popover_trigger = disabled_popover.scan(/<button[^>]*>/).find { |tag| tag.include?('ag-popover__trigger') }
     assert_equal 1, disabled_popover_trigger.scan(/\sdisabled=/).length

@@ -3,12 +3,14 @@
 Native Aurelglyph components, themes, tokens, and packaged fonts for iOS and Android.
 
 ```bash
-npm install @aurelglyph/react-native react react-native
+npm install @aurelglyph/react-native react react-native react-native-safe-area-context
 ```
 
-The 0.6 responsive interaction layer targets the verified React Native 0.86.x line and
-React 19.2.3 or newer within React 19. It has no runtime UI dependency beyond
-React Native itself.
+The responsive interaction layer supports the verified React Native 0.86 and
+0.87 lines with React 19.2.3 or newer within React 19. The release host runs on
+React Native 0.87.1 and retains the 0.86 public compatibility range. Safe-area
+handling uses the maintained `react-native-safe-area-context` package instead
+of React Native's deprecated core `SafeAreaView`.
 
 ## Theme provider
 
@@ -17,7 +19,11 @@ Wrap the app once. `system` follows the device appearance. The default
 accent; `quiet` uses flatter near-white/charcoal surfaces, smaller radii, lower
 elevation, and one restrained violet signal palette.
 
+Place `SafeAreaProvider` from `react-native-safe-area-context` above the
+Aurelglyph provider so modal and hosted overlays resolve device insets.
+
 ```tsx
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
   AurelglyphProvider,
   Button,
@@ -28,14 +34,16 @@ import {
 
 export function Settings() {
   return (
-    <AurelglyphProvider appearance="quiet" mode="system" accent="royal-purple">
-      <Surface elevation="raised">
-        <Stack gap={4}>
-          <TextField label="System name" value="Workbench" />
-          <Button onPress={() => {}}>Save changes</Button>
-        </Stack>
-      </Surface>
-    </AurelglyphProvider>
+    <SafeAreaProvider>
+      <AurelglyphProvider appearance="quiet" mode="system" accent="royal-purple">
+        <Surface elevation="raised">
+          <Stack gap={4}>
+            <TextField label="System name" value="Workbench" />
+            <Button onPress={() => {}}>Save changes</Button>
+          </Stack>
+        </Surface>
+      </AurelglyphProvider>
+    </SafeAreaProvider>
   );
 }
 ```
@@ -59,7 +67,7 @@ The adapter shares the public Aurelglyph vocabulary used by React and Rails:
 - Fields: `TextField`, `SearchField`, `TextArea`, `Switch`, `Checkbox`,
   `RadioGroup`, `Slider`, `NumberField`, `Select`, `Combobox`, `Autocomplete`,
   `FileUpload`
-- Overlays: `Dialog`, `Drawer`, `Popover`, `Tooltip`, `Menu`, `Dropdown`,
+- Overlays: `Dialog`, `Drawer`, `Popover`, `MoreInformation`, `Tooltip`, `Menu`, `Dropdown`,
   `CommandPalette`
 - Navigation: `Tabs`, `SegmentedControl`, `TabBar`, `Pagination`
 - Feedback: `Spinner`, `Progress`
@@ -70,6 +78,15 @@ for local state. Text and search fields follow React Native's native
 `value`/`onChangeText` contract; checkboxes use `checked`/`onCheckedChange`;
 overlays use controlled `open`/`onOpenChange`. Command-palette search text may
 be controlled separately with `query`/`onQueryChange`.
+
+`Menu`, `Dropdown`, `Select`, and `Combobox` present their option lists inside
+tokenized Aurelglyph dialogs, so both the trigger and expanded list resolve the
+active appearance and light/dark palette rather than inheriting browser-style
+defaults.
+
+Use `MoreInformation` for optional supporting copy that should not occupy the
+primary working surface. It provides a 44-point accessible trigger and a
+safe-area-aware popover. Keep validation errors and live status inline.
 
 ```tsx
 const options = [

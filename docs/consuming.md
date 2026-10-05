@@ -242,7 +242,7 @@ and responsive layout:
 The checked cross-platform surface is published in
 [`component-manifest.json`](../component-manifest.json). Run
 `npm run check:components` to validate its schema, declared platform coverage,
-and all 90 implementation-evidence claims locally. Adapter and browser suites
+and all 95 implementation-evidence claims locally. Adapter and browser suites
 verify applicable behavior and accessibility separately.
 
 For CSS-only apps, install only `@aurelglyph/css`, import it once, and build
@@ -281,7 +281,7 @@ values are `dark` and `light`. In atelier, supported `data-theme` values are
 Install the native adapter:
 
 ```bash
-npm install @aurelglyph/react-native
+npm install @aurelglyph/react-native react-native-safe-area-context
 ```
 
 The adapter targets React Native 0.86 or newer and React 19.2.3 or newer. It
@@ -297,23 +297,28 @@ import {
   Stack,
   Surface
 } from "@aurelglyph/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-<AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system">
-  <Surface elevation="raised">
-    <Stack gap={4}>
-      <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
-      <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
-      <Button onPress={save}>Save changes</Button>
-    </Stack>
-  </Surface>
-</AurelglyphProvider>
+<SafeAreaProvider>
+  <AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system">
+    <Surface elevation="raised">
+      <Stack gap={4}>
+        <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
+        <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
+        <Button onPress={save}>Save changes</Button>
+      </Stack>
+    </Surface>
+  </AurelglyphProvider>
+</SafeAreaProvider>
 ```
 
 `aurelglyphTheme` remains available for direct token access and
 `resolveAurelglyphTheme` resolves semantic native values. Overlays use React
 Native `Modal`; tooltip behavior uses native accessibility hints plus
 press/long-press disclosure; the slider implements native `adjustable` actions
-without a UI dependency. `FileUpload` accepts a host-provided document-picker
+and More Information moves optional supporting copy into an accessible popover.
+Safe-area handling uses the maintained `react-native-safe-area-context` peer.
+`FileUpload` accepts a host-provided document-picker
 callback because React Native core does not ship one.
 
 For Expo Font or another Metro-based loader, use the optional packaged-font
@@ -563,5 +568,5 @@ Minimum Git-based Swift Package Manager dependency once the repository is
 reachable from the app:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.7.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.0")
 ```

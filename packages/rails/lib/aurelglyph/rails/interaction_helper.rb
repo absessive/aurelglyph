@@ -164,6 +164,42 @@ module Aurelglyph
         content_tag(:div, safe_join([trigger_html, panel]), html_attributes.merge(id: root_id, class: classes))
       end
 
+      def aurelglyph_more_information(label: "More information", trigger_label: "More information",
+                                      open: false, placement: "bottom", disabled: false,
+                                      trigger_attributes: {}, **attributes, &block)
+        raise ArgumentError, "a block is required" unless block
+
+        html_attributes = attributes.dup
+        html_attributes[:class] = class_names_for(
+          "ag-more-information",
+          extract_html_attribute!(html_attributes, :class)
+        )
+        more_information_trigger_attributes = trigger_attributes.dup
+        more_information_trigger_attributes[:class] = class_names_for(
+          "ag-more-information__trigger",
+          extract_html_attribute!(more_information_trigger_attributes, :class)
+        )
+        more_information_trigger_attributes = component_aria_attributes(
+          more_information_trigger_attributes,
+          label: label
+        )
+        trigger = safe_join([
+          aurelglyph_icon("info", decorative: true),
+          content_tag(:span, trigger_label, class: "ag-more-information__trigger-label")
+        ])
+        content = content_tag(:div, capture_content(&block), class: "ag-more-information__content")
+
+        aurelglyph_popover(
+          trigger: trigger,
+          label: label,
+          open: open,
+          placement: placement,
+          disabled: disabled,
+          trigger_attributes: more_information_trigger_attributes,
+          **html_attributes
+        ) { content }
+      end
+
       def aurelglyph_tooltip(content, trigger: nil, label: nil, href: nil, placement: "top",
                             trigger_attributes: {}, **attributes, &block)
         placement = validate_enum!(placement, TOOLTIP_PLACEMENTS, :placement)

@@ -1,0 +1,45 @@
+{
+  "reviewedAt": "2026-10-04",
+  "expires": "2027-01-15",
+  "scope": "Private React Native 0.87 smoke-host tooling only; no listed package is a runtime dependency in a published Aurelglyph tarball.",
+  "upstream": "React Native, Metro, and the React Native Jest preset currently resolve the listed glob-processing advisory. The smoke host consumes only repository-controlled paths and assets. Re-review on any React Native or Metro update and before the expiry date.",
+  "allowedAdvisories": [
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "source": 1240992,
+      "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "severity": "high",
+      "range": "<=3.0.3",
+      "affected": [
+        { "package": "@jest/environment", "severity": "high", "range": "<=30.2.0", "path": "node_modules/@jest/environment" },
+        { "package": "@jest/fake-timers", "severity": "high", "range": "<=30.2.0", "path": "node_modules/@jest/fake-timers" },
+        { "package": "@jest/transform", "severity": "high", "range": "<=30.2.0", "path": "node_modules/@jest/transform" },
+        { "package": "@react-native-community/cli", "severity": "high", "range": ">=13.5.2", "path": "node_modules/@react-native-community/cli" },
+        { "package": "@react-native-community/cli-clean", "severity": "high", "range": ">=13.5.2", "path": "node_modules/@react-native-community/cli-clean" },
+        { "package": "@react-native-community/cli-config", "severity": "high", "range": ">=13.5.2", "path": "node_modules/@react-native-community/cli-config" },
+        { "package": "@react-native-community/cli-config-android", "severity": "high", "range": "*", "path": "node_modules/@react-native-community/cli-config-android" },
+        { "package": "@react-native-community/cli-config-apple", "severity": "high", "range": "*", "path": "node_modules/@react-native-community/cli-config-apple" },
+        { "package": "@react-native-community/cli-doctor", "severity": "high", "range": ">=13.5.2", "path": "node_modules/@react-native-community/cli-doctor" },
+        { "package": "@react-native-community/cli-platform-android", "severity": "high", "range": ">=15.1.1", "path": "node_modules/@react-native-community/cli-platform-android" },
+        { "package": "@react-native-community/cli-platform-apple", "severity": "high", "range": ">=15.0.1-alpha.0", "path": "node_modules/@react-native-community/cli-platform-apple" },
+        { "package": "@react-native-community/cli-platform-ios", "severity": "high", "range": ">=15.0.1-alpha.0", "path": "node_modules/@react-native-community/cli-platform-ios" },
+        { "package": "@react-native/community-cli-plugin", "severity": "high", "range": "*", "path": "node_modules/@react-native/community-cli-plugin" },
+        { "package": "@react-native/jest-preset", "severity": "high", "range": "*", "path": "examples/react-native-smoke/node_modules/@react-native/jest-preset" },
+        { "package": "@react-native/metro-config", "severity": "high", "range": "*", "path": "node_modules/@react-native/metro-config" },
+        { "package": "@react-native/virtualized-lists", "severity": "high", "range": ">=0.85.0-nightly-20260108-1236b6be4", "path": "node_modules/@react-native/virtualized-lists" },
+        { "package": "babel-jest", "severity": "high", "range": "24.2.0-alpha.0 - 30.2.0", "path": "node_modules/babel-jest" },
+        { "package": "braces", "severity": "high", "range": "*", "path": "node_modules/braces" },
+        { "package": "fast-glob", "severity": "high", "range": "*", "path": "node_modules/fast-glob" },
+        { "package": "jest-environment-node", "severity": "high", "range": "24.2.0-alpha.0 - 30.2.0", "path": "node_modules/jest-environment-node" },
+        { "package": "jest-haste-map", "severity": "high", "range": "18.1.0 - 30.2.0", "path": "node_modules/jest-haste-map" },
+        { "package": "jest-message-util", "severity": "high", "range": "18.5.0-alpha.7da3df39 - 30.2.0", "path": "node_modules/jest-message-util" },
+        { "package": "metro", "severity": "high", "range": ">=0.71.0", "path": "node_modules/metro" },
+        { "package": "metro-config", "severity": "high", "range": ">=0.71.0", "path": "node_modules/metro-config" },
+        { "package": "metro-file-map", "severity": "high", "range": "*", "path": "node_modules/metro-file-map" },
+        { "package": "metro-transform-worker", "severity": "high", "range": ">=0.71.0", "path": "node_modules/metro-transform-worker" },
+        { "package": "micromatch", "severity": "high", "range": ">=0.2.0", "path": "node_modules/micromatch" },
+        { "package": "react-native", "severity": "high", "range": ">=0.73.0-nightly-20230506-1af868c52", "path": "node_modules/react-native" }
+      ]
+    }
+  ]
+}

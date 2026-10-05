@@ -19,6 +19,11 @@ import { Button, Card, TextField } from "@aurelglyph/react";
 Import `@aurelglyph/react/styles.css` only when another package already
 provides the tokens and base layer.
 
+The package entry declares a React client boundary, so it can be imported from
+Next.js and other React Server Component applications without making callers
+repeat `"use client"`. Components produce stable server markup and are covered
+by a representative hydration contract.
+
 Set `data-appearance="quiet"` on the document root for the simplified
 Aurelglyph treatment: near-white or charcoal semantic surfaces, smaller radii,
 flatter elevation, and one restrained violet signal palette. It works with
@@ -89,12 +94,35 @@ import { Button, Dialog, Menu } from "@aurelglyph/react";
 Composite widgets implement their expected keyboard model:
 
 - `Tabs` and `SegmentedControl`: Arrow keys, Home, and End with disabled-item
-  skipping.
+  skipping. Horizontal arrows follow the computed writing direction in RTL.
 - `Menu`: Arrow Up/Down, Home, End, typeahead, Enter/Space opening, Escape
   dismissal, and focus restoration.
 - `CommandPalette` and `Combobox`: filtering, active-descendant tracking,
   Arrow Up/Down, Home, End, Enter selection, and Escape dismissal.
 - `Tooltip`: focus and pointer activation with Escape dismissal.
+
+`Menu` and `Combobox` own their complete tokenized popup surfaces. `Select`
+keeps the real HTML `<select>` for native form submission, validation, keyboard,
+and assistive-technology behavior, then progressively opts its picker into the
+customizable-select contract. Supporting browsers receive Aurelglyph option,
+selected, hover, focus, radius, surface, and elevation styling in both modes and
+appearances; other browsers retain a mode-aware native picker.
+Controlled Combobox values that no longer exist or become disabled resolve as
+unselected for their visible label, hidden form value, selected option, and
+native required validation. Supplying `value` and `onValueChange` does not lock
+the search text; add `inputValue` and `onInputValueChange` only when the
+application also controls the query.
+
+Use `MoreInformation` for optional explanatory copy that would otherwise stay
+visible beside a control or panel. It composes the Popover behavior into a
+compact, icon-backed trigger with an accessible contextual label. Keep
+validation errors and live status messages inline.
+
+```tsx
+<MoreInformation label="Project name information">
+  <p>Use the short operational name shown in system navigation.</p>
+</MoreInformation>
+```
 
 ## Controls
 

@@ -1149,13 +1149,14 @@
       <h1>Usage</h1>
       <p>Use Aurelglyph by installing the package for your platform, importing the generated styles or token values, then setting the theme attributes on the root surface. Pin exact versions for applications and loosen ranges only when you are ready to adopt compatible updates.</p>
       <h2>React and CSS exact version</h2>
-      <pre aria-label="Code example" tabindex="0"><code>npm install @aurelglyph/css@0.7.0 @aurelglyph/react@0.7.0</code></pre>
+      <pre aria-label="Code example" tabindex="0"><code>npm install @aurelglyph/css@0.8.0 @aurelglyph/react@0.8.0</code></pre>
       <h2>React and CSS compatible range</h2>
-      <pre aria-label="Code example" tabindex="0"><code>npm install @aurelglyph/css@^0.7.0 @aurelglyph/react@^0.7.0</code></pre>
+      <pre aria-label="Code example" tabindex="0"><code>npm install @aurelglyph/css@^0.8.0 @aurelglyph/react@^0.8.0</code></pre>
       <pre aria-label="Code example" tabindex="0"><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
+      <p><code>Menu</code> and <code>Combobox</code> own their complete Aurelglyph popup surfaces. <code>Select</code> preserves the real HTML form control and progressively adopts the customizable native picker for tokenized surfaces, options, focus rails, radii, and elevation; other browsers keep a mode-aware accessible native picker.</p>
       <h2>React icons</h2>
-      <pre aria-label="Code example" tabindex="0"><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, ButtonGroup, Card, Checkbox, Combobox, CommandPalette, Container, DataTable, Dialog, Divider, Drawer, EmptyState, ExpandableSection, FileUpload, Grid, Icon, IconButton, ListRow, ListSection, Menu, Metric, NavigationPage, NavigationStack, NumberField, Pagination, Popover, Progress, RadioGroup, SearchField, SegmentedControl, Select, Sheet, Skeleton, Slider, Spinner, Stack, Surface, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, Tooltip, TopBar } from "@aurelglyph/react";
+      <pre aria-label="Code example" tabindex="0"><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, ButtonGroup, Card, Checkbox, Combobox, CommandPalette, Container, DataTable, Dialog, Divider, Drawer, EmptyState, ExpandableSection, FileUpload, Grid, Icon, IconButton, ListRow, ListSection, Menu, Metric, MoreInformation, NavigationPage, NavigationStack, NumberField, Pagination, Popover, Progress, RadioGroup, SearchField, SegmentedControl, Select, Sheet, Skeleton, Slider, Spinner, Stack, Surface, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, Tooltip, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
@@ -1241,7 +1242,7 @@ const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></
       <pre aria-label="Code example" tabindex="0"><code>gem "aurelglyph-rails",
   git: "https://github.com/absessive/aurelglyph",
   glob: "packages/rails/aurelglyph-rails.gemspec",
-  tag: "v0.7.0"</code></pre>
+  tag: "v0.8.0"</code></pre>
       <p>The Rails gem includes the same six WOFF2 files and <code>@font-face</code> declarations as the CSS adapter. Keep the packaged <code>app/assets/fonts/aurelglyph</code> directory with the stylesheet.</p>
       <h2>Rails interactive sheets</h2>
       <p>Load the packaged <code>aurelglyph.js</code> controller when using sheets. It synchronizes server intent with the native modal lifecycle, dismissal, and focus restoration.</p>
@@ -1276,9 +1277,9 @@ const strongLabelStyle = { fontFamily: aurelglyphFontFamilies.uiBold };</code></
   &lt;%= render @systems %&gt;
 &lt;% end %&gt;</code></pre>
       <h2>SwiftUI exact version</h2>
-      <pre aria-label="Code example" tabindex="0"><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "0.7.0")</code></pre>
+      <pre aria-label="Code example" tabindex="0"><code>.package(url: "https://github.com/absessive/aurelglyph", exact: "0.8.0")</code></pre>
       <h2>SwiftUI compatible version</h2>
-      <pre aria-label="Code example" tabindex="0"><code>.package(url: "https://github.com/absessive/aurelglyph", from: "0.7.0")</code></pre>
+      <pre aria-label="Code example" tabindex="0"><code>.package(url: "https://github.com/absessive/aurelglyph", from: "0.8.0")</code></pre>
       <h2>SwiftUI product dependency</h2>
       <pre aria-label="Code example" tabindex="0"><code>.product(name: "AurelglyphUI", package: "aurelglyph")</code></pre>
       <h2>Swift icons</h2>
@@ -1323,6 +1324,7 @@ AurelglyphContainer {
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
   Text("Advanced settings stay visible while details expand.")
 }</code></pre>
+      <p>SwiftUI menus and selects render tokenized Aurelglyph popovers. Arrow Up/Down, Home, and End traverse enabled rows, Escape or selection returns focus to the trigger, and <code>AurelglyphControlCopy</code> localizes dropdown placeholders, state values, hints, empty states, and generated option labels.</p>
       <h2>SwiftUI Phase 1 components</h2>
       <pre aria-label="Code example" tabindex="0"><code>AurelglyphAppShell {
   AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }

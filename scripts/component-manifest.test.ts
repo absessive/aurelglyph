@@ -47,12 +47,12 @@ async function read(path: string): Promise<string> {
   return readFile(join(root, path), "utf8");
 }
 
-async function readDirectorySources(path: string, extension: string): Promise<string> {
+async function readDirectorySources(path: string, extensions: readonly string[]): Promise<string> {
   const directory = join(root, path);
   const entries = await readdir(directory, { withFileTypes: true });
   const sources = await Promise.all(
     entries
-      .filter((entry) => entry.isFile() && entry.name.endsWith(extension))
+      .filter((entry) => entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension)))
       .map((entry) => readFile(join(directory, entry.name), "utf8"))
   );
   return sources.join("\n");
@@ -187,7 +187,7 @@ describe("component manifest", () => {
     expect(new Set(platformIds).size).toBe(platformIds.length);
     expect(new Set(manifest.platforms.map(({ label }) => label)).size).toBe(manifest.platforms.length);
     expect(new Set(componentIds).size).toBe(componentIds.length);
-    expect(manifest.components).toHaveLength(18);
+    expect(manifest.components).toHaveLength(19);
 
     for (const component of manifest.components) {
       expect(component.id).toMatch(/^[a-z][a-z0-9-]*$/u);
@@ -200,11 +200,12 @@ describe("component manifest", () => {
 
   it("keeps every cross-platform support claim backed by a shipped implementation", async () => {
     const manifest = await loadManifest();
+    const reactNativeIndex = await read("packages/react-native/src/index.ts");
     const sourceByPlatform: Record<string, string> = {
       css: await read("packages/react/src/styles.css"),
       react: await read("packages/react/src/index.ts"),
-      reactNative: await read("packages/react-native/src/index.ts"),
-      swiftUI: await readDirectorySources("packages/swift/Sources/AurelglyphUI", ".swift"),
+      reactNative: await readDirectorySources("packages/react-native/src", [".ts", ".tsx"]),
+      swiftUI: await readDirectorySources("packages/swift/Sources/AurelglyphUI", [".swift"]),
       rails: [
         await read("packages/rails/lib/aurelglyph/rails/helper.rb"),
         await read("packages/rails/lib/aurelglyph/rails/interaction_helper.rb")
@@ -218,6 +219,20 @@ describe("component manifest", () => {
           `${component.name} is declared for ${platform}, but ${JSON.stringify(evidence)} was not found.`
         ).toContain(evidence);
       }
+    }
+
+    const reactNativeEvidence = manifest.components.map(({ evidence }) => evidence.reactNative);
+    expect(new Set(reactNativeEvidence).size).toBe(reactNativeEvidence.length);
+    for (const component of manifest.components) {
+      const declaration = /^export (?:function|const) ([A-Z][A-Za-z0-9]*)/u.exec(component.evidence.reactNative);
+      expect(
+        declaration,
+        `${component.name} must use a component-specific React Native export declaration as evidence.`
+      ).not.toBeNull();
+      expect(
+        reactNativeIndex,
+        `${component.name} is implemented in React Native but is not exported by the package entry point.`
+      ).toMatch(new RegExp(`export \\{[^}]*\\b${declaration?.[1]}\\b[^}]*\\}`, "u"));
     }
   });
 });

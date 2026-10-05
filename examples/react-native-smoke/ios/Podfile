@@ -6,6 +6,13 @@ require Pod::Executable.execute_command('node', ['-p',
   )', __dir__]).strip
 
 platform :ios, min_ios_version_supported
+
+# React Native 0.87's prebuilt core nests Fabric headers below a framework
+# submodule, while third-party Fabric codegen imports them through <React/...>.
+# Build core from source so CocoaPods exposes the public header contract used by
+# react-native-safe-area-context and other community components.
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']

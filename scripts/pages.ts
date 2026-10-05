@@ -1481,8 +1481,9 @@ function renderUsage(version: string): string {
       <pre><code>npm install @aurelglyph/css@^${escapeHtml(version)} @aurelglyph/react@^${escapeHtml(version)}</code></pre>
       <pre><code>import "@aurelglyph/css";</code></pre>
       <p><code>@aurelglyph/css</code> includes tokens, packaged fonts, base styles, and the shared component class layer. <code>@aurelglyph/react/styles.css</code> is also exported for React-only adopters that want just the component class layer.</p>
+      <p><code>Menu</code> and <code>Combobox</code> own their complete Aurelglyph popup surfaces. <code>Select</code> preserves the real HTML form control and progressively adopts the customizable native picker for tokenized surfaces, options, focus rails, radii, and elevation; other browsers keep a mode-aware accessible native picker.</p>
       <h2>React icons</h2>
-      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, ButtonGroup, Card, Checkbox, Combobox, CommandPalette, Container, DataTable, Dialog, Divider, Drawer, EmptyState, ExpandableSection, FileUpload, Grid, Icon, IconButton, ListRow, ListSection, Menu, Metric, NavigationPage, NavigationStack, NumberField, Pagination, Popover, Progress, RadioGroup, SearchField, SegmentedControl, Select, Sheet, Skeleton, Slider, Spinner, Stack, Surface, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, Tooltip, TopBar } from "@aurelglyph/react";
+      <pre><code>import { Alert, AppShell, Avatar, Badge, Breadcrumbs, Button, ButtonGroup, Card, Checkbox, Combobox, CommandPalette, Container, DataTable, Dialog, Divider, Drawer, EmptyState, ExpandableSection, FileUpload, Grid, Icon, IconButton, ListRow, ListSection, Menu, Metric, MoreInformation, NavigationPage, NavigationStack, NumberField, Pagination, Popover, Progress, RadioGroup, SearchField, SegmentedControl, Select, Sheet, Skeleton, Slider, Spinner, Stack, Surface, Switch, Tabs, TabBar, TextArea, TextField, Toast, Toolbar, Tooltip, TopBar } from "@aurelglyph/react";
 
 &lt;Icon name="dashboard" title="Dashboard" /&gt;
 &lt;Icon name="thumbs-up" title="Approve" /&gt;
@@ -1650,6 +1651,7 @@ AurelglyphContainer {
 AurelglyphExpandableSection("Advanced settings", eyebrow: "System", isExpanded: $expanded) {
   Text("Advanced settings stay visible while details expand.")
 }</code></pre>
+      <p>SwiftUI menus and selects render tokenized Aurelglyph popovers. Arrow Up/Down, Home, and End traverse enabled rows, Escape or selection returns focus to the trigger, and <code>AurelglyphControlCopy</code> localizes dropdown placeholders, state values, hints, empty states, and generated option labels.</p>
       <h2>SwiftUI Phase 1 components</h2>
       <pre><code>AurelglyphAppShell {
   AurelglyphTopBar("Workbench", subtitle: "Systems") { EmptyView() } actions: { Text("Edit") }

@@ -466,7 +466,8 @@ describe("interaction foundation styles", () => {
     expect(css).toContain("text-decoration: none;");
     expect(css).toMatch(/\.ag-segmented__item\.is-active,[\s\S]*?border-color: var\(--ag-color-semantic-focus\);/u);
     expect(css).toMatch(/\.ag-tab-bar__item\.is-active,[\s\S]*?border-bottom-color: var\(--ag-color-semantic-focus\);/u);
-    expect(css).toContain("box-shadow: inset 3px 0 0 var(--ag-color-semantic-focus);");
+    expect(css).toContain("border-inline-start: 3px solid transparent;");
+    expect(css).toContain("border-inline-start-color: var(--ag-color-semantic-focus);");
   });
 
   it("keeps quiet button hover and pressed feedback distinct without changing disabled controls", () => {
@@ -477,5 +478,27 @@ describe("interaction foundation styles", () => {
     expect(css).toContain(':root[data-appearance="quiet"] .ag-button--ghost:hover:not(:disabled):not([aria-disabled="true"])');
     expect(css).toContain(':root[data-appearance="quiet"] .ag-button--danger:hover:not(:disabled):not([aria-disabled="true"])');
     expect(css).toContain(':root[data-appearance="quiet"] .ag-button:active:not(:disabled):not([aria-disabled="true"])');
+  });
+
+  it("uses logical geometry for direction-sensitive controls and selected rails", () => {
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+
+    expect(css).toMatch(/\.ag-switch__thumb\s*\{[^}]*inset-inline-start: 0\.1875rem;/u);
+    expect(css).toContain(".ag-switch:dir(rtl) .ag-switch__input:checked");
+    expect(css).toMatch(/\.ag-app-shell__nav\s*\{[^}]*border-inline-end:/u);
+    expect(css).toMatch(/\.ag-menu__item\s*\{[^}]*text-align: start;/u);
+    expect(css).toContain("margin-inline-start: -1px;");
+    expect(css).toContain("border-start-start-radius: 0;");
+    expect(css).toMatch(/\.ag-number-field__step:first-child\s*\{[^}]*border-inline-end:/u);
+    expect(css).toMatch(/\.ag-combobox__toggle\s*\{[^}]*border-inline-start:/u);
+    expect(css).toContain("border-inline-start-color: var(--ag-color-semantic-focus);");
+  });
+
+  it("styles compact optional information without changing inline errors", () => {
+    const css = readFileSync(join(import.meta.dirname, "../styles.css"), "utf8");
+
+    expect(css).toContain(".ag-more-information .ag-more-information__trigger");
+    expect(css).toContain(".ag-more-information__content");
+    expect(css).toMatch(/\.ag-field__error\s*\{[^}]*color: var\(--ag-color-semantic-danger\);/u);
   });
 });

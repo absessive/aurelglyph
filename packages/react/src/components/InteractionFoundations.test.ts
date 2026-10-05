@@ -16,6 +16,7 @@ import { ExpandableSection } from "./ExpandableSection";
 import { FileUpload } from "./FileUpload";
 import { Grid, Stack, Surface } from "./Layout";
 import { Menu } from "./Menu";
+import { MoreInformation } from "./MoreInformation";
 import { NumberField } from "./NumberField";
 import { Pagination } from "./Pagination";
 import { Popover } from "./Popover";
@@ -112,6 +113,49 @@ describe("roving selection controls", () => {
     expect(document.activeElement).toBe(options[2]);
     expect(options[0]?.tabIndex).toBe(-1);
     expect(options[1]?.tabIndex).toBe(0);
+  });
+
+  it("mirrors horizontal tab and segmented-control navigation in RTL", () => {
+    const onTabChange = vi.fn();
+    const onSegmentChange = vi.fn();
+    const items = [
+      { id: "first", label: "First" },
+      { id: "middle", label: "Middle" },
+      { id: "last", label: "Last" }
+    ];
+    render(
+      createElement(
+        "div",
+        { dir: "rtl" },
+        createElement(Tabs, { activeId: "middle", id: "rtl-tabs", items, onValueChange: onTabChange }),
+        createElement(SegmentedControl, {
+          activeId: "middle",
+          id: "rtl-segmented",
+          items,
+          onValueChange: onSegmentChange
+        })
+      )
+    );
+
+    const tabs = container.querySelectorAll<HTMLButtonElement>("#rtl-tabs [role='tab']");
+    tabs[1]?.focus();
+    fire(tabs[1] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "ArrowRight" }));
+    expect(onTabChange).toHaveBeenLastCalledWith("first");
+    expect(document.activeElement).toBe(tabs[0]);
+    tabs[1]?.focus();
+    fire(tabs[1] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "ArrowLeft" }));
+    expect(onTabChange).toHaveBeenLastCalledWith("last");
+    expect(document.activeElement).toBe(tabs[2]);
+
+    const segments = container.querySelectorAll<HTMLButtonElement>("#rtl-segmented [role='radio']");
+    segments[1]?.focus();
+    fire(segments[1] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "ArrowRight" }));
+    expect(onSegmentChange).toHaveBeenLastCalledWith("first");
+    expect(document.activeElement).toBe(segments[0]);
+    segments[1]?.focus();
+    fire(segments[1] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "ArrowLeft" }));
+    expect(onSegmentChange).toHaveBeenLastCalledWith("last");
+    expect(document.activeElement).toBe(segments[2]);
   });
 
   it("resolves disabled and unknown segmented values to the first enabled option", () => {
@@ -313,6 +357,31 @@ describe("overlay foundations", () => {
     expect(onOpenChange).toHaveBeenCalledWith(true);
     fire(document.body, new Event("pointerdown", { bubbles: true }));
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("keeps optional explanatory copy behind an accessible information trigger", () => {
+    render(
+      createElement(
+        MoreInformation,
+        { label: "Project name information" },
+        createElement("p", null, "Use a short operational name.")
+      )
+    );
+
+    const trigger = container.querySelector<HTMLButtonElement>(".ag-more-information__trigger") as HTMLButtonElement;
+    const panel = container.querySelector<HTMLElement>(".ag-more-information__content")?.parentElement as HTMLElement;
+    expect(trigger.textContent).toContain("More information");
+    expect(trigger.getAttribute("aria-label")).toBe("Project name information");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(trigger.querySelector(".ag-icon")?.getAttribute("aria-hidden")).toBe("true");
+    expect(panel.getAttribute("role")).toBe("dialog");
+    expect(panel.getAttribute("aria-label")).toBe("Project name information");
+    expect(panel.hidden).toBe(true);
+
+    act(() => trigger.click());
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(panel.hidden).toBe(false);
+    expect(panel.textContent).toContain("Use a short operational name.");
   });
 
   it("shifts popovers into the viewport on the opening frame", () => {
@@ -716,6 +785,60 @@ describe("new form and layout primitives", () => {
     expect(empty.getAttribute("role")).toBe("option");
     expect(empty.getAttribute("aria-disabled")).toBe("true");
     expect(listbox.querySelector("[role='status']")).toBeNull();
+  });
+
+  it("normalizes stale and disabled controlled combobox values for display, validity, and submission", () => {
+    const options = [
+      { disabled: true, label: "Archived", value: "archived" },
+      { label: "Beacon", value: "beacon" }
+    ];
+    const renderValue = (value: string): void => {
+      render(createElement(Combobox, { id: "controlled-system", label: "System", name: "system", options, required: true, value }));
+    };
+
+    renderValue("beacon");
+    let input = container.querySelector<HTMLInputElement>("#controlled-system-input") as HTMLInputElement;
+    let hidden = container.querySelector<HTMLInputElement>("input[name='system']") as HTMLInputElement;
+    expect(input.value).toBe("Beacon");
+    expect(input.checkValidity()).toBe(true);
+    expect(hidden.value).toBe("beacon");
+
+    renderValue("archived");
+    input = container.querySelector<HTMLInputElement>("#controlled-system-input") as HTMLInputElement;
+    hidden = container.querySelector<HTMLInputElement>("input[name='system']") as HTMLInputElement;
+    expect(input.value).toBe("");
+    expect(input.checkValidity()).toBe(false);
+    expect(input.validationMessage).toBe("Select an option.");
+    expect(hidden.value).toBe("");
+    expect(container.querySelector("[aria-selected='true']")).toBeNull();
+
+    renderValue("missing");
+    expect((container.querySelector("#controlled-system-input") as HTMLInputElement).value).toBe("");
+    expect((container.querySelector("input[name='system']") as HTMLInputElement).value).toBe("");
+  });
+
+  it("keeps a controlled selection editable when the query is uncontrolled", () => {
+    const onValueChange = vi.fn();
+    render(createElement(Combobox, {
+      id: "editable-controlled-system",
+      label: "System",
+      onValueChange,
+      options: [
+        { label: "Beacon", value: "beacon" },
+        { label: "Royal purple", value: "royal-purple" }
+      ],
+      value: "beacon"
+    }));
+
+    const input = container.querySelector<HTMLInputElement>("#editable-controlled-system-input") as HTMLInputElement;
+    expect(input.value).toBe("Beacon");
+
+    setInputValue(input, "royal");
+
+    expect(input.value).toBe("royal");
+    expect(onValueChange).toHaveBeenCalledWith(null);
+    expect(container.querySelectorAll("#editable-controlled-system-list [role='option']")).toHaveLength(1);
+    expect(container.querySelector("#editable-controlled-system-list")?.textContent).toContain("Royal purple");
   });
 
   it.each(["disabled", "loading", "readOnly"] as const)("closes and guards an open combobox when %s", (state) => {

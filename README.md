@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.7.0`
+Current version: `0.8.0`
 
 ## Status
 
@@ -15,15 +15,19 @@ This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
 local workspace paths.
 
-Version 0.7.0 adds the opt-in `quiet` appearance: a simpler, flatter Aurelglyph
-surface for white and charcoal backgrounds with a restrained violet signal
-palette, smaller radii, and lighter elevation. The release carries the same
-semantic, responsive, and accessible interaction contract through CSS, React,
-React Native, SwiftUI, Rails, examples, previews, and generated outputs while
-preserving `atelier` as the compatibility default.
+Version 0.8.0 establishes a production release foundation around the existing
+catalog: bidirectional Web and Rails behavior, safer controlled values, React
+server rendering, a real SwiftUI accessibility host, cross-browser fallback
+coverage, clean-consumer package tests, pinned toolchains, reviewed security
+exceptions, and controlled provenance-enabled publication. The simplified
+`quiet` appearance and detailed `atelier` appearance remain available in light
+and dark modes across every adapter.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
+Supported toolchains, browsers, semantic-versioning guarantees, release gates,
+and current pre-1.0 scope limits are documented in
+[docs/compatibility.md](docs/compatibility.md).
 
 ## What Is Included
 
@@ -37,8 +41,8 @@ and Swift, see [docs/consuming.md](docs/consuming.md).
   select, alert, empty state, avatar, and badge
 - Phase 3 workbench controls: tabs, breadcrumbs, toast, progress, skeleton,
   metrics, data table, pagination, and command palette
-- Interaction foundations: dialog, drawer, menu/dropdown, popover, tooltip,
-  icon button, button group, checkbox, radio group, slider, number field,
+- Interaction foundations: dialog, drawer, menu/dropdown, popover, More
+  Information, tooltip, icon button, button group, checkbox, radio group, slider, number field,
   combobox/autocomplete, spinner, divider, surface/box, stack, container, and
   responsive grid
 - A machine-readable [component manifest](component-manifest.json), generated
@@ -109,6 +113,7 @@ import {
   ListSection,
   Menu,
   Metric,
+  MoreInformation,
   NavigationPage,
   NavigationStack,
   NumberField,
@@ -145,6 +150,7 @@ export function DesignSystemSetup() {
       footer={<TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} />}
     >
       <SearchField label="Search systems" name="query" />
+      <MoreInformation label="Search information">Search covers active systems and archived releases.</MoreInformation>
       <Card eyebrow="Live" title="Status">Systems operational</Card>
       <ListSection title="Settings">
         <ListRow icon="bell" selected title="Quiet mode" description="Enabled" trailing="On" />
@@ -323,6 +329,8 @@ Use the interaction controls for modal work, anchored actions, complete choice a
 numeric input, loading feedback, and responsive composition. Interactive
 controls are controlled or uncontrolled where that distinction is meaningful;
 modal components always report dismissal so application state stays canonical.
+A controlled `Combobox` selection remains searchable with its internal query;
+control `inputValue` separately only when the application also owns search text.
 
 ```tsx
 <ButtonGroup label="Release actions">
@@ -354,9 +362,9 @@ modal components always report dismissal so application state stays canonical.
 </Grid>
 ```
 
-The canonical [component manifest](component-manifest.json) records all 18
+The canonical [component manifest](component-manifest.json) records all 19
 cross-platform interaction-foundation families. `npm run check:components`
-validates the manifest schema and verifies all 90 implementation-evidence claims
+validates the manifest schema and verifies all 95 implementation-evidence claims
 against shipped adapter source. Platform and browser suites test behavior and
 accessibility separately.
 
@@ -560,7 +568,7 @@ Use generated CSS variables directly:
 ### React Native
 
 ```bash
-npm install @aurelglyph/react-native
+npm install @aurelglyph/react-native react-native-safe-area-context
 ```
 
 The adapter targets React Native 0.86 or newer and React 19.2.3 or newer. Wrap
@@ -577,20 +585,23 @@ import {
   Stack,
   Surface
 } from "@aurelglyph/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export function Settings() {
   return (
-    <AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system">
-      <Surface elevation="raised">
-        <Stack gap={4}>
-          <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
-          <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
-          <Grid columns={{ base: 1, md: 2 }} minItemWidth={240}>
-            <Button onPress={save}>Save changes</Button>
-          </Grid>
-        </Stack>
-      </Surface>
-    </AurelglyphProvider>
+    <SafeAreaProvider>
+      <AurelglyphProvider appearance="quiet" accent="royal-purple" mode="system">
+        <Surface elevation="raised">
+          <Stack gap={4}>
+            <Combobox label="Operating mode" options={modes} value={mode} onValueChange={setMode} />
+            <Checkbox checked={verify} label="Automated verification" onCheckedChange={setVerify} />
+            <Grid columns={{ base: 1, md: 2 }} minItemWidth={240}>
+              <Button onPress={save}>Save changes</Button>
+            </Grid>
+          </Stack>
+        </Surface>
+      </AurelglyphProvider>
+    </SafeAreaProvider>
   );
 }
 ```
@@ -601,7 +612,8 @@ appearance-aware native values. In `quiet`, the selected accent is retained so
 switching back to `atelier` is lossless while rendered controls use the reduced
 violet signal palette.
 Overlays use React Native `Modal` inside bounded safe-area and keyboard-aware
-shells; tooltip behavior combines `accessibilityHint` with the provider's
+shells backed by `react-native-safe-area-context`; tooltip behavior combines
+`accessibilityHint` with the provider's
 non-modal, safe-bound overlay host; and the dependency-free slider exposes
 native `adjustable` actions. Responsive grids measure their actual container
 for split-view and nested-panel layouts, while compact controls preserve real
@@ -630,7 +642,7 @@ const strongLabel = { fontFamily: aurelglyphFontFamilies.uiBold };
 Bare React Native apps can link the same files from the package's
 `assets/fonts` directory.
 
-The private `examples/react-native-smoke` workspace is a real React Native 0.86
+The private `examples/react-native-smoke` workspace is a real React Native 0.87
 iOS and Android host for adapter integration work. Its native iOS UI contract
 opens a consumer-owned `Modal` and verifies overlay-host layering,
 remeasurement, viewport clamping, and touch pass-through against a release
@@ -645,7 +657,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.7.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.0")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
@@ -822,6 +834,16 @@ warning, danger, and info colors remain distinct from the active signal color.
 Forced modes also set the browser `color-scheme`, so native fields, menus, and
 scrollbars follow the same light or dark contract. Quiet control boundaries and
 selected-state rails meet the 3:1 non-text contrast target across its surfaces.
+`Menu` and `Combobox` always render tokenized Aurelglyph popup surfaces. Native
+web and Rails `Select` controls progressively use the customizable-select
+picker for the same surfaces, focus rail, option states, radius, and elevation;
+browsers without that capability keep accessible platform behavior with
+mode-aware option paint. SwiftUI `AurelglyphMenu` and `AurelglyphSelect`, plus
+the React Native equivalents, use tokenized package-owned popup content rather
+than an unstyled system list. SwiftUI dropdowns skip disabled rows during
+Arrow/Home/End navigation, restore trigger focus after Escape or selection, and
+expose their placeholders, state values, hints, empty states, and generated
+option labels through `AurelglyphControlCopy` for localization.
 The React gallery persists appearance, mode, and atelier accent choices before
 rendering, exposes branded keyboard focus on its custom controls, and announces
 client-side page changes.
@@ -953,9 +975,14 @@ npm test
 npm run test:rails
 npm run test:react-native-host
 npm run test:swift
+npm run test:browsers
 npm run test:ux
 npm run typecheck
+npm run security:check
+npm run pack:check
+npm run pack:gem
 npm run version:check
+npm run version:release-check
 npm run version:sync -- "Describe the changelog item"
 npm run verify
 ```
@@ -965,6 +992,21 @@ TypeScript, React, and React Native source, including React Hooks correctness,
 with zero warnings allowed. Generated artifacts, vendored native outputs, and
 build directories are excluded.
 
+`npm run security:check` accepts only time-bounded private-tooling exceptions
+whose advisory identity, affected range, severity, and installed dependency
+path exactly match the reviewed policy. Changed or stale fingerprints fail.
+
+`npm run pack:check` installs packed adapters into clean strict-peer consumers
+and compiles SSR and type contracts against React 19.1/19.2 and React Native
+0.86/0.87, so compatibility claims are exercised outside the workspace graph.
+
+Tagged releases build every registry artifact before publication and verify
+existing exact-version artifacts by integrity. A retry safely skips matching
+packages after a partial registry outage and fails closed on different bytes.
+The protected `release` environment needs `NPM_BOOTSTRAP_TOKEN` for the first
+publication of each npm package name and `RUBYGEMS_API_KEY` while the Rails gem
+is missing; later npm versions use trusted publishing.
+
 `npm run test:react-native-host` runs the Jest renderer contract, validates the
 Android native project and production bundle, and runs the native iOS XCTest
 contract. The iOS check requires Xcode, CocoaPods, and an installed Simulator
@@ -973,7 +1015,7 @@ runtime; a full Android Gradle build requires an Android SDK and compatible JDK.
 `npm run test:ux` builds the React example and drives real headless Chrome. The
 responsive matrix covers 320×568 compact portrait, 568×320 phone landscape,
 768×1024 tablet, 1024×768 laptop/split view, and 1920×1080 wide layouts. It runs
-44 full mode/viewport and accessibility-tree audits, 41 additional responsive
+47 full mode/viewport and accessibility-tree audits, 41 additional responsive
 probes, and desktop, compact, and landscape interaction suites. The gate fails
 on browser auto-scaling, document overflow, clipped headings, off-screen
 controls, undersized web targets, invalid accessibility relationships, or open
@@ -994,3 +1036,7 @@ workspace package dependency pins, `package-lock.json`, `CHANGELOG.md`, and
 version markers in the React example, Rails adapter, and static preview.
 
 Run `npm run version:check` before publishing or consuming packages from apps.
+After promoting the release notes, `npm run version:release-check` additionally
+requires an empty `Unreleased` section and a non-empty entry for the canonical
+version. CI repeats generated-artifact, package, browser, Rails, SwiftUI, React
+Native, security, and clean-consumer checks before publication.

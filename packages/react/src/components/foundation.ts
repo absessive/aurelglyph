@@ -71,6 +71,18 @@ export function edgeEnabledIndex(count: number, disabled: (index: number) => boo
   return -1;
 }
 
+/** Resolves the visual step for a horizontal arrow key in the element's writing direction. */
+export function horizontalArrowStep(element: HTMLElement, key: "ArrowLeft" | "ArrowRight"): 1 | -1 {
+  const directionRoot = element.closest<HTMLElement>("[dir]");
+  const explicitDirection = directionRoot?.getAttribute("dir")?.toLocaleLowerCase();
+  const rightToLeft =
+    explicitDirection === "rtl" ||
+    (explicitDirection !== "ltr" && typeof getComputedStyle === "function" && getComputedStyle(element).direction === "rtl");
+
+  if (key === "ArrowRight") return rightToLeft ? -1 : 1;
+  return rightToLeft ? 1 : -1;
+}
+
 export function focusAt(container: HTMLElement, selector: string, index: number, options?: FocusOptions): void {
   const candidates = container.querySelectorAll<HTMLElement>(selector);
   const candidate = candidates.item(index);

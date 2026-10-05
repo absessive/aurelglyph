@@ -9,7 +9,8 @@ import {
   type ReactElement,
   type ReactNode
 } from "react";
-import { SafeAreaView, StyleSheet, View, type Insets } from "react-native";
+import { StyleSheet, View, type Insets, type ViewInstance } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export type OverlayHostFrame = { height: number; width: number; x: number; y: number };
 
@@ -29,12 +30,15 @@ export type AurelglyphOverlayHostProps = {
 export function AurelglyphOverlayHost({ children, insets }: AurelglyphOverlayHostProps): ReactElement {
   const [entries, setEntries] = useState<ReadonlyMap<string, ReactNode>>(() => new Map());
   const [frame, setFrame] = useState<OverlayHostFrame | null>(null);
-  const hostRef = useRef<View | null>(null);
+  const hostRef = useRef<ViewInstance | null>(null);
   const measureHost = useCallback((): void => {
     hostRef.current?.measureInWindow((x, y, width, height) => {
-      setFrame((current) => current?.x === x && current.y === y && current.width === width && current.height === height
-        ? current
-        : { height, width, x, y });
+      setFrame((current) => {
+        if (current && current.x === x && current.y === y && current.width === width && current.height === height) {
+          return current;
+        }
+        return { height, width, x, y };
+      });
     });
   }, []);
   const setOverlay = useCallback((id: string, node: ReactNode): void => {

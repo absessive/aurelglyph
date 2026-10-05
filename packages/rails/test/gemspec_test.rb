@@ -24,6 +24,11 @@ class AurelglyphRailsGemspecTest < Minitest::Test
     assert_includes @spec.files, "app/assets/fonts/aurelglyph/libre-baskerville-400.woff2"
     assert_includes @spec.files, "app/assets/fonts/aurelglyph/OFL-1.1.txt"
     assert_includes @spec.files, "LICENSE.md"
+    assert_equal "https://aurelglyph.absessive.com/", @spec.metadata.fetch("homepage_uri")
+    assert_equal "https://github.com/absessive/aurelglyph", @spec.metadata.fetch("source_code_uri")
+    assert_equal "https://github.com/absessive/aurelglyph/issues", @spec.metadata.fetch("bug_tracker_uri")
+    assert_equal "https://github.com/absessive/aurelglyph/blob/main/CHANGELOG.md", @spec.metadata.fetch("changelog_uri")
+    refute @spec.files.any? { |path| File.directory?(File.join(@package_root, path)) }
 
     actionview = @spec.runtime_dependencies.find { |dependency| dependency.name == "actionview" }
     refute_nil actionview

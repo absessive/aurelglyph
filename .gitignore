@@ -8,6 +8,8 @@ coverage/
 .vite/
 .expo/
 .swiftpm/
+.bundle/
+vendor/bundle/
 Package.resolved
 .env
 .env.*

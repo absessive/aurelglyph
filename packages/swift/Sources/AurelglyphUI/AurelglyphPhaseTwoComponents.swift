@@ -273,6 +273,9 @@ public struct AurelglyphSelect: View {
   @Environment(\.aurelglyphTheme) private var theme
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.aurelglyphControlCopy) private var controlCopy
+  @State private var isPresented = false
+  @FocusState private var triggerFocused: Bool
+  @FocusState private var focusedItemID: String?
   private let title: String
   private let items: [AurelglyphSegmentedItem]
   @Binding private var selection: String
@@ -301,40 +304,90 @@ public struct AurelglyphSelect: View {
 
   public var body: some View {
     let palette = theme.palette(for: colorScheme)
+    let selectedItem = items.first { $0.id == selection }
+    let unavailable = isUnavailable
+    let displayValue = isLoading ? controlCopy.loading : (selectedItem?.title ?? controlCopy.selectPlaceholder)
+    let displayColor = selectedItem == nil ? palette.muted : palette.foreground
 
-    VStack(alignment: .leading, spacing: 5) {
-      HStack(spacing: 8) {
-        Picker(title, selection: $selection) {
-          ForEach(items) { item in
-            Text(item.title)
-              .tag(item.id)
-              .disabled(item.isDisabled)
+    VStack(alignment: .leading, spacing: 7) {
+      Text(title)
+        .font(AurelglyphTypography.monoLabel)
+        .textCase(.uppercase)
+        .foregroundStyle(palette.muted)
+
+      Button {
+        guard !unavailable else { return }
+        if isPresented {
+          isPresented = false
+        } else {
+          presentOptions()
+        }
+      } label: {
+        HStack(spacing: 10) {
+          Text(displayValue)
+            .font(AurelglyphTypography.body)
+            .foregroundStyle(displayColor)
+            .lineLimit(1)
+          Spacer(minLength: 12)
+          if isLoading {
+            ProgressView()
+              .controlSize(.mini)
+              .accessibilityHidden(true)
+          } else {
+            Image(systemName: isPresented ? "chevron.up" : "chevron.down")
+              .foregroundStyle(palette.muted)
+              .accessibilityHidden(true)
           }
         }
-        .pickerStyle(.menu)
-        .foregroundStyle(palette.foreground)
-        .tint(palette.accent)
-        .frame(minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
-        .contentShape(Rectangle())
-        .disabled(isDisabled || isLoading || isReadOnly)
-        .accessibilityValue(
-          isLoading
-            ? controlCopy.loading
-            : (items.first(where: { $0.id == selection })?.title ?? "")
-        )
-        .accessibilityHint(
-          aurelglyphControlHint(
-            isReadOnly: isReadOnly,
-            error: error,
-            readOnlyLabel: controlCopy.readOnly
-          )
-        )
-        if isLoading {
-          ProgressView().controlSize(.mini)
-            .accessibilityLabel(controlCopy.loadingLabel("\(title) options"))
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension)
+        .background(palette.surfaceMuted, in: RoundedRectangle(cornerRadius: theme.boxCornerRadius, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: theme.boxCornerRadius, style: .continuous)
+            .stroke(error == nil ? palette.borderStrong : palette.danger, lineWidth: 1)
         }
+        .contentShape(Rectangle())
       }
+      .buttonStyle(.plain)
+      .focused($triggerFocused)
+      .disabled(unavailable)
       .opacity(isDisabled ? 0.52 : 1)
+      .accessibilityLabel(title)
+      .accessibilityValue(
+        [
+          isLoading ? controlCopy.loading : selectedItem?.title,
+          isPresented && !unavailable ? controlCopy.expanded : controlCopy.collapsed
+        ]
+        .compactMap { $0 }
+        .joined(separator: ", ")
+      )
+      .accessibilityHint(
+        aurelglyphControlHint(
+          isReadOnly: isReadOnly,
+          error: error,
+          instruction: isPresented ? controlCopy.chooseOption : controlCopy.showOptions,
+          readOnlyLabel: controlCopy.readOnly
+        )
+      )
+      .popover(isPresented: $isPresented, attachmentAnchor: .rect(.bounds), arrowEdge: .top) {
+        selectSurface(palette: palette)
+          .presentationBackground(palette.backgroundElevated)
+      }
+      .onKeyPress(.downArrow) {
+        guard !unavailable, items.contains(where: { !$0.isDisabled }) else { return .ignored }
+        presentOptions()
+        return .handled
+      }
+      .onKeyPress(.upArrow) {
+        guard !unavailable, items.contains(where: { !$0.isDisabled }) else { return .ignored }
+        presentOptions(edge: .last)
+        return .handled
+      }
+      .onKeyPress(.escape) {
+        guard isPresented else { return .ignored }
+        isPresented = false
+        return .handled
+      }
 
       if let error {
         Text(error)
@@ -343,6 +396,179 @@ public struct AurelglyphSelect: View {
           .accessibilityLabel(error)
       }
     }
+    .onChange(of: unavailable) { _, value in
+      if value { isPresented = false }
+    }
+    .onChange(of: isPresented) { _, presented in
+      if !presented {
+        focusedItemID = nil
+        restoreTriggerFocus()
+      }
+    }
+  }
+
+  private func selectSurface(palette: AurelglyphPalette) -> some View {
+    ScrollView {
+      LazyVStack(alignment: .leading, spacing: 2) {
+        if items.isEmpty {
+          Text(controlCopy.noOptions)
+            .font(AurelglyphTypography.caption)
+            .foregroundStyle(palette.muted)
+            .padding(10)
+            .frame(maxWidth: .infinity, minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension, alignment: .leading)
+        } else {
+          ForEach(items) { item in
+            Button {
+              guard !item.isDisabled else { return }
+              selection = item.id
+              isPresented = false
+            } label: {
+              HStack(spacing: 10) {
+                Text(item.title)
+                  .font(AurelglyphTypography.body)
+                  .foregroundStyle(palette.foreground)
+                Spacer(minLength: 12)
+                if selection == item.id {
+                  Image(systemName: "checkmark")
+                    .foregroundStyle(palette.focus)
+                    .accessibilityHidden(true)
+                }
+              }
+              .padding(.horizontal, 10)
+              .frame(maxWidth: .infinity, minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension, alignment: .leading)
+              .overlay(alignment: .leading) {
+                if selection == item.id {
+                  Rectangle()
+                    .fill(palette.focus)
+                    .frame(width: 3)
+                    .accessibilityHidden(true)
+                }
+              }
+              .contentShape(Rectangle())
+            }
+            .focused($focusedItemID, equals: item.id)
+            .onKeyPress(.downArrow) {
+              moveOptionFocus(1)
+              return .handled
+            }
+            .onKeyPress(.upArrow) {
+              moveOptionFocus(-1)
+              return .handled
+            }
+            .onKeyPress(.home) {
+              focusOption(at: .first)
+              return .handled
+            }
+            .onKeyPress(.end) {
+              focusOption(at: .last)
+              return .handled
+            }
+            .onKeyPress(.escape) {
+              isPresented = false
+              return .handled
+            }
+            .buttonStyle(
+              AurelglyphSelectOptionButtonStyle(
+                palette: palette,
+                cornerRadius: theme.boxCornerRadius,
+                isSelected: selection == item.id,
+                isFocused: focusedItemID == item.id
+              )
+            )
+            .disabled(item.isDisabled)
+            .opacity(item.isDisabled ? 0.52 : 1)
+            .accessibilityAddTraits(selection == item.id ? .isSelected : [])
+          }
+        }
+      }
+    }
+    .scrollIndicators(.visible)
+    .frame(minWidth: 220, idealWidth: 280, maxWidth: 360, maxHeight: 320)
+    .padding(5)
+    .background(palette.backgroundElevated)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel(controlCopy.optionsLabel(title))
+  }
+
+  private var isUnavailable: Bool {
+    isDisabled || isLoading || isReadOnly
+  }
+
+  private func presentOptions(edge: AurelglyphFocusEdge? = nil) {
+    guard !isUnavailable else { return }
+    let target: String?
+    if let edge {
+      target = aurelglyphEdgeEnabledID(
+        in: items,
+        edge: edge,
+        id: { $0.id },
+        isDisabled: { $0.isDisabled }
+      )
+    } else if items.contains(where: { $0.id == selection && !$0.isDisabled }) {
+      target = selection
+    } else {
+      target = aurelglyphEdgeEnabledID(
+        in: items,
+        edge: .first,
+        id: { $0.id },
+        isDisabled: { $0.isDisabled }
+      )
+    }
+    isPresented = true
+    guard let target else { return }
+    Task { @MainActor in
+      await Task.yield()
+      focusedItemID = target
+    }
+  }
+
+  private func moveOptionFocus(_ direction: Int) {
+    focusedItemID = aurelglyphNextEnabledID(
+      in: items,
+      currentID: focusedItemID,
+      direction: direction,
+      id: { $0.id },
+      isDisabled: { $0.isDisabled }
+    )
+  }
+
+  private func focusOption(at edge: AurelglyphFocusEdge) {
+    focusedItemID = aurelglyphEdgeEnabledID(
+      in: items,
+      edge: edge,
+      id: { $0.id },
+      isDisabled: { $0.isDisabled }
+    )
+  }
+
+  private func restoreTriggerFocus() {
+    Task { @MainActor in
+      await Task.yield()
+      triggerFocused = true
+    }
+  }
+}
+
+private struct AurelglyphSelectOptionButtonStyle: ButtonStyle {
+  let palette: AurelglyphPalette
+  let cornerRadius: CGFloat
+  let isSelected: Bool
+  let isFocused: Bool
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .background(
+        isSelected
+          ? palette.accent.opacity(0.2)
+          : (isFocused || configuration.isPressed ? palette.surfaceMuted : Color.clear),
+        in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+      )
+      .overlay {
+        if isFocused {
+          RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .stroke(palette.focus, lineWidth: 2)
+        }
+      }
   }
 }
 

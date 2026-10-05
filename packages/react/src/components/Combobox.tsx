@@ -101,14 +101,16 @@ export function Combobox({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const suppressFocusOpenRef = useRef(false);
-  const initialLabel = options.find((option) => option.value === defaultValue)?.label ?? "";
+  const clearingControlledSelectionFromInputRef = useRef(false);
+  const initialValue = value === undefined ? defaultValue : value;
+  const initialLabel = options.find((option) => option.value === initialValue && !option.disabled)?.label ?? "";
   const [selectedValue, setSelectedValue] = useControllableState<string | null>({
     defaultValue: defaultValue ?? null,
     onChange: onValueChange,
     value
   });
   const [query, setQuery] = useControllableState({
-    defaultValue: defaultInputValue ?? initialLabel,
+    defaultValue: value === undefined ? (defaultInputValue ?? initialLabel) : initialLabel,
     onChange: onInputValueChange,
     value: inputValue
   });
@@ -117,15 +119,17 @@ export function Combobox({
   const isInvalid = invalid || Boolean(error);
   const isBusy = busy || loading;
   const unavailable = disabled || loading || readOnly;
+  const selectedOption = options.find((option) => option.value === selectedValue && !option.disabled);
+  const normalizedSelectedValue = selectedOption?.value ?? null;
+  const controlledLabel = value === undefined ? undefined : (selectedOption?.label ?? "");
+  const displayedQuery = query;
   const filteredOptions = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase();
+    const needle = displayedQuery.trim().toLocaleLowerCase();
     if (!needle) return options;
     return options.filter((option) =>
       [option.label, ...(option.keywords ?? [])].join(" ").toLocaleLowerCase().includes(needle)
     );
-  }, [options, query]);
-  const controlledLabel =
-    value === undefined ? undefined : value === null ? "" : options.find((option) => option.value === value)?.label;
+  }, [displayedQuery, options]);
 
   useDismissLayer({ enabled: open && !unavailable, onDismiss: () => setOpen(false), refs: [rootRef] });
   useViewportShift({
@@ -149,13 +153,18 @@ export function Combobox({
   }, [filteredOptions]);
 
   useEffect(() => {
-    if (value === undefined || inputValue !== undefined) return;
-    if (controlledLabel !== undefined) setQuery(controlledLabel);
-  }, [controlledLabel, inputValue, setQuery, value]);
+    inputRef.current?.setCustomValidity(required && normalizedSelectedValue === null ? "Select an option." : "");
+  }, [normalizedSelectedValue, required]);
 
   useEffect(() => {
-    inputRef.current?.setCustomValidity(required && selectedValue === null ? "Select an option." : "");
-  }, [required, selectedValue]);
+    if (value === undefined || inputValue !== undefined) return;
+    if (clearingControlledSelectionFromInputRef.current && normalizedSelectedValue === null) {
+      clearingControlledSelectionFromInputRef.current = false;
+      return;
+    }
+    clearingControlledSelectionFromInputRef.current = false;
+    setQuery(controlledLabel ?? "");
+  }, [controlledLabel, inputValue, normalizedSelectedValue, setQuery, value]);
 
   const optionId = (index: number): string => `${comboboxId}-option-${index}`;
   const selectOption = (index: number): void => {
@@ -171,7 +180,10 @@ export function Combobox({
     inputProps?.onChange?.(event);
     if (event.defaultPrevented || unavailable) return;
     setQuery(event.currentTarget.value);
-    if (selectedValue !== null) setSelectedValue(null);
+    if (selectedValue !== null) {
+      clearingControlledSelectionFromInputRef.current = value !== undefined && inputValue === undefined;
+      setSelectedValue(null);
+    }
     setOpen(true);
     setActiveIndex(-1);
   };
@@ -261,7 +273,7 @@ export function Combobox({
           ref={inputRef}
           required={required}
           role="combobox"
-          value={query}
+          value={displayedQuery}
         />
         <button
           aria-label={open ? "Close options" : "Open options"}
@@ -295,7 +307,7 @@ export function Combobox({
           ? filteredOptions.map((option, index) => (
               <div
                 aria-disabled={option.disabled || undefined}
-                aria-selected={option.value === selectedValue}
+                aria-selected={option.value === normalizedSelectedValue}
                 className={["ag-combobox__option", index === activeIndex ? "is-active" : undefined].filter(Boolean).join(" ")}
                 id={optionId(index)}
                 key={option.value}
@@ -305,12 +317,12 @@ export function Combobox({
                 role="option"
               >
                 {option.label}
-                {option.value === selectedValue ? <Icon className="ag-combobox__check" decorative name="check" /> : null}
+                {option.value === normalizedSelectedValue ? <Icon className="ag-combobox__check" decorative name="check" /> : null}
               </div>
             ))
           : null}
       </div>
-      {name ? <input disabled={disabled || loading} name={name} type="hidden" value={selectedValue ?? ""} /> : null}
+      {name ? <input disabled={disabled || loading} name={name} type="hidden" value={normalizedSelectedValue ?? ""} /> : null}
       {helpText ? (
         <span className="ag-combobox__help" id={helpId}>
           {helpText}

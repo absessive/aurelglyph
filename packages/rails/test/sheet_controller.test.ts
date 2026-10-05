@@ -1691,6 +1691,34 @@ describe("Aurelglyph Rails interaction controllers", () => {
     expect(aurelglyph().selections?.select("missing-group", "grid")).toBe(false);
   });
 
+  it("mirrors horizontal selection-group navigation in RTL", () => {
+    document.body.innerHTML = `
+      <div data-aurelglyph-selection-group="tabs" dir="rtl" role="tablist">
+        <button aria-selected="false" data-aurelglyph-selection-item="" data-value="first" role="tab">First</button>
+        <button aria-selected="true" data-aurelglyph-selection-item="" data-value="middle" role="tab">Middle</button>
+        <button aria-selected="false" data-aurelglyph-selection-item="" data-value="last" role="tab">Last</button>
+      </div>
+    `;
+    const group = document.querySelector<HTMLElement>("[data-aurelglyph-selection-group]");
+    const items = group?.querySelectorAll<HTMLButtonElement>("[data-aurelglyph-selection-item]");
+    if (!group || !items) throw new Error("Invalid RTL selection fixture");
+
+    aurelglyph().init?.(document);
+    items[1].focus();
+    items[1].dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "ArrowRight" }));
+    expect(document.activeElement).toBe(items[0]);
+    expect(items[0].getAttribute("aria-selected")).toBe("true");
+
+    items[1].focus();
+    items[1].dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "ArrowLeft" }));
+    expect(document.activeElement).toBe(items[2]);
+    expect(items[2].getAttribute("aria-selected")).toBe("true");
+
+    items[1].focus();
+    items[1].dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "ArrowDown" }));
+    expect(document.activeElement).toBe(items[2]);
+  });
+
   it("filters and keyboard-selects command palette actions", () => {
     document.body.innerHTML = `
       <div data-aurelglyph-command-palette="" id="commands" role="dialog">

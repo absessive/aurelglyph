@@ -1,6 +1,6 @@
 import { useId, useRef, type HTMLAttributes, type KeyboardEvent, type ReactElement, type ReactNode } from "react";
 
-import { edgeEnabledIndex, focusAt, nextEnabledIndex } from "./foundation.js";
+import { edgeEnabledIndex, focusAt, horizontalArrowStep, nextEnabledIndex } from "./foundation.js";
 
 export type TabsItem = {
   disabled?: boolean;
@@ -54,9 +54,16 @@ export function Tabs({
     let nextIndex = -1;
     if (event.key === "Home") nextIndex = edgeEnabledIndex(items.length, (candidate) => disabled || Boolean(items[candidate]?.disabled), "first");
     else if (event.key === "End") nextIndex = edgeEnabledIndex(items.length, (candidate) => disabled || Boolean(items[candidate]?.disabled), "last");
-    else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+    else if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      nextIndex = nextEnabledIndex(
+        index,
+        items.length,
+        (candidate) => disabled || Boolean(items[candidate]?.disabled),
+        horizontalArrowStep(event.currentTarget, event.key)
+      );
+    } else if (event.key === "ArrowDown") {
       nextIndex = nextEnabledIndex(index, items.length, (candidate) => disabled || Boolean(items[candidate]?.disabled), 1);
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+    } else if (event.key === "ArrowUp") {
       nextIndex = nextEnabledIndex(index, items.length, (candidate) => disabled || Boolean(items[candidate]?.disabled), -1);
     }
 

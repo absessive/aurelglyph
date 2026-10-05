@@ -1,3 +1,5 @@
+"use client";
+
 export { AppShell } from "./components/AppShell.js";
 export type { AppShellProps } from "./components/AppShell.js";
 export { Alert } from "./components/Alert.js";
@@ -70,6 +72,8 @@ export { Menu, Dropdown } from "./components/Menu.js";
 export type { DropdownProps, MenuItem, MenuPlacement, MenuProps } from "./components/Menu.js";
 export { Popover } from "./components/Popover.js";
 export type { PopoverPlacement, PopoverProps } from "./components/Popover.js";
+export { MoreInformation } from "./components/MoreInformation.js";
+export type { MoreInformationProps } from "./components/MoreInformation.js";
 export { Tooltip } from "./components/Tooltip.js";
 export type { TooltipPlacement, TooltipProps } from "./components/Tooltip.js";
 export { RadioGroup } from "./components/RadioGroup.js";

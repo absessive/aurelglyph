@@ -26,3 +26,15 @@ The shared class layer includes mode-aware semantic status colors, 2px
 high-contrast focus indicators for every accent theme, native `<details>`
 disclosure state, and `prefers-reduced-motion` fallbacks for component
 transitions and skeleton loading indicators.
+
+Directional geometry uses logical properties for rails, selected markers,
+menus, grouped controls, number steppers, breadcrumbs, tables, and Combobox
+positioning. The same stylesheet therefore mirrors with `dir="rtl"` without a
+second direction-specific theme.
+
+It also themes the full `Menu` and `Combobox` popup surfaces and progressively
+enhances `.ag-select__input` with the native customizable-select picker. This
+preserves HTML form and accessibility semantics while styling picker surfaces,
+options, selection rails, focus, radii, and elevation. Unsupported browsers
+retain their native picker with forced-mode browser chrome and explicit option
+foreground/background colors.

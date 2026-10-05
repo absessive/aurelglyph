@@ -18,7 +18,7 @@ describe("platform adapter skeletons", () => {
     const css = await read("packages/css/src/index.css");
     const version = await currentVersion();
 
-    expect(packageJson).toEqual({
+    expect(packageJson).toMatchObject({
       name: "@aurelglyph/css",
       version,
       license: "MIT",
@@ -48,6 +48,30 @@ describe("platform adapter skeletons", () => {
     expect(css).toContain(".ag-focus-ring:focus-visible");
   });
 
+  it("publishes npm packages with explicit public provenance and source metadata", async () => {
+    for (const path of [
+      "packages/tokens/package.json",
+      "packages/css/package.json",
+      "packages/react/package.json",
+      "packages/react-native/package.json"
+    ]) {
+      const packageJson = JSON.parse(await read(path)) as Record<string, unknown>;
+      expect(packageJson).toMatchObject({
+        bugs: { url: "https://github.com/absessive/aurelglyph/issues" },
+        homepage: "https://aurelglyph.absessive.com/",
+        license: "MIT",
+        publishConfig: { access: "public", provenance: true },
+        repository: {
+          type: "git",
+          url: "git+https://github.com/absessive/aurelglyph.git"
+        }
+      });
+      expect(typeof packageJson.description).toBe("string");
+      expect((packageJson.description as string).length).toBeGreaterThan(20);
+      expect(packageJson.keywords).toEqual(expect.arrayContaining(["aurelglyph", "design-system"]));
+    }
+  });
+
   it("publishes built CSS with base and shared component classes", async () => {
     const source = await read("packages/css/src/index.css");
     const built = await read("packages/css/dist/index.css");
@@ -71,6 +95,13 @@ describe("platform adapter skeletons", () => {
     expect(built).toContain(".ag-sheet");
     expect(built).toContain(".ag-segmented");
     expect(built).toContain(".ag-command-palette");
+    expect(built).toContain(".ag-more-information");
+    expect(built).toContain("@supports (appearance: base-select)");
+    expect(built).toContain(".ag-select__input::picker(select)");
+    expect(built).toContain(".ag-select__input option::checkmark");
+    expect(built).toMatch(
+      /\.ag-select__input option:checked\s*\{[^}]*border-inline-start-color: var\(--ag-color-semantic-focus\);[^}]*background: rgba\(var\(--ag-accent-rgb\), 0\.2\);/u
+    );
     expect(built).toContain('.ag-command-palette__item[aria-disabled="true"]');
     expect(built).toContain('.ag-command-palette__empty');
     expect(built).toContain('.ag-sheet[aria-modal="true"] > .ag-sheet__fallback-scrim');
@@ -125,11 +156,12 @@ describe("platform adapter skeletons", () => {
       },
       peerDependencies: {
         react: ">=19.2.3 <20",
-        "react-native": "^0.86.0"
+        "react-native": ">=0.86.0 <0.88.0",
+        "react-native-safe-area-context": ">=5.5.2 <6"
       }
     });
     expect(source).toContain("AurelglyphProvider");
-    expect(source).toContain("export { Dialog, Drawer, Popover, Tooltip }");
+    expect(source).toContain("export { Dialog, Drawer, MoreInformation, Popover, Tooltip }");
     expect(source).toContain("export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }");
     expect(source).toContain("export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }");
     expect(source).toContain("export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }");
@@ -147,6 +179,8 @@ describe("platform adapter skeletons", () => {
     const copied = await read("packages/swift/Sources/AurelglyphUI/AurelglyphTokens.swift");
     const fontRegistry = await read("packages/swift/Sources/AurelglyphUI/AurelglyphFontRegistry.swift");
     const font = await read("packages/swift/Sources/AurelglyphUI/Resources/Fonts/LibreBaskerville-Regular.ttf");
+    const phaseTwo = await read("packages/swift/Sources/AurelglyphUI/AurelglyphPhaseTwoComponents.swift");
+    const presentation = await read("packages/swift/Sources/AurelglyphUI/AurelglyphPresentationComponents.swift");
     const version = await currentVersion();
 
     expect(packageJson).toMatchObject({
@@ -168,6 +202,20 @@ describe("platform adapter skeletons", () => {
     expect(packageSwift).toContain('name: "AurelglyphUI"');
     expect(packageSwift).toContain('.process("Resources")');
     expect(fontRegistry).toContain("AurelglyphFontRegistry");
+    expect(phaseTwo).not.toContain("Picker(title, selection:");
+    expect(phaseTwo).toContain("selectSurface(palette: palette)");
+    expect(phaseTwo).toContain(".presentationBackground(palette.backgroundElevated)");
+    expect(phaseTwo).toContain("@FocusState private var focusedItemID: String?");
+    expect(phaseTwo).toContain(".onKeyPress(.home)");
+    expect(phaseTwo).toContain("restoreTriggerFocus()");
+    expect(phaseTwo).toContain("Text(controlCopy.noOptions)");
+    expect(presentation).not.toMatch(/\n\s*Menu\s*\{/u);
+    expect(presentation).toContain("menuSurface(palette: palette)");
+    expect(presentation).toContain("AurelglyphMenuItemButtonStyle");
+    expect(presentation).toContain("@FocusState private var focusedItemID: String?");
+    expect(presentation).toContain(".onKeyPress(.end)");
+    expect(presentation).toContain("restoreTriggerFocus()");
+    expect(presentation).toContain("Text(controlCopy.noActions)");
     expect(font.length).toBeGreaterThan(0);
     expect(copied).toBe(generated);
   });

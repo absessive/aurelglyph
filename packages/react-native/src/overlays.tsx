@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,10 +16,13 @@ import {
   type DimensionValue,
   type PressableProps,
   type StyleProp,
+  type ViewInstance,
   type ViewStyle
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { clamp, useControllableState } from "./foundation.js";
+import { Icon } from "./icons.js";
 import { AurelglyphOverlayHost, useAurelglyphOverlayHost, type OverlayHostFrame } from "./overlay-host.js";
 import { useAurelglyphTheme } from "./theme.js";
 
@@ -246,6 +248,71 @@ export function Popover({ accessibilityLabel, children, placement = "center", ti
   );
 }
 
+export type MoreInformationProps = Omit<
+  PopoverProps,
+  "accessibilityLabel" | "children" | "onOpenChange" | "open" | "title"
+> & {
+  children: ReactNode;
+  defaultOpen?: boolean;
+  disabled?: boolean;
+  label?: string;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  triggerLabel?: string;
+};
+
+/** Keeps optional supporting copy available without permanently occupying the working surface. */
+export function MoreInformation({
+  children,
+  defaultOpen = false,
+  disabled = false,
+  label = "More information",
+  onOpenChange,
+  open,
+  triggerLabel = "More information",
+  ...props
+}: MoreInformationProps): ReactElement {
+  const theme = useAurelglyphTheme();
+  const [isOpen, setOpen] = useControllableState({ defaultValue: defaultOpen, onChange: onOpenChange, value: open });
+  const resolvedOpen = isOpen && !disabled;
+
+  return (
+    <View style={styles.moreInformation}>
+      <Pressable
+        accessibilityLabel={label}
+        accessibilityRole="button"
+        accessibilityState={{ disabled, expanded: resolvedOpen }}
+        disabled={disabled}
+        onPress={() => setOpen(!resolvedOpen)}
+        style={({ pressed }) => [
+          styles.moreInformationTrigger,
+          {
+            backgroundColor: resolvedOpen ? theme.colors.surfaceMuted : "transparent",
+            borderColor: resolvedOpen ? theme.colors.focus : theme.colors.border,
+            opacity: disabled ? 0.5 : pressed ? 0.72 : 1
+          }
+        ]}
+      >
+        <Icon color={resolvedOpen ? theme.colors.focus : theme.colors.muted} name="info" size={16} />
+        {triggerLabel ? (
+          <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.mono, fontSize: 12 }}>
+            {triggerLabel}
+          </Text>
+        ) : null}
+      </Pressable>
+      <Popover
+        {...props}
+        accessibilityLabel={label}
+        onOpenChange={(nextOpen) => setOpen(nextOpen)}
+        open={resolvedOpen}
+        title={label}
+      >
+        {children}
+      </Popover>
+    </View>
+  );
+}
+
 export type TooltipPlacement = "top" | "bottom" | "left" | "right";
 type TooltipTriggerProps = Pick<
   PressableProps,
@@ -282,7 +349,7 @@ export function Tooltip({
   const [open, setOpen] = useControllableState({ defaultValue: defaultVisible, onChange: onVisibleChange, value: visible });
   const [anchor, setAnchor] = useState<TooltipRect | null>(null);
   const [tooltipSize, setTooltipSize] = useState<TooltipSize | null>(null);
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<ViewInstance | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
@@ -297,9 +364,12 @@ export function Tooltip({
   };
   const measureAnchor = useCallback((): void => {
     anchorRef.current?.measureInWindow((x, y, width, height) => {
-      setAnchor((current) => current?.x === x && current.y === y && current.width === width && current.height === height
-        ? current
-        : { height, width, x, y });
+      setAnchor((current) => {
+        if (current && current.x === x && current.y === y && current.width === width && current.height === height) {
+          return current;
+        }
+        return { height, width, x, y };
+      });
     });
   }, []);
   useEffect(() => {
@@ -442,6 +512,17 @@ const styles = StyleSheet.create({
   dialogTitle: { flexShrink: 1, fontSize: 22 },
   footer: { alignItems: "center", borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", flexShrink: 0, flexWrap: "wrap", gap: 8, justifyContent: "flex-end", paddingTop: 16 },
   keyboardAvoider: { flex: 1 },
+  moreInformation: { alignSelf: "flex-start" },
+  moreInformationTrigger: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 10
+  },
   safeArea: { flex: 1 },
   scrim: { flex: 1, justifyContent: "center" },
   tooltip: { borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 10, paddingVertical: 7, position: "absolute", zIndex: 100 },

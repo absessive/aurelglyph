@@ -12,6 +12,7 @@ import {
   Button,
   Icon,
   IconButton,
+  MoreInformation,
   Tooltip,
   useAurelglyphTheme,
 } from '@aurelglyph/react-native';
@@ -24,8 +25,10 @@ import {
 export const smokeLabels = {
   closeModal: 'Close native modal',
   modalActive: 'Native modal active',
+  modalInformation: 'About modal calibration',
   moveAnchor: 'Move tooltip anchor',
   openModal: 'Open native modal',
+  screenInformation: 'About the native overlay host',
   tooltip: 'Hosted modal signal · bounded precision overlay calibration',
   underlyingAction: 'Underlying action',
 } as const;
@@ -52,12 +55,20 @@ function NativeModalSmoke({insets, onClose}: {insets: EdgeInsets; onClose: () =>
               <Text style={[styles.eyebrow, {color: theme.colors.focus}]}>LIVE · NATIVE WINDOW</Text>
               <Text style={[styles.modalTitle, {color: theme.colors.text}]}>Overlay host calibration</Text>
             </View>
-            <IconButton
-              icon={<Icon name="close" />}
-              label={smokeLabels.closeModal}
-              onPress={onClose}
-              variant="ghost"
-            />
+            <View style={styles.headerActions}>
+              <MoreInformation
+                label={smokeLabels.modalInformation}
+                placement="top"
+                triggerLabel="">
+                <Text style={[styles.body, {color: theme.colors.text}]}>The tooltip is rendered by an inner host in this native modal window.</Text>
+              </MoreInformation>
+              <IconButton
+                icon={<Icon name="close" />}
+                label={smokeLabels.closeModal}
+                onPress={onClose}
+                variant="ghost"
+              />
+            </View>
           </View>
 
           <View
@@ -71,7 +82,6 @@ function NativeModalSmoke({insets, onClose}: {insets: EdgeInsets; onClose: () =>
               },
             ]}>
             <Text style={[styles.panelLabel, {color: theme.colors.muted}]}>CONSUMER-OWNED MODAL</Text>
-            <Text style={[styles.body, {color: theme.colors.text}]}>The tooltip below is rendered by an inner host in this native modal window.</Text>
 
             <View style={styles.anchorRail}>
               <Tooltip
@@ -122,9 +132,15 @@ function SmokeWorkbench() {
     <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <StatusBar barStyle="light-content" />
       <View style={[styles.calibrationLine, {borderTopColor: theme.colors.focus}]} />
-      <Text style={[styles.eyebrow, {color: theme.colors.focus}]}>AURELGLYPH · RN 0.86</Text>
-      <Text style={[styles.title, {color: theme.colors.text}]}>Native overlay test host</Text>
-      <Text style={[styles.body, {color: theme.colors.muted}]}>A focused runtime surface for modal layering, host measurement, viewport clamping, and pointer passthrough.</Text>
+      <View style={styles.workbenchHeader}>
+        <View style={styles.headingGroup}>
+          <Text style={[styles.eyebrow, {color: theme.colors.focus}]}>AURELGLYPH · RN 0.87</Text>
+          <Text style={[styles.title, {color: theme.colors.text}]}>Native overlay test host</Text>
+        </View>
+        <MoreInformation label={smokeLabels.screenInformation} placement="top" triggerLabel="">
+          <Text style={[styles.body, {color: theme.colors.text}]}>This host verifies modal layering, host measurement, viewport clamping, and pointer passthrough.</Text>
+        </MoreInformation>
+      </View>
       <View
         testID="quiet-smoke-status"
         style={[
@@ -207,6 +223,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
+  headerActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
   instrumentPanel: {
     borderWidth: StyleSheet.hairlineWidth,
     gap: 18,
@@ -265,6 +286,11 @@ const styles = StyleSheet.create({
   },
   tooltipAtCenter: {
     alignSelf: 'center',
+  },
+  workbenchHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 16,
   },
 });
 

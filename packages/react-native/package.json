@@ -1,8 +1,25 @@
 {
   "name": "@aurelglyph/react-native",
-  "version": "0.7.0",
+  "version": "0.8.0",
+  "description": "Accessible React Native components for the Aurelglyph cross-platform design system.",
   "license": "MIT",
   "type": "module",
+  "keywords": [
+    "aurelglyph",
+    "react-native",
+    "design-system",
+    "components",
+    "accessibility"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/absessive/aurelglyph.git",
+    "directory": "packages/react-native"
+  },
+  "homepage": "https://aurelglyph.absessive.com/",
+  "bugs": {
+    "url": "https://github.com/absessive/aurelglyph/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -23,21 +40,27 @@
     "README.md",
     "LICENSE.md"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "npm run build -w @aurelglyph/tokens && node --experimental-strip-types ../../scripts/font-assets.ts && tsc -p tsconfig.json",
     "test": "vitest run --root ../.. packages/react-native/src",
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.7.0"
+    "@aurelglyph/tokens": "0.8.0"
   },
   "peerDependencies": {
     "react": ">=19.2.3 <20",
-    "react-native": "^0.86.0"
+    "react-native": ">=0.86.0 <0.88.0",
+    "react-native-safe-area-context": ">=5.5.2 <6"
   },
   "devDependencies": {
     "@types/react": "^19.1.1",
     "react": "^19.2.3",
-    "react-native": "0.86.0"
+    "react-native": "0.87.1",
+    "react-native-safe-area-context": "^5.5.2"
   }
 }

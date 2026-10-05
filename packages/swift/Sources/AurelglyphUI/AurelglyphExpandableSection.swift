@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct AurelglyphExpandableSection<Content: View>: View {
   @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+  @Environment(\.aurelglyphControlCopy) private var controlCopy
   @Binding private var isExpanded: Bool
   private let title: String
   private let eyebrow: String?
@@ -42,7 +43,7 @@ public struct AurelglyphExpandableSection<Content: View>: View {
 
           Spacer(minLength: 12)
 
-          Image(systemName: "chevron.right")
+          Image(systemName: "chevron.forward")
             .font(AurelglyphTypography.label)
             .rotationEffect(.degrees(isExpanded ? 90 : 0))
             .foregroundStyle(.tint)
@@ -57,7 +58,7 @@ public struct AurelglyphExpandableSection<Content: View>: View {
       }
       .buttonStyle(.plain)
       .accessibilityAddTraits(.isButton)
-      .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+      .accessibilityValue(Self.stateLabel(isExpanded: isExpanded, copy: controlCopy))
 
       if isExpanded {
         content
@@ -71,5 +72,9 @@ public struct AurelglyphExpandableSection<Content: View>: View {
 
   static func animation(reduceMotion: Bool) -> Animation? {
     reduceMotion ? nil : .easeInOut(duration: 0.22)
+  }
+
+  static func stateLabel(isExpanded: Bool, copy: AurelglyphControlCopy) -> String {
+    isExpanded ? copy.expanded : copy.collapsed
   }
 }

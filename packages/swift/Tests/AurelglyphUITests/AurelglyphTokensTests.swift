@@ -29,6 +29,7 @@ import SwiftUI
 
 @Test func exposesReducedMotionAwareExpandableSection() {
   let expanded = Binding.constant(true)
+  let localizedCopy = AurelglyphControlCopy(collapsed: "Replié", expanded: "Déplié")
   let section = AurelglyphExpandableSection("Advanced settings", eyebrow: "React and Swift", isExpanded: expanded) {
     Text("Animated content")
   }
@@ -36,6 +37,12 @@ import SwiftUI
   #expect(String(describing: type(of: section)).contains("AurelglyphExpandableSection"))
   #expect(AurelglyphExpandableSection<EmptyView>.animation(reduceMotion: true) == nil)
   #expect(AurelglyphExpandableSection<EmptyView>.animation(reduceMotion: false) != nil)
+  #expect(
+    AurelglyphExpandableSection<EmptyView>.stateLabel(isExpanded: false, copy: localizedCopy) == "Replié"
+  )
+  #expect(
+    AurelglyphExpandableSection<EmptyView>.stateLabel(isExpanded: true, copy: localizedCopy) == "Déplié"
+  )
 }
 
 @Test func exposesNativeTypographyAdapterWithBundledNativeFonts() {

@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/component-manifest.schema.json",
   "schemaVersion": 1,
-  "release": "0.7.0",
+  "release": "0.8.0",
   "scope": "Interaction foundations",
   "platforms": [
     { "id": "css", "label": "CSS/Web" },
@@ -19,7 +19,7 @@
       "evidence": {
         "css": ".ag-dialog",
         "react": "export { Dialog }",
-        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "reactNative": "export function Dialog(",
         "swiftUI": "struct AurelglyphDialog",
         "rails": "def aurelglyph_dialog"
       }
@@ -32,7 +32,7 @@
       "evidence": {
         "css": ".ag-drawer",
         "react": "export { Drawer }",
-        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "reactNative": "export function Drawer(",
         "swiftUI": "struct AurelglyphDrawer",
         "rails": "def aurelglyph_drawer"
       }
@@ -45,7 +45,7 @@
       "evidence": {
         "css": ".ag-menu",
         "react": "export { Menu, Dropdown }",
-        "reactNative": "export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }",
+        "reactNative": "export function Menu(",
         "swiftUI": "struct AurelglyphMenu",
         "rails": "def aurelglyph_menu"
       }
@@ -58,7 +58,7 @@
       "evidence": {
         "css": ".ag-popover",
         "react": "export { Popover }",
-        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "reactNative": "export function Popover(",
         "swiftUI": "struct AurelglyphPopover",
         "rails": "def aurelglyph_popover"
       }
@@ -71,9 +71,22 @@
       "evidence": {
         "css": ".ag-tooltip",
         "react": "export { Tooltip }",
-        "reactNative": "export { Dialog, Drawer, Popover, Tooltip }",
+        "reactNative": "export function Tooltip(",
         "swiftUI": "struct AurelglyphTooltip",
         "rails": "def aurelglyph_tooltip"
+      }
+    },
+    {
+      "id": "more-information",
+      "name": "More information",
+      "category": "Overlays",
+      "introduced": "0.8.0",
+      "evidence": {
+        "css": ".ag-more-information",
+        "react": "export { MoreInformation }",
+        "reactNative": "export function MoreInformation(",
+        "swiftUI": "struct AurelglyphMoreInformation",
+        "rails": "def aurelglyph_more_information"
       }
     },
     {
@@ -84,7 +97,7 @@
       "evidence": {
         "css": ".ag-icon-button",
         "react": "export { IconButton }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function IconButton(",
         "swiftUI": "struct AurelglyphIconButton",
         "rails": "def aurelglyph_icon_button"
       }
@@ -97,7 +110,7 @@
       "evidence": {
         "css": ".ag-button-group",
         "react": "export { ButtonGroup }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function ButtonGroup(",
         "swiftUI": "struct AurelglyphButtonGroup",
         "rails": "def aurelglyph_button_group"
       }
@@ -110,7 +123,7 @@
       "evidence": {
         "css": ".ag-checkbox",
         "react": "export { Checkbox }",
-        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "reactNative": "export function Checkbox(",
         "swiftUI": "struct AurelglyphCheckbox",
         "rails": "def aurelglyph_checkbox"
       }
@@ -123,7 +136,7 @@
       "evidence": {
         "css": ".ag-radio-group",
         "react": "export { RadioGroup }",
-        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "reactNative": "export function RadioGroup(",
         "swiftUI": "struct AurelglyphRadioGroup",
         "rails": "def aurelglyph_radio_group"
       }
@@ -136,7 +149,7 @@
       "evidence": {
         "css": ".ag-slider",
         "react": "export { Slider }",
-        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "reactNative": "export function Slider(",
         "swiftUI": "struct AurelglyphSlider",
         "rails": "def aurelglyph_slider"
       }
@@ -149,7 +162,7 @@
       "evidence": {
         "css": ".ag-number-field",
         "react": "export { NumberField }",
-        "reactNative": "export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }",
+        "reactNative": "export function NumberField(",
         "swiftUI": "struct AurelglyphNumberField",
         "rails": "def aurelglyph_number_field"
       }
@@ -162,7 +175,7 @@
       "evidence": {
         "css": ".ag-combobox",
         "react": "export { Combobox, Autocomplete }",
-        "reactNative": "export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }",
+        "reactNative": "export function Combobox(",
         "swiftUI": "struct AurelglyphCombobox",
         "rails": "def aurelglyph_combobox"
       }
@@ -175,7 +188,7 @@
       "evidence": {
         "css": ".ag-spinner",
         "react": "export { Spinner }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function Spinner(",
         "swiftUI": "struct AurelglyphSpinner",
         "rails": "def aurelglyph_spinner"
       }
@@ -188,7 +201,7 @@
       "evidence": {
         "css": ".ag-divider",
         "react": "export { Divider }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function Divider(",
         "swiftUI": "struct AurelglyphDivider",
         "rails": "def aurelglyph_divider"
       }
@@ -201,7 +214,7 @@
       "evidence": {
         "css": ".ag-surface",
         "react": "export { Box, Container, Grid, Stack, Surface }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function Surface(",
         "swiftUI": "struct AurelglyphSurface",
         "rails": "def aurelglyph_surface"
       }
@@ -214,7 +227,7 @@
       "evidence": {
         "css": ".ag-stack",
         "react": "export { Box, Container, Grid, Stack, Surface }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function Stack(",
         "swiftUI": "struct AurelglyphStack",
         "rails": "def aurelglyph_stack"
       }
@@ -227,7 +240,7 @@
       "evidence": {
         "css": ".ag-container",
         "react": "export { Box, Container, Grid, Stack, Surface }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function Container(",
         "swiftUI": "struct AurelglyphContainer",
         "rails": "def aurelglyph_container"
       }
@@ -240,7 +253,7 @@
       "evidence": {
         "css": ".ag-grid",
         "react": "export { Box, Container, Grid, Stack, Surface }",
-        "reactNative": "export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }",
+        "reactNative": "export function Grid(",
         "swiftUI": "struct AurelglyphGrid",
         "rails": "def aurelglyph_grid"
       }

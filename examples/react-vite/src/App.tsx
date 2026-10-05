@@ -26,6 +26,7 @@ import {
   ListSection,
   Menu,
   Metric,
+  MoreInformation,
   NavigationPage,
   NavigationStack,
   NumberField,
@@ -72,7 +73,7 @@ const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"]
 const modeOptions = ["dark", "light"] as const;
 const appearanceOptions = ["quiet", "atelier"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.7.0";
+const packageVersion = "0.8.0";
 const iconCatalog = [
   "home",
   "dashboard",
@@ -376,10 +377,12 @@ function OverviewPage({ appearance, mode, theme }: { appearance: AppearanceOptio
         <div className="example-hero__copy">
           <p className="example-kicker">Aurelglyph React · v{packageVersion}</p>
           <h1 id="hero-title">Use Aurelglyph React components.</h1>
-          <p className="example-hero__summary">
-            Import the CSS package once, set theme attributes on the document,
-            then compose React controls with shared variants, icons, and focus states.
-          </p>
+          <MoreInformation label="About the React package">
+            <p>
+              Import the CSS package once, set theme attributes on the document,
+              then compose React controls with shared variants, icons, and focus states.
+            </p>
+          </MoreInformation>
         </div>
 
         <div className="example-hero__actions" aria-label="Package actions" role="group">
@@ -397,10 +400,12 @@ function OverviewPage({ appearance, mode, theme }: { appearance: AppearanceOptio
         <div className="example-panel__header">
           <p className="example-kicker">COMPONENT PREVIEW</p>
           <h2>Buttons and fields</h2>
-          <p className="example-panel__summary">
-            These controls come from <code>@aurelglyph/react</code> and inherit
-            tokens from <code>@aurelglyph/css</code>.
-          </p>
+          <MoreInformation label="Component preview information">
+            <p>
+              These controls come from <code>@aurelglyph/react</code> and inherit
+              tokens from <code>@aurelglyph/css</code>.
+            </p>
+          </MoreInformation>
         </div>
 
         <div className="example-component-bar" aria-label="Button variants">
@@ -415,13 +420,11 @@ function OverviewPage({ appearance, mode, theme }: { appearance: AppearanceOptio
 
         <div className="example-preview-grid">
           <TextField
-            helpText="A styled input with label, helper text, and focus treatment."
             label="Project name"
             name="preview-project"
             placeholder="Home operations console"
           />
           <TextArea
-            helpText="Textarea, upload, and field controls share spacing and border values."
             label="Notes"
             name="preview-notes"
             placeholder="Describe the React screen that will use these controls."
@@ -434,23 +437,23 @@ function OverviewPage({ appearance, mode, theme }: { appearance: AppearanceOptio
             <div className="example-panel__header">
               <p className="example-kicker">APP SETUP</p>
               <h2>Consumer configuration</h2>
+              <MoreInformation label="Consumer configuration information">
+                <p>Pin matching package versions, set theme attributes on the root, and import package styles once.</p>
+              </MoreInformation>
             </div>
 
             <div className="example-fields">
               <TextField
-                helpText="Install the token CSS plus the React adapter at the same version."
                 label="Install"
                 name="install"
                 placeholder={`npm install @aurelglyph/css@${packageVersion} @aurelglyph/react@${packageVersion}`}
               />
               <TextField
-                helpText="Set these attributes once on the root element."
                 label="Theme attributes"
                 name="theme"
                 placeholder={`data-appearance="${appearance}" data-mode="${mode}" data-theme="${theme}"`}
               />
               <TextArea
-                helpText="Import package styles before composing controls."
                 label="React entry"
                 name="integration-notes"
                 placeholder={`import "@aurelglyph/css";\nimport { Button, TextField } from "@aurelglyph/react";`}
@@ -462,11 +465,13 @@ function OverviewPage({ appearance, mode, theme }: { appearance: AppearanceOptio
             <div className="example-panel__header">
               <p className="example-kicker">PACKAGE SURFACE</p>
               <h2>What ships</h2>
+              <MoreInformation label="Generated output information">
+                <p>The token compiler emits CSS, TypeScript, React Native, Swift, and Ruby values.</p>
+              </MoreInformation>
             </div>
 
             <FileUpload
               accept=".json,.css,.ts,.tsx,.swift,.rb"
-              helpText="The token compiler emits CSS variables, TypeScript constants, React Native values, Swift constants, and Ruby helpers."
               label="Generated outputs"
               name="generated-assets"
             />
@@ -515,12 +520,10 @@ function ComponentsPage() {
       <div className="example-panel__header">
         <p className="example-kicker">COMPONENTS</p>
         <h1 id="components-title">Component previews</h1>
+        <MoreInformation label="Component coverage information">
+          <p>Each adapter preserves shared names, states, and semantics while retaining platform-native behavior.</p>
+        </MoreInformation>
       </div>
-      <p className="example-copy">
-        Use the same component names, variants, and states across CSS/Web,
-        React, React Native, SwiftUI, and Rails. This page shows the React
-        package rendering the shared contract.
-      </p>
       <div className="example-platform-list" aria-label="Platform targets" role="list">
         {platformTargets.map((target) => (
           <span key={target} role="listitem">{target}</span>
@@ -549,7 +552,7 @@ function ComponentsPage() {
               />
               <Popover label="Release details" trigger="Inspect release">
                 <strong>Systems operational.</strong>
-                <p className="example-copy">All interaction adapters report the same 0.6 contract.</p>
+                <p className="example-copy">All interaction adapters report the same {packageVersion} contract.</p>
               </Popover>
               <Tooltip content="Refresh package state">
                 <IconButton icon="refresh" label="Refresh package state" variant="secondary" />
@@ -578,9 +581,11 @@ function ComponentsPage() {
         </section>
         <section className="example-preview-card">
           <h2>Form state contract</h2>
+          <MoreInformation label="Form state information">
+            <p>Search, density, range, and step controls share validation, focus, and disabled-state semantics.</p>
+          </MoreInformation>
           <Stack gap="lg">
             <Combobox
-              helpText="Type to filter theme names."
               label="Accent theme"
               name="components-accent"
               onValueChange={setComboboxValue}
@@ -594,13 +599,11 @@ function ComponentsPage() {
             />
             <Checkbox
               checked={automationEnabled}
-              description="Run the cross-platform release gate before publishing."
               label="Automated verification"
               name="components-automation"
               onChange={(event) => setAutomationEnabled(event.currentTarget.checked)}
             />
             <RadioGroup
-              helpText="Density changes spacing, never semantics."
               label="Interface density"
               name="components-density"
               onValueChange={setRadioValue}
@@ -614,13 +617,11 @@ function ComponentsPage() {
             />
             <Slider
               formatValue={(value) => `${value}%`}
-              helpText="Primary chart and focus intensity preview."
               label="Signal strength"
               onValueChange={setSignal}
               value={signal}
             />
             <NumberField
-              helpText="Use the step controls or enter a value."
               label="Retention days"
               max={90}
               min={1}
@@ -643,6 +644,9 @@ function ComponentsPage() {
         </section>
         <section className="example-preview-card">
           <h2>Mobile shell</h2>
+          <MoreInformation label="Mobile shell information">
+            <p>The shell keeps navigation compact while carrying the same token and interaction contracts into smaller viewports.</p>
+          </MoreInformation>
           <AppShell
             className="example-mobile-shell"
             contentAs="div"
@@ -682,7 +686,6 @@ function ComponentsPage() {
               </ListSection>
               <Switch
                 checked={quietMode}
-                description="Use restrained notifications."
                 label="Quiet mode"
                 name="quiet-mode"
                 onChange={(event) => setQuietMode(event.currentTarget.checked)}
@@ -824,15 +827,16 @@ function ComponentsPage() {
         </section>
         <section className="example-preview-card">
           <h2>Forms</h2>
+          <MoreInformation label="Form field information">
+            <p>Labels, placeholders, focus treatment, and validation remain visible where they affect the current task.</p>
+          </MoreInformation>
           <div className="example-preview-grid">
             <TextField
-              helpText="Label, helper text, placeholder, and focus treatment."
               label="Project name"
               name="components-project"
               placeholder="Home operations console"
             />
             <TextArea
-              helpText="Textarea uses the same field contract."
               label="Notes"
               name="components-notes"
               placeholder="Add implementation notes for this React view."
@@ -847,9 +851,11 @@ function ComponentsPage() {
         </section>
         <section className="example-preview-card">
           <h2>Upload and icons</h2>
+          <MoreInformation label="Upload and icon information">
+            <p>Uploads accept generated source formats; icons use the shared geometric Aurelglyph set.</p>
+          </MoreInformation>
           <FileUpload
             accept=".json,.css,.ts,.tsx,.swift,.rb"
-            helpText="Upload affordance with generated output file types."
             label="Generated outputs"
             name="components-upload"
           />
@@ -908,7 +914,7 @@ function ChangelogPage() {
         <h1 id="changelog-title">{packageVersion}</h1>
       </div>
       <p className="example-copy">
-        Adds 18 interaction-foundation families across five platform targets,
+        Adds 19 interaction-foundation families across five platform targets,
         completes shared state and keyboard contracts, and publishes an
         executable support manifest.
       </p>

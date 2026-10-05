@@ -17,6 +17,7 @@ export default [
       '**/coverage/**',
       '**/dist/**',
       '**/node_modules/**',
+      '**/vendor/**',
       'docs/**',
       'examples/react-native-smoke/android/**',
       'examples/react-native-smoke/ios/**',

@@ -246,7 +246,12 @@ public struct AurelglyphDrawer<Content: View>: View {
               Image(systemName: "xmark")
                 .frame(width: 44, height: 44)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(
+              AurelglyphMenuItemButtonStyle(
+                palette: palette,
+                cornerRadius: theme.boxCornerRadius
+              )
+            )
             .focused($closeControlFocused)
             .accessibilityFocused($accessibleCloseControlFocused)
             .accessibilityLabel(closeLabel)
@@ -446,8 +451,14 @@ public struct AurelglyphMenuItem: Identifiable {
   }
 }
 
-/// A native menu that preserves the shared menu/dropdown item contract.
+/// A tokenized menu that preserves the shared menu/dropdown item contract.
 public struct AurelglyphMenu: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.aurelglyphControlCopy) private var controlCopy
+  @State private var isPresented = false
+  @FocusState private var triggerFocused: Bool
+  @FocusState private var focusedItemID: String?
   private let label: String
   private let systemImage: String?
   private let items: [AurelglyphMenuItem]
@@ -466,33 +477,211 @@ public struct AurelglyphMenu: View {
   }
 
   public var body: some View {
-    Menu {
-      ForEach(items) { item in
-        Button(role: item.isDestructive ? .destructive : nil, action: item.action) {
-          if let systemImage = item.systemImage {
-            Label(item.title, systemImage: systemImage)
-          } else {
-            Text(item.title)
-          }
-        }
-        .disabled(item.isDisabled)
+    let palette = theme.palette(for: colorScheme)
+
+    Button {
+      guard !isDisabled else { return }
+      if isPresented {
+        isPresented = false
+      } else {
+        presentOptions(edge: .first)
       }
     } label: {
-      Group {
-        if let systemImage {
-          Label(label, systemImage: systemImage)
-        } else {
-          Text(label)
+      HStack(spacing: 8) {
+        Group {
+          if let systemImage {
+            Label(label, systemImage: systemImage)
+          } else {
+            Text(label)
+          }
         }
+        Image(systemName: isPresented ? "chevron.up" : "chevron.down")
+          .foregroundStyle(palette.muted)
+          .accessibilityHidden(true)
       }
+      .font(AurelglyphTypography.label)
+      .foregroundStyle(palette.foreground)
+      .padding(.horizontal, 12)
       .frame(
         minWidth: AurelglyphResponsiveLayout.minimumInteractiveDimension,
         minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension
       )
+      .background(palette.surfaceMuted, in: RoundedRectangle(cornerRadius: theme.boxCornerRadius, style: .continuous))
+      .overlay {
+        RoundedRectangle(cornerRadius: theme.boxCornerRadius, style: .continuous)
+          .stroke(palette.borderStrong, lineWidth: 1)
+      }
       .contentShape(Rectangle())
     }
+    .buttonStyle(.plain)
+    .focused($triggerFocused)
     .disabled(isDisabled)
+    .opacity(isDisabled ? 0.52 : 1)
     .accessibilityLabel(label)
+    .accessibilityValue(isPresented && !isDisabled ? controlCopy.expanded : controlCopy.collapsed)
+    .popover(isPresented: $isPresented, attachmentAnchor: .rect(.bounds), arrowEdge: .top) {
+      menuSurface(palette: palette)
+        .presentationBackground(palette.backgroundElevated)
+    }
+    .onKeyPress(.downArrow) {
+      guard !isDisabled, items.contains(where: { !$0.isDisabled }) else { return .ignored }
+      presentOptions(edge: .first)
+      return .handled
+    }
+    .onKeyPress(.upArrow) {
+      guard !isDisabled, items.contains(where: { !$0.isDisabled }) else { return .ignored }
+      presentOptions(edge: .last)
+      return .handled
+    }
+    .onKeyPress(.escape) {
+      guard isPresented else { return .ignored }
+      isPresented = false
+      return .handled
+    }
+    .onChange(of: isDisabled) { _, disabled in
+      if disabled { isPresented = false }
+    }
+    .onChange(of: isPresented) { _, presented in
+      if !presented {
+        focusedItemID = nil
+        restoreTriggerFocus()
+      }
+    }
+  }
+
+  private func menuSurface(palette: AurelglyphPalette) -> some View {
+    ScrollView {
+      LazyVStack(alignment: .leading, spacing: 2) {
+        if items.isEmpty {
+          Text(controlCopy.noActions)
+            .font(AurelglyphTypography.caption)
+            .foregroundStyle(palette.muted)
+            .padding(10)
+            .frame(maxWidth: .infinity, minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension, alignment: .leading)
+        } else {
+          ForEach(items) { item in
+            Button(role: item.isDestructive ? .destructive : nil) {
+              guard !item.isDisabled else { return }
+              isPresented = false
+              item.action()
+            } label: {
+              HStack(spacing: 10) {
+                if let systemImage = item.systemImage {
+                  Image(systemName: systemImage)
+                    .frame(width: 20)
+                    .accessibilityHidden(true)
+                }
+                Text(item.title)
+                Spacer(minLength: 12)
+              }
+              .font(AurelglyphTypography.body)
+              .foregroundStyle(item.isDestructive ? palette.danger : palette.foreground)
+              .padding(.horizontal, 10)
+              .frame(maxWidth: .infinity, minHeight: AurelglyphResponsiveLayout.minimumInteractiveDimension, alignment: .leading)
+              .contentShape(Rectangle())
+            }
+            .focused($focusedItemID, equals: item.id)
+            .onKeyPress(.downArrow) {
+              moveOptionFocus(1)
+              return .handled
+            }
+            .onKeyPress(.upArrow) {
+              moveOptionFocus(-1)
+              return .handled
+            }
+            .onKeyPress(.home) {
+              focusOption(at: .first)
+              return .handled
+            }
+            .onKeyPress(.end) {
+              focusOption(at: .last)
+              return .handled
+            }
+            .onKeyPress(.escape) {
+              isPresented = false
+              return .handled
+            }
+            .buttonStyle(
+              AurelglyphMenuItemButtonStyle(
+                palette: palette,
+                cornerRadius: theme.boxCornerRadius,
+                isFocused: focusedItemID == item.id
+              )
+            )
+            .disabled(item.isDisabled)
+            .opacity(item.isDisabled ? 0.52 : 1)
+          }
+        }
+      }
+    }
+    .scrollIndicators(.visible)
+    .frame(minWidth: 220, idealWidth: 260, maxWidth: 360, maxHeight: 320)
+    .padding(5)
+    .background(palette.backgroundElevated)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel(label)
+  }
+
+  private func presentOptions(edge: AurelglyphFocusEdge) {
+    guard !isDisabled else { return }
+    let target = aurelglyphEdgeEnabledID(
+      in: items,
+      edge: edge,
+      id: { $0.id },
+      isDisabled: { $0.isDisabled }
+    )
+    isPresented = true
+    guard let target else { return }
+    Task { @MainActor in
+      await Task.yield()
+      focusedItemID = target
+    }
+  }
+
+  private func moveOptionFocus(_ direction: Int) {
+    focusedItemID = aurelglyphNextEnabledID(
+      in: items,
+      currentID: focusedItemID,
+      direction: direction,
+      id: { $0.id },
+      isDisabled: { $0.isDisabled }
+    )
+  }
+
+  private func focusOption(at edge: AurelglyphFocusEdge) {
+    focusedItemID = aurelglyphEdgeEnabledID(
+      in: items,
+      edge: edge,
+      id: { $0.id },
+      isDisabled: { $0.isDisabled }
+    )
+  }
+
+  private func restoreTriggerFocus() {
+    Task { @MainActor in
+      await Task.yield()
+      triggerFocused = true
+    }
+  }
+}
+
+private struct AurelglyphMenuItemButtonStyle: ButtonStyle {
+  let palette: AurelglyphPalette
+  let cornerRadius: CGFloat
+  var isFocused = false
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .background(
+        isFocused || configuration.isPressed ? palette.surfaceMuted : Color.clear,
+        in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+      )
+      .overlay {
+        if isFocused {
+          RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .stroke(palette.focus, lineWidth: 2)
+        }
+      }
   }
 }
 

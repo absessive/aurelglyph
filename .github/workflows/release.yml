@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-web:
+    name: Validate web and package contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Match tag to workspace version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: >-
+          node --input-type=module --eval
+          'import packageJson from "./package.json" with { type: "json" };
+          if (`v${packageJson.version}` !== process.env.RELEASE_TAG)
+          throw new Error(`Tag ${process.env.RELEASE_TAG} does not match v${packageJson.version}`);'
+      - run: npm run version:release-check
+      - run: npm run lint
+      - run: npm run build:pages
+      - name: Generated artifacts are reproducible
+        run: git diff --exit-code
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run security:check
+      - run: npm run pack:check
+      - run: npm run test:ux
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:browsers
+
+  validate-rails:
+    name: Validate Rails ${{ matrix.rails }} / Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rails: "7.x"
+            ruby: "3.1"
+            gemfile: gemfiles/rails-7.gemfile
+          - rails: "8.x"
+            ruby: "3.4"
+            gemfile: gemfiles/rails-8.gemfile
+    env:
+      BUNDLE_GEMFILE: ${{ matrix.gemfile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: npm ci
+      - run: npm run build -w @aurelglyph/tokens
+      - run: npm run build -w aurelglyph-rails
+      - run: npm run test:rails
+      - run: npm run pack:gem
+
+  validate-swift:
+    name: Validate Swift package and host
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:tokens
+      - run: npm run test:swift
+      - run: npm run test:swift-host
+
+  validate-react-native:
+    name: Validate React Native hosts
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: npm ci
+      - run: npm run build -w @aurelglyph/react-native
+      - run: npm test -w @aurelglyph/example-react-native-smoke
+      - run: npm run test:android -w @aurelglyph/example-react-native-smoke
+      - name: Install iOS dependencies
+        working-directory: examples/react-native-smoke
+        run: bundle install && bundle exec pod install --project-directory=ios
+      - run: npm run test:ios -w @aurelglyph/example-react-native-smoke
+
+  publish-registries:
+    name: Publish registry artifacts
+    needs: [validate-web, validate-rails, validate-swift, validate-react-native]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # npm trusted publishing requires Node 22.14+ and npm 11.5.1+.
+          node-version: "22.14.0"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+      - name: Install the pinned trusted-publishing npm CLI
+        run: npm install --global npm@11.6.0
+      - name: Assert the trusted-publishing toolchain
+        run: |
+          test "$(node --version)" = "v22.14.0"
+          test "$(npm --version)" = "11.6.0"
+      - run: npm ci
+      - run: npm run version:release-check
+      - run: npm run build
+      - name: Generated release artifacts are reproducible
+        run: git diff --exit-code
+      - name: Publish or verify registry artifacts
+        env:
+          # Only required while bootstrapping package names that do not yet
+          # exist on npm. Keep it in the protected release environment; remove
+          # it after trusted publishers are configured for every package.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: node --experimental-strip-types scripts/release-registry.ts all
+
+  github-release:
+    name: Publish GitHub release
+    needs: publish-registries
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" --verify-tag --generate-notes --title "Aurelglyph ${{ github.ref_name }}"

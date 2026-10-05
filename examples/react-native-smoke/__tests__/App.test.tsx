@@ -28,6 +28,22 @@ test('mounts a modal-local host and leaves underlying controls operable', async 
     expect(StyleSheet.flatten(root.findByProps({testID: 'quiet-smoke-signal'}).props.style)).toMatchObject({
       backgroundColor: '#7967cf',
     });
+    const screenInformation = root.findAllByProps({
+      accessibilityLabel: smokeLabels.screenInformation,
+    }).find(node => typeof node.props.onPress === 'function');
+    if (!screenInformation) throw new Error('Screen information trigger did not mount');
+    await ReactTestRenderer.act(async () => screenInformation.props.onPress());
+    expect(
+      root.findAll(node =>
+        node.props.children ===
+        'This host verifies modal layering, host measurement, viewport clamping, and pointer passthrough.'
+      ).length,
+    ).toBeGreaterThanOrEqual(1);
+    const closeScreenInformation = root.findByProps({
+      accessibilityLabel: `Close ${smokeLabels.screenInformation}`,
+    });
+    await ReactTestRenderer.act(async () => closeScreenInformation.props.onPress());
+
     const openModal = root.findByProps({accessibilityLabel: smokeLabels.openModal});
     await ReactTestRenderer.act(async () => openModal.props.onPress());
 
@@ -39,6 +55,21 @@ test('mounts a modal-local host and leaves underlying controls operable', async 
     expect(
       root.findAllByProps({testID: 'aurelglyph-overlay-host'}).length,
     ).toBeGreaterThanOrEqual(2);
+    const modalInformation = root.findAllByProps({
+      accessibilityLabel: smokeLabels.modalInformation,
+    }).find(node => typeof node.props.onPress === 'function');
+    if (!modalInformation) throw new Error('Modal information trigger did not mount');
+    await ReactTestRenderer.act(async () => modalInformation.props.onPress());
+    expect(
+      root.findAll(node =>
+        node.props.children ===
+        'The tooltip is rendered by an inner host in this native modal window.'
+      ).length,
+    ).toBeGreaterThanOrEqual(1);
+    const closeModalInformation = root.findByProps({
+      accessibilityLabel: `Close ${smokeLabels.modalInformation}`,
+    });
+    await ReactTestRenderer.act(async () => closeModalInformation.props.onPress());
 
     const underlyingAction = root.findByProps({
       accessibilityLabel: smokeLabels.underlyingAction,

@@ -1,0 +1,13 @@
+{
+  "name": "@aurelglyph/example-swiftui-smoke",
+  "version": "0.8.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:ios": "node scripts/build-ios.mjs",
+    "test:ios": "node scripts/test-ios.mjs"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

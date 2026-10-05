@@ -62,6 +62,27 @@ typography. Contrast-safe control boundaries, selected-state signals,
 keyboard focus, preference persistence, page announcements, responsive checks,
 and atelier compatibility complete the shared UX contract.
 
+## 0.8.0 — Production foundation and internationalization
+
+0.8.0 makes the existing framework safer to adopt and release. It closes stale
+controlled-value handling, adds bidirectional keyboard and logical-layout
+behavior across React and Rails, strengthens themed dropdown fallbacks, and
+adds React server-render/hydration evidence. A real SwiftUI consumer host now
+exercises compact presentation, focus restoration, disabled-item traversal,
+localizable copy, and accessibility values in light/dark atelier and quiet
+appearances.
+
+Optional supporting copy now uses the shared More Information disclosure
+instead of permanently occupying primary work surfaces; validation and live
+status remain inline. React Native overlays use the maintained safe-area
+context contract rather than the deprecated core safe-area view.
+
+The release also adds pinned toolchains, clean-consumer npm and gem smoke tests,
+package-size budgets, time-bounded security triage, reproducible CI on Web,
+Rails, SwiftUI, and React Native hosts, and a controlled provenance-enabled
+publication workflow. The compatibility policy makes browser, platform,
+semantic-versioning, deprecation, and pre-1.0 limits explicit.
+
 ## Planned — Catalog expansion
 
 Finish the remaining core Bootstrap and Material UI catalog gaps:
@@ -90,8 +111,9 @@ Cover the component families commonly supplied by larger application suites:
 
 Make completeness operational rather than component-count driven:
 
-- RTL and bidirectional layout, localization, locale-aware formatting, and long
-  translated-copy regression.
+- Locale-aware formatting and broader long translated-copy regression beyond
+  the bidirectional layout, keyboard, and localizable native copy shipped in
+  0.8.0.
 - Density modes, responsive visibility/layout utilities, typography utilities,
   and stable portal/transition/media-query APIs where a platform needs them.
 - Form composition and validation APIs that integrate with native forms and

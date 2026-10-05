@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("react-native", () => ({
-  SafeAreaView: () => null,
   StyleSheet: { absoluteFill: {}, create: <T,>(styles: T) => styles },
   View: () => null,
   useColorScheme: () => "dark"
 }));
+
+vi.mock("react-native-safe-area-context", () => ({ SafeAreaView: () => null }));
 
 import { resolveAurelglyphTheme } from "./theme.js";
 

@@ -1,8 +1,25 @@
 {
   "name": "@aurelglyph/css",
-  "version": "0.7.0",
+  "version": "0.8.0",
+  "description": "Tokenized Aurelglyph foundations, fonts, and component styles for web applications.",
   "license": "MIT",
   "type": "module",
+  "keywords": [
+    "aurelglyph",
+    "design-system",
+    "css",
+    "components",
+    "accessibility"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/absessive/aurelglyph.git",
+    "directory": "packages/css"
+  },
+  "homepage": "https://aurelglyph.absessive.com/",
+  "bugs": {
+    "url": "https://github.com/absessive/aurelglyph/issues"
+  },
   "style": "dist/index.css",
   "sideEffects": [
     "*.css",
@@ -18,11 +35,15 @@
   "exports": {
     ".": "./dist/index.css"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "npm run build -w @aurelglyph/tokens && node scripts/build.mjs",
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.7.0"
+    "@aurelglyph/tokens": "0.8.0"
   }
 }

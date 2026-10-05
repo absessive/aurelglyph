@@ -28,6 +28,11 @@ export type VersionCheckResult = {
   version: string;
 };
 
+export type ReleaseCheckResult = VersionCheckResult & {
+  releaseNotesArePromoted: boolean;
+  unreleasedBody: string;
+};
+
 export const workspacePackagePaths = [
   "packages/tokens",
   "packages/css",
@@ -36,7 +41,8 @@ export const workspacePackagePaths = [
   "packages/swift",
   "packages/rails",
   "examples/react-vite",
-  "examples/react-native-smoke"
+  "examples/react-native-smoke",
+  "examples/swiftui-smoke"
 ] as const;
 
 const versionedArtifacts = [
@@ -84,6 +90,26 @@ const versionedArtifacts = [
     path: "docs/consuming.md",
     pattern: /\.package\(url: "https:\/\/github\.com\/absessive\/aurelglyph\.git", from: "([^"]+)"\)/u,
     replacement: (version: string) => `.package(url: "https://github.com/absessive/aurelglyph.git", from: "${version}")`
+  },
+  {
+    path: "docs/roadmap.md",
+    pattern: /^## ([0-9]+\.[0-9]+\.[0-9]+) — Production foundation and internationalization$/mu,
+    replacement: (version: string) => `## ${version} — Production foundation and internationalization`
+  },
+  {
+    path: "docs/index.html",
+    pattern: /Current release<strong>Version ([^<]+)<\/strong>/u,
+    replacement: (version: string) => `Current release<strong>Version ${version}</strong>`
+  },
+  {
+    path: "docs/components.html",
+    pattern: /Version ([0-9]+\.[0-9]+\.[0-9]+) declares/u,
+    replacement: (version: string) => `Version ${version} declares`
+  },
+  {
+    path: "docs/component-manifest.json",
+    pattern: /"release": "([^"]+)"/u,
+    replacement: (version: string) => `"release": "${version}"`
   }
 ] as const;
 
@@ -121,6 +147,31 @@ function syncDependencySet(dependencies: Record<string, string> | undefined, ver
   }
 }
 
+function checkDependencySet(
+  dependencies: Record<string, string> | undefined,
+  version: string,
+  packagePath: string,
+  field: string,
+  mismatches: VersionMismatch[]
+): void {
+  if (!dependencies) return;
+  for (const [name, actual] of Object.entries(dependencies)) {
+    if (workspaceDependencyNames.has(name) && actual !== version) {
+      mismatches.push({ actual, expected: version, packagePath: `${packagePath}#${field}.${name}` });
+    }
+  }
+}
+
+function sectionBody(markdown: string, heading: string): string | undefined {
+  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const headingMatch = new RegExp(`^##\\s+${escaped}\\s*$`, "mu").exec(markdown);
+  if (!headingMatch) return undefined;
+  const bodyStart = headingMatch.index + headingMatch[0].length;
+  const remainder = markdown.slice(bodyStart).replace(/^\r?\n/u, "");
+  const nextHeading = /^##\s/mu.exec(remainder);
+  return remainder.slice(0, nextHeading?.index ?? remainder.length).trim();
+}
+
 async function readRootVersion(root: string): Promise<string> {
   const rootPackage = await readJson<PackageJson>(join(root, "package.json"));
   if (!rootPackage.version) {
@@ -137,6 +188,34 @@ export async function checkWorkspaceVersions(root = repoRoot): Promise<VersionCh
     const packageJson = await readJson<PackageJson>(join(root, packagePath, "package.json"));
     if (packageJson.version !== version) {
       mismatches.push({ actual: packageJson.version, expected: version, packagePath });
+    }
+    checkDependencySet(packageJson.dependencies, version, `${packagePath}/package.json`, "dependencies", mismatches);
+    checkDependencySet(packageJson.devDependencies, version, `${packagePath}/package.json`, "devDependencies", mismatches);
+    checkDependencySet(packageJson.peerDependencies, version, `${packagePath}/package.json`, "peerDependencies", mismatches);
+  }
+
+  const lock = await readJson<PackageLock>(join(root, "package-lock.json")).catch(() => undefined);
+  if (!lock) {
+    mismatches.push({ actual: undefined, expected: version, packagePath: "package-lock.json" });
+  } else {
+    if (lock.version !== version) {
+      mismatches.push({ actual: lock.version, expected: version, packagePath: "package-lock.json#version" });
+    }
+    const lockPackages = lock.packages ?? {};
+    const rootLockPackage = lockPackages[""];
+    if (rootLockPackage?.version !== version) {
+      mismatches.push({ actual: rootLockPackage?.version, expected: version, packagePath: "package-lock.json#packages[''].version" });
+    }
+    for (const packagePath of workspacePackagePaths) {
+      const packageInfo = lockPackages[packagePath];
+      if (packageInfo?.version !== version) {
+        mismatches.push({ actual: packageInfo?.version, expected: version, packagePath: `package-lock.json#packages['${packagePath}'].version` });
+      }
+    }
+    for (const [lockPath, packageInfo] of Object.entries(lockPackages)) {
+      checkDependencySet(packageInfo.dependencies, version, `package-lock.json#packages['${lockPath}']`, "dependencies", mismatches);
+      checkDependencySet(packageInfo.devDependencies, version, `package-lock.json#packages['${lockPath}']`, "devDependencies", mismatches);
+      checkDependencySet(packageInfo.peerDependencies, version, `package-lock.json#packages['${lockPath}']`, "peerDependencies", mismatches);
     }
   }
 
@@ -156,6 +235,21 @@ export async function checkWorkspaceVersions(root = repoRoot): Promise<VersionCh
     mismatches,
     ok: mismatches.length === 0 && hasChangelogEntry,
     version
+  };
+}
+
+export async function checkReleaseReadiness(root = repoRoot): Promise<ReleaseCheckResult> {
+  const result = await checkWorkspaceVersions(root);
+  const changelog = await readFile(join(root, "CHANGELOG.md"), "utf8").catch(() => "");
+  const unresolvedSection = sectionBody(changelog, "Unreleased");
+  const unreleasedBody = unresolvedSection ?? "";
+  const releaseBody = sectionBody(changelog, result.version) ?? "";
+  const releaseNotesArePromoted = unresolvedSection !== undefined && unreleasedBody.length === 0 && releaseBody.length > 0;
+  return {
+    ...result,
+    ok: result.ok && releaseNotesArePromoted,
+    releaseNotesArePromoted,
+    unreleasedBody
   };
 }
 
@@ -219,8 +313,11 @@ async function syncChangelog(root: string, version: string, changelogItems: stri
   const current = await readFile(path, "utf8").catch(() => "# Changelog\n");
   if (changelogHasVersion(current, version)) return;
 
-  const entryItems = changelogItems.length > 0 ? changelogItems : ["Synchronize cross-platform package versions."];
-  const entry = [`## ${version}`, "", ...entryItems.map((item) => `- ${item}`), ""].join("\n");
+  const unreleasedBody = sectionBody(current, "Unreleased") ?? "";
+  const explicitItems = changelogItems.map((item) => `- ${item}`).join("\n");
+  const releaseBody = [unreleasedBody, explicitItems].filter(Boolean).join("\n");
+  const resolvedBody = releaseBody || "- Synchronize cross-platform package versions.";
+  const entry = [`## ${version}`, "", resolvedBody, ""].join("\n");
   const normalized = current.trimEnd();
 
   if (normalized === "# Changelog") {
@@ -228,7 +325,14 @@ async function syncChangelog(root: string, version: string, changelogItems: stri
     return;
   }
 
-  await writeFile(path, `${normalized.replace(/^# Changelog\n*/u, `# Changelog\n\n${entry}\n`)}\n`);
+  const withoutPromotedUnreleased = normalized.replace(
+    /^##\s+Unreleased\s*$\n[\s\S]*?(?=^##\s)/mu,
+    ""
+  );
+  await writeFile(
+    path,
+    `${withoutPromotedUnreleased.replace(/^# Changelog\n*/u, `# Changelog\n\n## Unreleased\n\n${entry}\n`)}\n`
+  );
 }
 
 async function main(): Promise<void> {
@@ -248,6 +352,25 @@ async function main(): Promise<void> {
       return;
     }
     console.log(`Aurelglyph workspace version ${result.version} is synchronized.`);
+    return;
+  }
+
+  if (command === "release-check") {
+    const result = await checkReleaseReadiness();
+    if (!result.ok) {
+      for (const mismatch of result.mismatches) {
+        console.error(`${mismatch.packagePath}: ${mismatch.actual ?? "missing"} !== ${mismatch.expected}`);
+      }
+      if (!result.hasChangelogEntry) {
+        console.error(`CHANGELOG.md is missing an entry for ${result.version}`);
+      }
+      if (!result.releaseNotesArePromoted) {
+        console.error("CHANGELOG.md must have an empty Unreleased section and non-empty notes for the release version.");
+      }
+      process.exitCode = 1;
+      return;
+    }
+    console.log(`Aurelglyph release metadata ${result.version} is synchronized and promoted.`);
     return;
   }
 

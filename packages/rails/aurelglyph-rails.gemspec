@@ -11,6 +11,13 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/absessive/aurelglyph"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1"
+  spec.metadata = {
+    "bug_tracker_uri" => "https://github.com/absessive/aurelglyph/issues",
+    "changelog_uri" => "https://github.com/absessive/aurelglyph/blob/main/CHANGELOG.md",
+    "documentation_uri" => "https://aurelglyph.absessive.com/usage.html",
+    "homepage_uri" => "https://aurelglyph.absessive.com/",
+    "source_code_uri" => "https://github.com/absessive/aurelglyph"
+  }
 
   spec.files = Dir.chdir(__dir__) do
     Dir[
@@ -19,7 +26,7 @@ Gem::Specification.new do |spec|
       "README.md",
       "LICENSE.md",
       "aurelglyph-rails.gemspec"
-    ]
+    ].select { |path| File.file?(path) }
   end
   spec.require_paths = ["lib"]
 

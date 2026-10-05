@@ -250,6 +250,17 @@ vi.mock("react-native", async () => {
   };
 });
 
+vi.mock("react-native-safe-area-context", async () => {
+  const React = await import("react");
+  return {
+    SafeAreaView: ({ children, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
+      "div",
+      { ...props, "data-rn": "SafeAreaView", "data-style": JSON.stringify(style) },
+      children
+    )
+  };
+});
+
 import {
   Button,
   ButtonGroup,
@@ -261,7 +272,7 @@ import {
   Spinner
 } from "./primitives.js";
 import { Combobox, CommandPalette, Menu } from "./selection.js";
-import { Dialog, Drawer, Popover, Tooltip } from "./overlays.js";
+import { Dialog, Drawer, MoreInformation, Popover, Tooltip } from "./overlays.js";
 import { FileUpload, NumberField, RadioGroup, SearchField, Slider, TextField } from "./forms.js";
 import { Pagination, SegmentedControl, TabBar, Tabs } from "./navigation.js";
 import { Icon } from "./icons.js";
@@ -389,6 +400,27 @@ describe("React Native rendered interaction contracts", () => {
     const nestedTooltip = rendered.container.querySelector('[role="tooltip"]');
     expect(nestedTooltip?.closest('[data-rn="Modal"]')).not.toBeNull();
     expect(rendered.container.querySelectorAll('[data-rn="Modal"]')).toHaveLength(1);
+  });
+
+  it("keeps optional information behind a compact accessible popover trigger", () => {
+    const onOpenChange = vi.fn();
+    const { container } = render(
+      <MoreInformation label="Signal information" onOpenChange={onOpenChange}>
+        <Text>Supporting context</Text>
+      </MoreInformation>
+    );
+    const trigger = container.querySelector('button[aria-label="Signal information"]')!;
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(JSON.parse(trigger.getAttribute("data-style")!).minHeight).toBe(44);
+    expect(container.querySelector('[data-rn="Modal"]')).toBeNull();
+
+    click(trigger);
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[data-rn="Modal"]')?.textContent).toContain("Supporting context");
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+    click(container.querySelector('button[aria-label="Close Signal information"]')!);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
   it("augments the real tooltip trigger without nesting another control", () => {

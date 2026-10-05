@@ -51,12 +51,13 @@ export type {
   SearchFieldProps
 } from "./forms.js";
 
-export { Dialog, Drawer, Popover, Tooltip } from "./overlays.js";
+export { Dialog, Drawer, MoreInformation, Popover, Tooltip } from "./overlays.js";
 export type {
   DialogProps,
   DialogVariant,
   DrawerProps,
   DrawerSide,
+  MoreInformationProps,
   OverlayDismissReason,
   OverlayOpenChangeDetails,
   PopoverPlacement,

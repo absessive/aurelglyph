@@ -32,6 +32,48 @@ import CoreGraphics
   #expect(String(describing: type(of: localized)).contains("ModifiedContent"))
 }
 
+@Test func localizesDropdownCopyAndNavigatesEnabledItems() {
+  let copy = AurelglyphControlCopy(
+    selectPlaceholder: "Choisir",
+    collapsed: "Replié",
+    expanded: "Déplié",
+    showOptions: "Afficher les options",
+    chooseOption: "Choisir une option",
+    noOptions: "Aucune option",
+    noActions: "Aucune action",
+    optionsLabel: { "Options pour \($0)" }
+  )
+  #expect(copy.selectPlaceholder == "Choisir")
+  #expect(copy.collapsed == "Replié")
+  #expect(copy.expanded == "Déplié")
+  #expect(copy.showOptions == "Afficher les options")
+  #expect(copy.chooseOption == "Choisir une option")
+  #expect(copy.noOptions == "Aucune option")
+  #expect(copy.noActions == "Aucune action")
+  #expect(copy.optionsLabel("Mode") == "Options pour Mode")
+
+  let items = [
+    AurelglyphSegmentedItem(id: "one", title: "One"),
+    AurelglyphSegmentedItem(id: "two", title: "Two", isDisabled: true),
+    AurelglyphSegmentedItem(id: "three", title: "Three")
+  ]
+  #expect(
+    aurelglyphEdgeEnabledID(in: items, edge: .first, id: { $0.id }, isDisabled: { $0.isDisabled }) == "one"
+  )
+  #expect(
+    aurelglyphEdgeEnabledID(in: items, edge: .last, id: { $0.id }, isDisabled: { $0.isDisabled }) == "three"
+  )
+  #expect(
+    aurelglyphNextEnabledID(in: items, currentID: "one", direction: 1, id: { $0.id }, isDisabled: { $0.isDisabled }) == "three"
+  )
+  #expect(
+    aurelglyphNextEnabledID(in: items, currentID: "three", direction: 1, id: { $0.id }, isDisabled: { $0.isDisabled }) == "one"
+  )
+  #expect(
+    aurelglyphNextEnabledID(in: items, currentID: "one", direction: -1, id: { $0.id }, isDisabled: { $0.isDisabled }) == "three"
+  )
+}
+
 @Test func lightInteractiveForegroundMaintainsContrastOnInsetSurfaces() {
   let interactiveSurfaceContrasts = [
     AurelglyphTokens.colorModeLightBackground,

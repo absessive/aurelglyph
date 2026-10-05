@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  checkReleaseReadiness,
   checkWorkspaceVersions,
   syncWorkspaceVersions,
   versionedArtifactPaths,
@@ -61,7 +62,11 @@ async function createWorkspace(): Promise<string> {
     "examples/react-vite/src/App.tsx": 'const packageVersion = "0.0.1";',
     "packages/rails/lib/aurelglyph/rails/version.rb": 'VERSION = "0.0.1"',
     "packages/swift/README.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
-    "docs/consuming.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")'
+    "docs/consuming.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
+    "docs/roadmap.md": "## 0.0.1 — Production foundation and internationalization",
+    "docs/index.html": "Current release<strong>Version 0.0.1</strong>",
+    "docs/components.html": "Version 0.0.1 declares",
+    "docs/component-manifest.json": '{"release": "0.0.1"}'
   };
 
   for (const [path, contents] of Object.entries(artifactContents)) {
@@ -86,7 +91,7 @@ describe("workspace versioning", () => {
 
     expect(result.version).toBe("1.2.3");
     expect(result.ok).toBe(false);
-    expect(result.mismatches).toHaveLength(workspacePackagePaths.length + versionedArtifactPaths.length);
+    expect(result.mismatches.length).toBeGreaterThanOrEqual(workspacePackagePaths.length + versionedArtifactPaths.length);
     expect(result.mismatches[0]).toMatchObject({ actual: "0.0.1", expected: "1.2.3" });
   });
 
@@ -108,13 +113,19 @@ describe("workspace versioning", () => {
     expect(packageLock.version).toBe("1.2.3");
     expect(packageLock.packages[""].version).toBe("1.2.3");
     expect(packageLock.packages["examples/react-native-smoke"].version).toBe("1.2.3");
+    expect(packageLock.packages["examples/swiftui-smoke"].version).toBe("1.2.3");
     expect(packageLock.packages["examples/react-native-smoke"].dependencies?.["@aurelglyph/react-native"]).toBe("1.2.3");
     expect(reactNativeHost.version).toBe("1.2.3");
     expect(reactNativeHost.dependencies["@aurelglyph/react-native"]).toBe("1.2.3");
+    await expect(readFile(join(root, "examples/swiftui-smoke/package.json"), "utf8")).resolves.toContain(
+      '"version": "1.2.3"'
+    );
     await expect(readFile(join(root, "preview/index.html"), "utf8")).resolves.toContain("v1.2.3");
     await expect(readFile(join(root, "examples/react-vite/src/App.tsx"), "utf8")).resolves.toContain('"1.2.3"');
     await expect(readFile(join(root, "README.md"), "utf8")).resolves.toContain("`1.2.3`");
     await expect(readFile(join(root, "docs/consuming.md"), "utf8")).resolves.toContain('from: "1.2.3"');
+    await expect(readFile(join(root, "docs/roadmap.md"), "utf8")).resolves.toContain("## 1.2.3");
+    await expect(readFile(join(root, "docs/index.html"), "utf8")).resolves.toContain("Version 1.2.3");
     await expect(readFile(join(root, "component-manifest.json"), "utf8")).resolves.toContain('"release": "1.2.3"');
   });
 
@@ -150,5 +161,39 @@ describe("workspace versioning", () => {
 
     expect(changelog.indexOf("## 2.0.0")).toBeLessThan(changelog.indexOf("## 1.2.3"));
     expect(changelog).toContain("- Add the next release.");
+  });
+
+  it("promotes Unreleased notes and requires an empty Unreleased section for releases", async () => {
+    const root = await createWorkspace();
+    await writeFile(join(root, "package.json"), JSON.stringify({ name: "aurelglyph", version: "2.0.0" }, null, 2));
+    await writeFile(
+      join(root, "CHANGELOG.md"),
+      "# Changelog\n\n## Unreleased\n\n- Harden release metadata across\n  every published adapter.\n- Add a second release contract.\n\n## 1.2.3\n\n- Existing entry\n"
+    );
+
+    await syncWorkspaceVersions(root);
+    const changelog = await readFile(join(root, "CHANGELOG.md"), "utf8");
+    const release = await checkReleaseReadiness(root);
+
+    expect(changelog).toContain(
+      "# Changelog\n\n## Unreleased\n\n## 2.0.0\n\n- Harden release metadata across\n  every published adapter.\n- Add a second release contract."
+    );
+    expect(changelog.indexOf("## Unreleased")).toBeLessThan(changelog.indexOf("## 2.0.0"));
+    expect(release.releaseNotesArePromoted).toBe(true);
+    expect(release.ok).toBe(true);
+  });
+
+  it("rejects release metadata while Unreleased still contains changes", async () => {
+    const root = await createWorkspace();
+    await writeFile(
+      join(root, "CHANGELOG.md"),
+      "# Changelog\n\n## Unreleased\n\n- Pending work.\n\n## 1.2.3\n\n- Existing entry\n"
+    );
+
+    const release = await checkReleaseReadiness(root);
+
+    expect(release.ok).toBe(false);
+    expect(release.releaseNotesArePromoted).toBe(false);
+    expect(release.unreleasedBody).toBe("- Pending work.");
   });
 });

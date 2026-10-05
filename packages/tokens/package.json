@@ -1,8 +1,26 @@
 {
   "name": "@aurelglyph/tokens",
-  "version": "0.7.0",
+  "version": "0.8.0",
+  "description": "Canonical cross-platform design tokens for the Aurelglyph design system.",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "aurelglyph",
+    "design-system",
+    "design-tokens",
+    "css",
+    "react-native",
+    "swiftui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/absessive/aurelglyph.git",
+    "directory": "packages/tokens"
+  },
+  "homepage": "https://aurelglyph.absessive.com/",
+  "bugs": {
+    "url": "https://github.com/absessive/aurelglyph/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -25,6 +43,10 @@
       "types": "./dist/generated/react-native.d.ts",
       "default": "./dist/generated/react-native.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "tsx src/build.ts && tsc -p tsconfig.json",

@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web, packages, and accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run version:check
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run build:pages
+      - name: Generated artifacts are reproducible
+        run: git diff --exit-code
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run security:check
+      - run: npm run pack:check
+      - run: npm run test:ux
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:browsers
+
+  rails:
+    name: Rails ${{ matrix.rails }} / Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rails: "7.x"
+            ruby: "3.1"
+            gemfile: gemfiles/rails-7.gemfile
+          - rails: "8.x"
+            ruby: "3.4"
+            gemfile: gemfiles/rails-8.gemfile
+    env:
+      BUNDLE_GEMFILE: ${{ matrix.gemfile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: npm ci
+      - run: npm run build -w @aurelglyph/tokens
+      - run: npm run build -w aurelglyph-rails
+      - run: npm run test:rails
+      - run: npm run pack:gem
+
+  swift:
+    name: Swift package and native SwiftUI host
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:tokens
+      - run: swift test --package-path .
+      - run: swift test --package-path packages/swift
+      - run: npm run build:ios -w @aurelglyph/example-swiftui-smoke
+      - run: npm run test:ios -w @aurelglyph/example-swiftui-smoke
+
+  react-native:
+    name: React Native consumer hosts
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: npm ci
+      - run: npm run build -w @aurelglyph/react-native
+      - run: npm test -w @aurelglyph/example-react-native-smoke
+      - run: npm run test:android -w @aurelglyph/example-react-native-smoke
+      - name: Install iOS dependencies
+        working-directory: examples/react-native-smoke
+        run: bundle install && bundle exec pod install --project-directory=ios
+      - run: npm run test:ios -w @aurelglyph/example-react-native-smoke

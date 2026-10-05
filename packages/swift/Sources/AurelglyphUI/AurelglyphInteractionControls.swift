@@ -12,6 +12,14 @@ public struct AurelglyphControlCopy {
   public var on: String
   public var off: String
   public var loadingOptions: String
+  public var selectPlaceholder: String
+  public var collapsed: String
+  public var expanded: String
+  public var showOptions: String
+  public var chooseOption: String
+  public var noOptions: String
+  public var noActions: String
+  public var optionsLabel: (String) -> String
   public var loadingLabel: (String) -> String
   public var decreaseLabel: (String) -> String
   public var increaseLabel: (String) -> String
@@ -27,6 +35,14 @@ public struct AurelglyphControlCopy {
     on: String = "On",
     off: String = "Off",
     loadingOptions: String = "Loading options",
+    selectPlaceholder: String = "Select an option",
+    collapsed: String = "Collapsed",
+    expanded: String = "Expanded",
+    showOptions: String = "Show options",
+    chooseOption: String = "Choose an option",
+    noOptions: String = "No options available",
+    noActions: String = "No actions available",
+    optionsLabel: @escaping (String) -> String = { "\($0) options" },
     loadingLabel: @escaping (String) -> String = { "Loading \($0)" },
     decreaseLabel: @escaping (String) -> String = { "Decrease \($0)" },
     increaseLabel: @escaping (String) -> String = { "Increase \($0)" }
@@ -41,12 +57,55 @@ public struct AurelglyphControlCopy {
     self.on = on
     self.off = off
     self.loadingOptions = loadingOptions
+    self.selectPlaceholder = selectPlaceholder
+    self.collapsed = collapsed
+    self.expanded = expanded
+    self.showOptions = showOptions
+    self.chooseOption = chooseOption
+    self.noOptions = noOptions
+    self.noActions = noActions
+    self.optionsLabel = optionsLabel
     self.loadingLabel = loadingLabel
     self.decreaseLabel = decreaseLabel
     self.increaseLabel = increaseLabel
   }
 
   public static let standard = AurelglyphControlCopy()
+}
+
+enum AurelglyphFocusEdge {
+  case first
+  case last
+}
+
+func aurelglyphEdgeEnabledID<Item>(
+  in items: [Item],
+  edge: AurelglyphFocusEdge,
+  id: (Item) -> String,
+  isDisabled: (Item) -> Bool
+) -> String? {
+  switch edge {
+  case .first:
+    return items.first(where: { !isDisabled($0) }).map(id)
+  case .last:
+    return items.reversed().first(where: { !isDisabled($0) }).map(id)
+  }
+}
+
+func aurelglyphNextEnabledID<Item>(
+  in items: [Item],
+  currentID: String?,
+  direction: Int,
+  id: (Item) -> String,
+  isDisabled: (Item) -> Bool
+) -> String? {
+  let enabledIDs = items.filter { !isDisabled($0) }.map(id)
+  guard !enabledIDs.isEmpty else { return nil }
+  guard let currentID, let currentIndex = enabledIDs.firstIndex(of: currentID) else {
+    return direction < 0 ? enabledIDs.last : enabledIDs.first
+  }
+  let offset = direction < 0 ? -1 : 1
+  return enabledIDs[(currentIndex + offset + enabledIDs.count) % enabledIDs.count]
 }
 
 private struct AurelglyphControlCopyKey: EnvironmentKey {
@@ -238,11 +297,11 @@ public struct AurelglyphCheckbox: View {
                 .tint((isChecked || isIndeterminate) ? palette.accentForeground : palette.focus)
             } else if isIndeterminate {
               Image(systemName: "minus")
-                .font(.system(size: 11, weight: .bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(palette.accentForeground)
             } else if isChecked {
               Image(systemName: "checkmark")
-                .font(.system(size: 11, weight: .bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(palette.accentForeground)
             }
           }

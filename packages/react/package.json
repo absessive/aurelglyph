@@ -1,8 +1,25 @@
 {
   "name": "@aurelglyph/react",
-  "version": "0.7.0",
+  "version": "0.8.0",
+  "description": "Accessible React components for the Aurelglyph cross-platform design system.",
   "license": "MIT",
   "type": "module",
+  "keywords": [
+    "aurelglyph",
+    "react",
+    "design-system",
+    "components",
+    "accessibility"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/absessive/aurelglyph.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://aurelglyph.absessive.com/",
+  "bugs": {
+    "url": "https://github.com/absessive/aurelglyph/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "style": "dist/styles.css",
@@ -24,6 +41,10 @@
     },
     "./styles.css": "./dist/styles.css"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/build.mjs",
     "prepare": "npm run build",
@@ -33,6 +54,6 @@
     "react": "^19.1.0"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.7.0"
+    "@aurelglyph/tokens": "0.8.0"
   }
 }

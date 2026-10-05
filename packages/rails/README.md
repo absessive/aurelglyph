@@ -83,6 +83,11 @@ Selection groups expose `init` and `select(id, value)`.
 Use `window.Aurelglyph.destroy(rootElement)` before manually caching or removing
 a subtree with an open interaction.
 
+Tabs, segmented controls, radio groups, and other horizontal selection groups
+read their computed writing direction. Left/Right keyboard movement mirrors in
+RTL, while Up/Down and Home/End retain their semantic behavior. The generated
+stylesheet uses the same logical-property geometry as the React package.
+
 While open, menu, popover, tooltip, and combobox surfaces stay within the
 intersection of the visual viewport and any clipping scrollport ancestors; the
 controller remeasures on viewport changes and ancestor scrolling, and dismisses
@@ -199,6 +204,17 @@ Menu and popover triggers always render as non-submitting `type="button"`
 controls. A disabled menu is normalized closed; a disabled popover trigger may
 still accompany a programmatically controlled open panel.
 
+Optional explanatory copy can use the compact `aurelglyph_more_information`
+popover instead of remaining visible beside the working surface. Give repeated
+controls a contextual label for assistive technology; validation errors and
+live status remain inline.
+
+```erb
+<%= aurelglyph_more_information(label: "Project name information") do %>
+  Use the short operational name shown in system navigation.
+<% end %>
+```
+
 ```erb
 <%= aurelglyph_popover(
   trigger: "Filters",
@@ -293,6 +309,13 @@ where the platform supports them. Helpers compose descriptions and errors into
 `aria-describedby`, apply `aria-invalid` and `aria-busy`, and expose consistent
 `data-disabled`, `data-invalid`, and `data-loading` states. Errors use polite
 live regions.
+
+`aurelglyph_menu` and `aurelglyph_combobox` render complete Aurelglyph popup
+surfaces. `aurelglyph_select` remains a real `<select>` so forms, validation,
+keyboard navigation, and no-script use stay native, while supporting browsers
+progressively render its picker and option states with Aurelglyph tokens. The
+fallback picker follows the forced light/dark browser scheme and explicit
+option colors.
 
 Checkboxes support `indeterminate: true`; the controller applies the native
 indeterminate property and clears the mixed state after a user change.

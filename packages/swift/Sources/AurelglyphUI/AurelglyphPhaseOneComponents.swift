@@ -127,6 +127,8 @@ public struct AurelglyphAppShell<Content: View, TopBar: View, TabBar: View>: Vie
 }
 
 public struct AurelglyphTopBar<Leading: View, Actions: View>: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.layoutDirection) private var layoutDirection
   private let title: String
@@ -171,13 +173,15 @@ public struct AurelglyphTopBar<Leading: View, Actions: View>: View {
   }
 
   private var titleBlock: some View {
-    VStack(alignment: .leading, spacing: 2) {
+    let palette = theme.palette(for: colorScheme)
+
+    return VStack(alignment: .leading, spacing: 2) {
       Text(title)
         .font(AurelglyphTypography.title)
       if let subtitle {
         Text(subtitle)
           .font(AurelglyphTypography.caption)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(palette.muted)
       }
     }
   }
@@ -280,6 +284,8 @@ public struct AurelglyphTabBar: View {
 }
 
 public struct AurelglyphCard<Content: View>: View {
+  @Environment(\.aurelglyphTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
   private let title: String?
   private let eyebrow: String?
   private let content: Content
@@ -291,13 +297,15 @@ public struct AurelglyphCard<Content: View>: View {
   }
 
   public var body: some View {
+    let palette = theme.palette(for: colorScheme)
+
     VStack(alignment: .leading, spacing: 12) {
       if eyebrow != nil || title != nil {
         VStack(alignment: .leading, spacing: 4) {
           if let eyebrow {
             Text(eyebrow)
               .font(AurelglyphTypography.monoCaption)
-              .foregroundStyle(.secondary)
+              .foregroundStyle(palette.foreground)
               .textCase(.uppercase)
           }
           if let title {
