@@ -21,10 +21,11 @@ describe("GitHub Actions policy", () => {
 
   it("pins the Android consumer gate to its reviewed Gradle distribution", async () => {
     const androidRoot = join(root, "examples/react-native-smoke/android");
-    const [wrapper, properties, build] = await Promise.all([
+    const [wrapper, properties, build, appBuild] = await Promise.all([
       readFile(join(androidRoot, "gradle/wrapper/gradle-wrapper.properties"), "utf8"),
       readFile(join(androidRoot, "gradle.properties"), "utf8"),
-      readFile(join(androidRoot, "build.gradle"), "utf8")
+      readFile(join(androidRoot, "build.gradle"), "utf8"),
+      readFile(join(androidRoot, "app/build.gradle"), "utf8")
     ]);
 
     expect(wrapper).toContain(
@@ -38,6 +39,8 @@ describe("GitHub Actions policy", () => {
     expect(build).toContain('buildToolsVersion = "37.0.0"');
     expect(build).toContain("compileSdkVersion = 37");
     expect(build).toContain('kotlinVersion = "2.2.0"');
+    expect(appBuild).toContain('getDefaultProguardFile("proguard-android-optimize.txt")');
+    expect(appBuild).not.toContain('getDefaultProguardFile("proguard-android.txt")');
   });
 
   it("grants release write and OIDC privileges only to the jobs that need them", async () => {
