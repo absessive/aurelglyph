@@ -385,7 +385,7 @@ describe("React Native rendered interaction contracts", () => {
     );
     expect(rendered.container.querySelector('[role="dialog"]')?.getAttribute("data-accessible")).toBe("true");
     expect(rendered.container.querySelector('[role="menu"]')).toBeNull();
-    expect(rendered.container.querySelector('[role="menuitem"]')?.getAttribute("aria-label")).toBe("System actions, Sync");
+    expect(rendered.container.querySelector('button[aria-label="System actions, Sync"]')).not.toBeNull();
     expect(rendered.container.querySelector('[data-accessible="false"][role]')).toBeNull();
 
     rendered.rerender(<Drawer onOpenChange={onOpenChange} open title="Drawer"><Button>Apply</Button></Drawer>);
@@ -538,7 +538,7 @@ describe("React Native rendered interaction contracts", () => {
     const rendered = render(<Combobox label="Mode" options={options} />);
     click(rendered.container.querySelector('[role="combobox"]')!);
     expect(rendered.container.querySelector('[data-rn="Modal"]')).not.toBeNull();
-    expect(rendered.container.querySelector('[role="option"]')?.getAttribute("aria-label")).toBe("Mode, Quiet");
+    expect(rendered.container.querySelector('button[aria-label="Mode, Quiet"]')).not.toBeNull();
     expect(rendered.container.querySelector('[data-accessible="false"][role]')).toBeNull();
     rendered.rerender(<Combobox disabled label="Mode" options={options} />);
     expect(rendered.container.querySelector('[data-rn="Modal"]')).toBeNull();
@@ -565,7 +565,7 @@ describe("React Native rendered interaction contracts", () => {
     expect(JSON.parse(container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
       .toEqual({ text: "Stable" });
     click(container.querySelector('[role="combobox"]')!);
-    click(container.querySelector('[role="option"][aria-label="Release channel, Beta"]')!);
+    click(container.querySelector('button[aria-label="Release channel, Beta"]')!);
     expect(onValueChange).toHaveBeenLastCalledWith("beta");
     expect(JSON.parse(container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
       .toEqual({ text: "Beta" });

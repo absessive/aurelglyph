@@ -52,7 +52,9 @@
   re-query the native combobox while reporting its observed accessibility value
   on failure. Preserve taps in searchable React Native Select, Combobox, and
   Command Palette lists while the native keyboard is focused, including during
-  its opening transition on iOS 18.5.
+  its opening transition on iOS 18.5. Expose actionable native Menu and
+  selection rows with button activation semantics while retaining disabled and
+  selected state.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

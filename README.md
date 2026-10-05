@@ -642,10 +642,12 @@ Overlays use React Native `Modal` inside bounded safe-area and keyboard-aware
 shells backed by `react-native-safe-area-context`; tooltip behavior combines
 `accessibilityHint` with the provider's
 non-modal, safe-bound overlay host; and the dependency-free slider exposes
-native `adjustable` actions. Searchable selection and command lists deliver
-option taps while the native keyboard is focused. Responsive grids measure their actual container
-for split-view and nested-panel layouts, while compact controls preserve real
-44-point touch bounds. The overlay host reserves an elevated, non-blocking root
+native `adjustable` actions. Actionable menu and selection rows expose native
+button semantics while retaining disabled and selected state, and searchable
+selection and command lists deliver option taps while the native keyboard is
+focused. Responsive grids measure their actual container for split-view and
+nested-panel layouts, while compact controls preserve real 44-point touch
+bounds. The overlay host reserves an elevated, non-blocking root
 layer so regular application panels do not cover active tooltips. Set
 `overlayHost={false}` when the application supplies its own hosts, and place an
 `AurelglyphOverlayHost` inside any consumer-owned native `Modal` that contains

@@ -88,10 +88,10 @@ final class SmokeUITests: XCTestCase {
       waitUntilHittable(filter, timeout: 5),
       "The release-channel filter was not ready for keyboard-backed selection"
     )
-    let nightly = app.descendants(matching: .any)["Release channel, Nightly"].firstMatch
+    let nightly = app.buttons["Release channel, Nightly"].firstMatch
     XCTAssertTrue(nightly.waitForExistence(timeout: 5), "The disabled Nightly option was not exposed")
     XCTAssertFalse(nightly.isEnabled, "The disabled Nightly option was interactive")
-    let beta = app.descendants(matching: .any)["Release channel, Beta"].firstMatch
+    let beta = app.buttons["Release channel, Beta"].firstMatch
     XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The Beta option was not interactive")
     beta.tap()
     let selectedReleaseChannel = NSPredicate { _, _ in
@@ -113,10 +113,10 @@ final class SmokeUITests: XCTestCase {
     let operations = app.buttons["Operations"]
     XCTAssertTrue(scrollUntilHittable(operations), "The menu trigger was not reachable")
     operations.tap()
-    let approval = app.descendants(matching: .any)["Operations, Requires approval"].firstMatch
+    let approval = app.buttons["Operations, Requires approval"].firstMatch
     XCTAssertTrue(approval.waitForExistence(timeout: 5), "The disabled approval action was not exposed")
     XCTAssertFalse(approval.isEnabled, "The disabled approval action was interactive")
-    let archive = app.descendants(matching: .any)["Operations, Archive draft"].firstMatch
+    let archive = app.buttons["Operations, Archive draft"].firstMatch
     XCTAssertTrue(waitUntilHittable(archive, timeout: 5), "The archive action was not interactive")
     archive.tap()
     XCTAssertTrue(

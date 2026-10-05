@@ -68,7 +68,7 @@ export function Menu({
                 <Pressable
                   accessibilityHint={item.description}
                   accessibilityLabel={`${accessibilityLabel}, ${item.label}`}
-                  accessibilityRole="menuitem"
+                  accessibilityRole="button"
                   accessibilityState={{ disabled: item.disabled, selected }}
                   disabled={item.disabled}
                   key={item.value}
@@ -236,7 +236,7 @@ export function Combobox({
                   <Pressable
                     accessibilityHint={option.description}
                     accessibilityLabel={`${label}, ${option.label}`}
-                    role="option"
+                    accessibilityRole="button"
                     accessibilityState={{ disabled: option.disabled, selected: active }}
                     disabled={option.disabled}
                     key={option.value}
