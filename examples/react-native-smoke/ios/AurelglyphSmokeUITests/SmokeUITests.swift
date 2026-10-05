@@ -143,9 +143,28 @@ final class SmokeUITests: XCTestCase {
 
     let optionSearch = app.textFields["Search options"].firstMatch
     XCTAssertTrue(waitUntilHittable(optionSearch, timeout: 5), "Combobox search was not ready")
-    typeTextSynchronously("Bet", into: optionSearch, description: "Combobox search")
-
+    let stable = app.buttons["Searchable channel, Stable"].firstMatch
+    let nightly = app.buttons["Searchable channel, Nightly"].firstMatch
     let beta = app.buttons["Searchable channel, Beta"].firstMatch
+    XCTAssertTrue(stable.waitForExistence(timeout: 3), "The initial Stable option was not exposed")
+    XCTAssertTrue(nightly.waitForExistence(timeout: 3), "The initial Nightly option was not exposed")
+    XCTAssertTrue(beta.waitForExistence(timeout: 3), "The initial Beta option was not exposed")
+    typeTextSynchronously(
+      "Be",
+      into: optionSearch,
+      description: "Combobox search",
+      afterCommittedValue: { value in
+        switch value {
+        case "B":
+          return self.waitUntilAbsent(nightly, timeout: 3) && stable.exists && beta.exists
+        case "Be":
+          return self.waitUntilAbsent(stable, timeout: 3) && beta.exists
+        default:
+          return true
+        }
+      }
+    )
+
     XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The filtered Combobox option was not interactive")
     beta.tap()
     let selectedSearchableChannel = NSPredicate { _, _ in
@@ -172,9 +191,28 @@ final class SmokeUITests: XCTestCase {
 
     let commandSearch = app.textFields["Search commands"].firstMatch
     XCTAssertTrue(waitUntilHittable(commandSearch, timeout: 5), "Command Palette search was not ready")
-    typeTextSynchronously("Arc", into: commandSearch, description: "Command Palette search")
-
     let archive = app.buttons["Command palette, Archive systems"].firstMatch
+    let synchronize = app.buttons["Command palette, Synchronize systems"].firstMatch
+    let applyChanges = app.buttons["Command palette, Apply changes"].firstMatch
+    XCTAssertTrue(archive.waitForExistence(timeout: 3), "The initial Archive systems action was not exposed")
+    XCTAssertTrue(synchronize.waitForExistence(timeout: 3), "The initial Synchronize systems action was not exposed")
+    XCTAssertTrue(applyChanges.waitForExistence(timeout: 3), "The initial Apply changes action was not exposed")
+    typeTextSynchronously(
+      "Ar",
+      into: commandSearch,
+      description: "Command Palette search",
+      afterCommittedValue: { value in
+        switch value {
+        case "A":
+          return self.waitUntilAbsent(synchronize, timeout: 3) && archive.exists && applyChanges.exists
+        case "Ar":
+          return self.waitUntilAbsent(applyChanges, timeout: 3) && archive.exists
+        default:
+          return true
+        }
+      }
+    )
+
     XCTAssertTrue(waitUntilHittable(archive, timeout: 5), "The filtered Command Palette action was not interactive")
     archive.tap()
     XCTAssertTrue(
@@ -208,10 +246,20 @@ final class SmokeUITests: XCTestCase {
     return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
   }
 
+  private func waitUntilAbsent(_ element: XCUIElement, timeout: TimeInterval) -> Bool {
+    let predicate = NSPredicate { candidate, _ in
+      guard let candidate = candidate as? XCUIElement else { return false }
+      return !candidate.exists
+    }
+    let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+    return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+  }
+
   private func typeTextSynchronously(
     _ text: String,
     into field: XCUIElement,
     description: String,
+    afterCommittedValue: ((String) -> Bool)? = nil,
     file: StaticString = #filePath,
     line: UInt = #line
   ) {
@@ -236,6 +284,15 @@ final class SmokeUITests: XCTestCase {
         line: line
       )
       if result != .completed { return }
+
+      if afterCommittedValue?(expectedValue) == false {
+        XCTFail(
+          "\(description) did not propagate \(expectedValue) through the filtered React Native surface",
+          file: file,
+          line: line
+        )
+        return
+      }
     }
   }
 

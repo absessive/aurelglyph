@@ -204,6 +204,7 @@ function SmokeWorkbench() {
           onValueChange={setSearchableChannel}
           options={[
             {label: 'Stable', value: 'stable'},
+            {disabled: true, label: 'Nightly', value: 'nightly'},
             {label: 'Beta', value: 'beta'},
           ]}
           value={searchableChannel}
@@ -230,6 +231,11 @@ function SmokeWorkbench() {
               id: 'synchronize',
               label: 'Synchronize systems',
               onSelect: () => setLastCommand('Synchronize systems'),
+            },
+            {
+              id: 'apply-changes',
+              label: 'Apply changes',
+              onSelect: () => setLastCommand('Apply changes'),
             },
           ]}
           onOpenChange={setCommandPaletteOpen}

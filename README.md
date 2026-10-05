@@ -651,9 +651,10 @@ behavior. Application-owned ancestor `ScrollView` instances around searchable
 controls must also set `keyboardShouldPersistTaps="always"`. Autofocus is
 applied after native modal presentation. The native smoke host independently
 verifies browse-first Select and keyboard-focused Combobox and Command Palette
-activation without retry recovery. Responsive grids measure their actual
-container for split-view and nested-panel layouts, while compact controls
-preserve real 44-point touch bounds.
+activation without retry recovery, waiting for controlled filter results after
+each accepted search keystroke. Responsive grids measure their actual container
+for split-view and nested-panel layouts, while compact controls preserve real
+44-point touch bounds.
 The overlay host reserves an elevated, non-blocking root
 layer so regular application panels do not cover active tooltips. Set
 `overlayHost={false}` when the application supplies its own hosts, and place an
