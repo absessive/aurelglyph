@@ -2,6 +2,9 @@
 
 Native Aurelglyph components, themes, tokens, and packaged fonts for iOS and Android.
 
+Public npm publication begins with Aurelglyph `1.0.0`; before then, consume this
+package from the Git repository or workspace.
+
 ```bash
 npm install @aurelglyph/react-native react react-native react-native-safe-area-context
 ```
@@ -11,6 +14,21 @@ The responsive interaction layer supports the verified React Native 0.86 and
 React Native 0.87.1 and retains the 0.86 public compatibility range. Safe-area
 handling uses the maintained `react-native-safe-area-context` package instead
 of React Native's deprecated core `SafeAreaView`.
+
+React Native 0.87 enables prebuilt RNCore by default, but that release's
+framework layout does not expose the Fabric headers imported by generated
+third-party component registration for `react-native-safe-area-context`. Until
+that upstream header contract is corrected, place this line before
+`prepare_react_native_project!` in the application's `ios/Podfile`, then run
+`pod install` again:
+
+```ruby
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+```
+
+This builds RNCore from source and restores the public `<React/...>` header
+layout. Aurelglyph's RN 0.87 native host enforces this ordering before its iOS
+UI contract runs. React Native 0.86 consumers do not need the override.
 
 ## Theme provider
 
@@ -79,10 +97,11 @@ for local state. Text and search fields follow React Native's native
 overlays use controlled `open`/`onOpenChange`. Command-palette search text may
 be controlled separately with `query`/`onQueryChange`.
 
-`Menu`, `Dropdown`, `Select`, and `Combobox` present their option lists inside
-tokenized Aurelglyph dialogs, so both the trigger and expanded list resolve the
-active appearance and light/dark palette rather than inheriting browser-style
-defaults.
+`Select` and `Combobox` theme both their trigger and expanded list.
+`Menu`/`Dropdown` theme the controlled expanded list; pair them with an
+Aurelglyph `Button` or `IconButton` when the library should also own the trigger
+paint. All option surfaces use tokenized Aurelglyph dialogs rather than
+browser-style defaults.
 
 Use `MoreInformation` for optional supporting copy that should not occupy the
 primary working surface. It provides a 44-point accessible trigger and a
@@ -115,6 +134,31 @@ metadata. Invalid helper text uses the danger token and a polite live-region
 announcement even when the field does not provide a separate error string.
 Modal transitions automatically disable themselves when the operating system's
 Reduce Motion setting is enabled.
+
+## Localized control copy
+
+Wrap a subtree in `AurelglyphControlCopyProvider` to replace generated visible
+copy and accessibility phrases once. Explicit component props still win; for
+example, `Dialog` accepts `closeText` and `closeLabel`, `SearchField` accepts
+`clearText` and `clearLabel`, and `Select` accepts `searchPlaceholder`.
+
+```tsx
+<AurelglyphControlCopyProvider
+  value={{
+    close: "Fermer",
+    closeLabel: (title) => `Fermer ${title}`,
+    filterOptions: "Filtrer les options",
+    readOnly: "lecture seule"
+  }}
+>
+  <Settings />
+</AurelglyphControlCopyProvider>
+```
+
+The standard copy object is exported as `aurelglyphControlCopy`; spread it when
+building a complete locale catalog. Descriptions and read-only state remain
+attached to the focused native `Switch`, so VoiceOver and TalkBack do not lose
+that context.
 
 ## Responsive and constrained layouts
 

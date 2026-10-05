@@ -96,10 +96,23 @@ public struct AurelglyphMoreInformation<Content: View>: View {
         .accessibilityLabel(closeLabel)
       }
 
-      content
-        .font(AurelglyphTypography.body)
-        .foregroundStyle(palette.muted)
-        .fixedSize(horizontal: false, vertical: true)
+      ViewThatFits(in: .vertical) {
+        content
+          .font(AurelglyphTypography.body)
+          .foregroundStyle(palette.muted)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .fixedSize(horizontal: false, vertical: true)
+
+        ScrollView {
+          content
+            .font(AurelglyphTypography.body)
+            .foregroundStyle(palette.muted)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+      }
+      .frame(maxHeight: 420)
     }
     .padding(16)
     .frame(minWidth: 240, idealWidth: 300, maxWidth: 360, alignment: .leading)

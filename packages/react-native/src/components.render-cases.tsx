@@ -271,9 +271,10 @@ import {
   Progress,
   Spinner
 } from "./primitives.js";
-import { Combobox, CommandPalette, Menu } from "./selection.js";
+import { AurelglyphControlCopyProvider } from "./control-copy.js";
+import { Combobox, CommandPalette, Menu, Select } from "./selection.js";
 import { Dialog, Drawer, MoreInformation, Popover, Tooltip } from "./overlays.js";
-import { FileUpload, NumberField, RadioGroup, SearchField, Slider, TextField } from "./forms.js";
+import { FileUpload, NumberField, RadioGroup, SearchField, Slider, Switch as AurelglyphSwitch, TextField } from "./forms.js";
 import { Pagination, SegmentedControl, TabBar, Tabs } from "./navigation.js";
 import { Icon } from "./icons.js";
 import { AurelglyphOverlayHost } from "./overlay-host.js";
@@ -448,6 +449,56 @@ describe("React Native rendered interaction contracts", () => {
     expect(input.getAttribute("aria-description")).toContain("Name is unavailable");
     expect(input.hasAttribute("aria-invalid")).toBe(false);
     expect(input.disabled).toBe(true);
+  });
+
+  it("associates switch descriptions and read-only state with the native control", () => {
+    const { container } = render(
+      <AurelglyphSwitch
+        description="Keeps release telemetry on this device"
+        label="Release telemetry"
+        readOnly
+        value
+      />
+    );
+    const control = container.querySelector('[role="switch"]') as HTMLButtonElement;
+    expect(control.getAttribute("aria-label")).toBe("Release telemetry");
+    expect(control.getAttribute("aria-description")).toBe("Keeps release telemetry on this device. read only");
+    expect(control.disabled).toBe(true);
+  });
+
+  it("localizes generated native control copy from one provider", () => {
+    const { container } = render(
+      <AurelglyphControlCopyProvider
+        value={{
+          clear: "Effacer",
+          clearSearch: "Effacer la recherche",
+          close: "Fermer",
+          closeLabel: (title) => `Fermer ${title}`,
+          filterOptions: "Filtrer les options",
+          invalid: "non valide",
+          readOnly: "lecture seule",
+          required: "obligatoire"
+        }}
+      >
+        <Dialog onOpenChange={vi.fn()} open title="Réglages"><Text>Contenu</Text></Dialog>
+        <SearchField defaultValue="systèmes" />
+        <Select invalid label="Mode" options={[{ label: "Calme", value: "quiet" }]} readOnly required />
+      </AurelglyphControlCopyProvider>
+    );
+
+    const close = container.querySelector('button[aria-label="Fermer Réglages"]');
+    expect(close?.textContent).toBe("Fermer");
+    expect(container.querySelector('button[aria-label="Effacer la recherche"]')?.textContent).toBe("Effacer");
+    const select = container.querySelector('[role="combobox"]')!;
+    expect(select.getAttribute("aria-label")).toBe("Mode, obligatoire, non valide, lecture seule");
+
+    const rendered = render(
+      <AurelglyphControlCopyProvider value={{ filterOptions: "Filtrer les options" }}>
+        <Select label="Mode" options={[{ label: "Calme", value: "quiet" }]} />
+      </AurelglyphControlCopyProvider>
+    );
+    click(rendered.container.querySelector('[role="combobox"]')!);
+    expect(rendered.container.querySelector("input")?.getAttribute("placeholder")).toBe("Filtrer les options");
   });
 
   it("announces invalid helper text even when no explicit error is supplied", () => {

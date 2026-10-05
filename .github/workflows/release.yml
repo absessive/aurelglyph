@@ -6,8 +6,7 @@ on:
       - "v*"
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -16,11 +15,11 @@ concurrency:
 jobs:
   validate-web:
     name: Validate web and package contract
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -38,7 +37,7 @@ jobs:
       - run: npm run build:pages
       - name: Generated artifacts are reproducible
         run: git diff --exit-code
-      - run: npm test
+      - run: npm run test:unit
       - run: npm run typecheck
       - run: npm run security:check
       - run: npm run pack:check
@@ -48,7 +47,7 @@ jobs:
 
   validate-rails:
     name: Validate Rails ${{ matrix.rails }} / Ruby ${{ matrix.ruby }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -63,12 +62,12 @@ jobs:
     env:
       BUNDLE_GEMFILE: ${{ matrix.gemfile }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
@@ -83,8 +82,8 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -96,14 +95,19 @@ jobs:
   validate-react-native:
     name: Validate React Native hosts
     runs-on: macos-15
-    timeout-minutes: 50
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1
         with:
           ruby-version: "3.3"
       - run: npm ci
@@ -118,18 +122,19 @@ jobs:
   publish-registries:
     name: Publish registry artifacts
     needs: [validate-web, validate-rails, validate-swift, validate-react-native]
-    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref_name, 'v0.') == false && contains(github.ref_name, '-') == false }}
+    runs-on: ubuntu-24.04
     environment: release
     permissions:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           # npm trusted publishing requires Node 22.14+ and npm 11.5.1+.
           node-version: "22.14.0"
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1
         with:
           ruby-version: "3.1"
           bundler-cache: true
@@ -155,12 +160,26 @@ jobs:
 
   github-release:
     name: Publish GitHub release
-    needs: publish-registries
-    runs-on: ubuntu-latest
+    needs: [validate-web, validate-rails, validate-swift, validate-react-native, publish-registries]
+    if: >-
+      ${{
+        always() &&
+        needs.validate-web.result == 'success' &&
+        needs.validate-rails.result == 'success' &&
+        needs.validate-swift.result == 'success' &&
+        needs.validate-react-native.result == 'success' &&
+        (needs.publish-registries.result == 'success' || needs.publish-registries.result == 'skipped')
+      }}
+    runs-on: ubuntu-24.04
     environment: release
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" --verify-tag --generate-notes --title "Aurelglyph ${{ github.ref_name }}"
+        run: node --experimental-strip-types scripts/release-github.ts

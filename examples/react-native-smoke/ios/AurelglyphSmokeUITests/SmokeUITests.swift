@@ -8,14 +8,14 @@ final class SmokeUITests: XCTestCase {
     XCUIDevice.shared.orientation = .portrait
     app = XCUIApplication()
     app.launch()
-    let openModal = app.buttons["Open native modal"]
-    XCTAssertTrue(openModal.waitForExistence(timeout: 20), "The smoke host did not finish launching")
-    XCTAssertTrue(waitUntilHittable(openModal, timeout: 8), "The native modal trigger never became interactive")
-    openModal.tap()
-    XCTAssertTrue(app.descendants(matching: .any)["Native modal active"].firstMatch.waitForExistence(timeout: 15), "The native modal did not open")
+    XCTAssertTrue(
+      app.staticTexts["Native overlay test host"].waitForExistence(timeout: 20),
+      "The smoke host did not finish launching"
+    )
   }
 
   func testHostedTooltipStaysInNativeModalAndOverlayDoesNotBlockTouches() {
+    openNativeModal()
     let tooltip = app.descendants(matching: .any)["Hosted modal signal · bounded precision overlay calibration"].firstMatch
     XCTAssertTrue(tooltip.waitForExistence(timeout: 8), "The hosted tooltip was not exposed in the native modal")
     assertInsideModalHost(tooltip)
@@ -27,6 +27,7 @@ final class SmokeUITests: XCTestCase {
   }
 
   func testHostedTooltipRemeasuresAfterAnchorAndViewportChanges() {
+    openNativeModal()
     let tooltip = app.descendants(matching: .any)["Hosted modal signal · bounded precision overlay calibration"].firstMatch
     XCTAssertTrue(tooltip.waitForExistence(timeout: 8), "The hosted tooltip was not exposed in the native modal")
     let initialFrame = tooltip.frame
@@ -54,6 +55,71 @@ final class SmokeUITests: XCTestCase {
     assertInsideModalHost(tooltip)
   }
 
+  func testThemeSelectionAndNativeSelectionSurfaces() {
+    let atelier = app.descendants(matching: .any)["Atelier, Surface language"].firstMatch
+    XCTAssertTrue(waitUntilHittable(atelier, timeout: 8), "The Atelier appearance option was not interactive")
+    atelier.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Theme: Dark · Atelier"].firstMatch.waitForExistence(timeout: 5),
+      "The dark Atelier theme state was not announced"
+    )
+
+    let light = app.descendants(matching: .any)["Light, Color mode"].firstMatch
+    XCTAssertTrue(waitUntilHittable(light, timeout: 8), "The Light mode option was not interactive")
+    light.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Theme: Light · Atelier"].firstMatch.waitForExistence(timeout: 5),
+      "The light Atelier theme state was not announced"
+    )
+
+    let quiet = app.descendants(matching: .any)["Quiet, Surface language"].firstMatch
+    XCTAssertTrue(waitUntilHittable(quiet, timeout: 8), "The Quiet appearance option was not interactive")
+    quiet.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Theme: Light · Quiet"].firstMatch.waitForExistence(timeout: 5),
+      "The light Quiet theme state was not announced"
+    )
+
+    let select = app.descendants(matching: .any)["Release channel"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(select), "The release-channel select was not reachable")
+    select.tap()
+    let nightly = app.descendants(matching: .any)["Release channel, Nightly"].firstMatch
+    XCTAssertTrue(nightly.waitForExistence(timeout: 5), "The disabled Nightly option was not exposed")
+    XCTAssertFalse(nightly.isEnabled, "The disabled Nightly option was interactive")
+    let beta = app.descendants(matching: .any)["Release channel, Beta"].firstMatch
+    XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The Beta option was not interactive")
+    beta.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Channel: Beta"].firstMatch.waitForExistence(timeout: 5),
+      "The selected release channel was not announced"
+    )
+
+    let operations = app.buttons["Operations"]
+    XCTAssertTrue(scrollUntilHittable(operations), "The menu trigger was not reachable")
+    operations.tap()
+    let approval = app.descendants(matching: .any)["Operations, Requires approval"].firstMatch
+    XCTAssertTrue(approval.waitForExistence(timeout: 5), "The disabled approval action was not exposed")
+    XCTAssertFalse(approval.isEnabled, "The disabled approval action was interactive")
+    let archive = app.descendants(matching: .any)["Operations, Archive draft"].firstMatch
+    XCTAssertTrue(waitUntilHittable(archive, timeout: 5), "The archive action was not interactive")
+    archive.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Last action: Draft archived"].firstMatch.waitForExistence(timeout: 5),
+      "The menu action result was not announced"
+    )
+  }
+
+  func testMoreInformationPresentsAndDismissesNatively() {
+    let information = app.buttons["About the native overlay host"]
+    XCTAssertTrue(scrollUntilHittable(information, direction: .down), "The More information trigger was not reachable")
+    information.tap()
+    XCTAssertTrue(app.staticTexts["About the native overlay host"].waitForExistence(timeout: 5))
+    let close = app.buttons["Close About the native overlay host"]
+    XCTAssertTrue(waitUntilHittable(close, timeout: 5))
+    close.tap()
+    XCTAssertTrue(waitUntilHittable(information, timeout: 5), "Focus did not return to an interactive trigger")
+  }
+
   override func tearDownWithError() throws {
     app.terminate()
     app = nil
@@ -77,6 +143,38 @@ final class SmokeUITests: XCTestCase {
     }
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
     return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+  }
+
+  private enum ScrollDirection {
+    case down
+    case up
+  }
+
+  private func scrollUntilHittable(
+    _ element: XCUIElement,
+    direction: ScrollDirection = .up,
+    maximumSwipes: Int = 8
+  ) -> Bool {
+    let scrollView = app.scrollViews.firstMatch
+    for _ in 0..<maximumSwipes {
+      if element.exists && element.isHittable { return true }
+      if scrollView.exists {
+        if direction == .up { scrollView.swipeUp() } else { scrollView.swipeDown() }
+      } else {
+        if direction == .up { app.swipeUp() } else { app.swipeDown() }
+      }
+    }
+    return element.exists && element.isHittable
+  }
+
+  private func openNativeModal() {
+    let openModal = app.buttons["Open native modal"]
+    XCTAssertTrue(scrollUntilHittable(openModal), "The native modal trigger never became interactive")
+    openModal.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Native modal active"].firstMatch.waitForExistence(timeout: 15),
+      "The native modal did not open"
+    )
   }
 
   private func assertInsideModalHost(

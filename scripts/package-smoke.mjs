@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -168,6 +168,8 @@ try {
   for (const reactNativeVersion of ["0.86.0", "0.87.1"]) {
     const consumer = await createConsumer(`react-native-${reactNativeVersion.replaceAll(".", "-")}`);
     install(consumer, [
+      "@react-native-community/cli@20.2.0",
+      `@react-native/metro-config@${reactNativeVersion}`,
       "@types/react@19.2.0",
       "react@19.2.3",
       `react-native@${reactNativeVersion}`,
@@ -183,6 +185,33 @@ try {
         'const information: MoreInformationProps = { children: "Details", label: "System information" };',
         "void button;",
         "void information;",
+        ""
+      ].join("\n")
+    );
+    const runtimeMarker = `Aurelglyph RN ${reactNativeVersion} clean-consumer runtime`;
+    await writeFile(
+      join(consumer, "index.js"),
+      [
+        'import React from "react";',
+        'import { AppRegistry, Text } from "react-native";',
+        'import { AurelglyphProvider, MoreInformation, Select } from "@aurelglyph/react-native";',
+        `const marker = ${JSON.stringify(runtimeMarker)};`,
+        "function App() {",
+        "  return React.createElement(AurelglyphProvider, { mode: 'light' },",
+        "    React.createElement(Text, null, marker),",
+        "    React.createElement(Select, { label: 'Mode', options: [{ label: 'Quiet', value: 'quiet' }] }),",
+        "    React.createElement(MoreInformation, { label: 'Details' }, React.createElement(Text, null, 'Supporting copy'))",
+        "  );",
+        "}",
+        "AppRegistry.registerComponent('AurelglyphConsumer', () => App);",
+        ""
+      ].join("\n")
+    );
+    await writeFile(
+      join(consumer, "metro.config.cjs"),
+      [
+        'const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");',
+        "module.exports = mergeConfig(getDefaultConfig(__dirname), {});",
         ""
       ].join("\n")
     );
@@ -202,10 +231,41 @@ try {
       }, null, 2)}\n`
     );
     run(join(root, "node_modules/.bin/tsc"), ["-p", "tsconfig.json"], { cwd: consumer });
+
+    const bundleOutput = join(consumer, "runtime.ios.jsbundle");
+    const assetsDestination = join(consumer, "runtime-assets");
+    await mkdir(assetsDestination, { recursive: true });
+    run(
+      "node",
+      [
+        "node_modules/react-native/cli.js",
+        "bundle",
+        "--entry-file",
+        "index.js",
+        "--platform",
+        "ios",
+        "--dev",
+        "false",
+        "--minify",
+        "true",
+        "--bundle-output",
+        bundleOutput,
+        "--assets-dest",
+        assetsDestination,
+        "--config",
+        "metro.config.cjs"
+      ],
+      { cwd: consumer }
+    );
+    const bundle = await readFile(bundleOutput, "utf8");
+    const bundleSize = (await stat(bundleOutput)).size;
+    if (bundleSize < 1_024 || !bundle.includes(runtimeMarker)) {
+      throw new Error(`React Native ${reactNativeVersion} clean-consumer runtime bundle was incomplete.`);
+    }
   }
 
   process.stdout.write(
-    `Package smoke passed: ${packages.length} tarballs fit budgets; React 19.1/19.2 and React Native 0.86/0.87 install with strict peers in clean consumers.\n`
+    `Package smoke passed: ${packages.length} tarballs fit budgets; React 19.1/19.2 and React Native 0.86/0.87 install, typecheck, and bundle with strict peers in clean consumers.\n`
   );
 } finally {
   await rm(temporaryRoot, { force: true, recursive: true });

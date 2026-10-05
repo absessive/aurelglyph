@@ -23,6 +23,7 @@ import {
   type ViewStyle
 } from "react-native";
 
+import { useAurelglyphControlCopy } from "./control-copy.js";
 import type { ControlStateProps } from "./foundation.js";
 import { resolveResponsiveColumns } from "./foundation.js";
 import { useAurelglyphTheme } from "./theme.js";
@@ -269,12 +270,13 @@ export type SpinnerProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Spinner({ color, label = "Loading", size = "md", style }: SpinnerProps): ReactElement {
+export function Spinner({ color, label, size = "md", style }: SpinnerProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const nativeSize = size === "sm" ? 16 : size === "lg" ? 32 : 24;
   return (
     <View
-      accessibilityLabel={label}
+      accessibilityLabel={label ?? controlCopy.loading}
       accessibilityLiveRegion="polite"
       accessibilityRole="progressbar"
       style={[styles.spinner, style]}
@@ -441,8 +443,9 @@ export type ProgressProps = ViewProps & {
   showValue?: boolean;
 };
 
-export function Progress({ label = "Progress", max = 100, min = 0, showValue = false, style, value, ...props }: ProgressProps): ReactElement {
+export function Progress({ label, max = 100, min = 0, showValue = false, style, value, ...props }: ProgressProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const indeterminate = value === undefined;
   const safeMin = Number.isFinite(min) ? min : 0;
   const finiteMax = Number.isFinite(max) ? max : safeMin + 100;
@@ -453,7 +456,7 @@ export function Progress({ label = "Progress", max = 100, min = 0, showValue = f
     <View style={[{ gap: theme.space[2] }, style]} {...props}>
       {showValue ? <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.mono, fontSize: 12 }}>{Math.round(percent)}%</Text> : null}
       <View
-        accessibilityLabel={label}
+        accessibilityLabel={label ?? controlCopy.progress}
         accessibilityRole="progressbar"
         accessibilityState={{ busy: indeterminate }}
         accessibilityValue={current === undefined ? undefined : { min: safeMin, max: safeMax, now: current, text: `${Math.round(percent)}%` }}

@@ -15,8 +15,10 @@ The public Git package lives at the repository root:
 
 `examples/swiftui-smoke` is a real iOS consumer of that root package. Its UI
 tests cover light/dark atelier and quiet surfaces plus select/menu opening,
-enabled-item traversal, dismissal, focus restoration, empty state, and exposed
-accessibility values before a release is tagged.
+disabled-row semantics, dismissal and presentation recovery, localized state
+copy, exposed accessibility values, and scroll reachability at an accessibility
+text size before a release is tagged. Package tests separately cover the
+enabled-item navigation helpers used by keyboard traversal.
 
 Register the packaged OFL TTF files before using the typography roles:
 

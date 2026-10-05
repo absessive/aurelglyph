@@ -13,6 +13,7 @@ import {
   type ViewStyle
 } from "react-native";
 
+import { useAurelglyphControlCopy } from "./control-copy.js";
 import { clamp, normalizeStep, snapValue, useControllableState, type ControlStateProps } from "./foundation.js";
 import { Icon } from "./icons.js";
 import { Button } from "./primitives.js";
@@ -74,13 +75,14 @@ export function TextField({
   ...props
 }: TextFieldProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const isInvalid = invalid || Boolean(error);
   const {
     accessibilityHint,
     accessibilityLabel,
     ...inputProps
   } = props;
-  const stateLabel = [accessibilityLabel ?? label, required ? "required" : undefined, isInvalid ? "invalid" : undefined, readOnly ? "read only" : undefined]
+  const stateLabel = [accessibilityLabel ?? label, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined, readOnly ? controlCopy.readOnly : undefined]
     .filter(Boolean)
     .join(", ");
   const stateHint = [accessibilityHint, error ?? helperText].filter(Boolean).join(". ") || undefined;
@@ -112,13 +114,15 @@ export function TextField({
 
 export type SearchFieldProps = Omit<TextFieldProps, "multiline" | "numberOfLines"> & {
   clearLabel?: string;
+  clearText?: string;
   icon?: ReactNode;
   onClear?: () => void;
 };
 
 export function SearchField({
   busy = false,
-  clearLabel = "Clear search",
+  clearLabel,
+  clearText,
   containerStyle,
   defaultValue = "",
   disabled = false,
@@ -126,11 +130,11 @@ export function SearchField({
   helperText,
   icon,
   invalid = false,
-  label = "Search",
+  label,
   loading = false,
   onChangeText,
   onClear,
-  placeholder = "Search",
+  placeholder,
   readOnly = false,
   required = false,
   style,
@@ -138,6 +142,9 @@ export function SearchField({
   ...props
 }: SearchFieldProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedLabel = label ?? controlCopy.search;
+  const resolvedPlaceholder = placeholder ?? controlCopy.search;
   const [query, setQuery] = useControllableState({ defaultValue, onChange: onChangeText, value });
   const unavailable = disabled || loading || readOnly;
   const isInvalid = invalid || Boolean(error);
@@ -147,17 +154,17 @@ export function SearchField({
     onClear?.();
   };
   return (
-    <FieldChrome error={error} helperText={helperText} invalid={isInvalid} label={label} required={required} style={containerStyle}>
+    <FieldChrome error={error} helperText={helperText} invalid={isInvalid} label={resolvedLabel} required={required} style={containerStyle}>
       <View style={styles.searchRow}>
         {icon ?? <Icon color={theme.colors.muted} name="search" />}
         <TextInput
           {...props}
           accessibilityHint={[props.accessibilityHint, error ?? helperText].filter(Boolean).join(". ") || undefined}
-          accessibilityLabel={[props.accessibilityLabel ?? label, required ? "required" : undefined, isInvalid ? "invalid" : undefined, readOnly ? "read only" : undefined].filter(Boolean).join(", ")}
+          accessibilityLabel={[props.accessibilityLabel ?? resolvedLabel, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(", ")}
           accessibilityState={{ busy: busy || loading, disabled: disabled || loading }}
           editable={!unavailable}
           onChangeText={setQuery}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           placeholderTextColor={theme.colors.subtle}
           returnKeyType="search"
           role="searchbox"
@@ -177,8 +184,8 @@ export function SearchField({
           value={query}
         />
         {query ? (
-          <Button accessibilityLabel={clearLabel} disabled={unavailable} onPress={clear} size="sm" variant="ghost">
-            Clear
+          <Button accessibilityLabel={clearLabel ?? controlCopy.clearSearch} disabled={unavailable} onPress={clear} size="sm" variant="ghost">
+            {clearText ?? controlCopy.clear}
           </Button>
         ) : null}
       </View>
@@ -215,6 +222,7 @@ export function Switch({
   ...props
 }: SwitchProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const [checked, setChecked] = useControllableState({ defaultValue, onChange: onValueChange, value });
   const unavailable = disabled || loading || readOnly;
   return (
@@ -224,6 +232,7 @@ export function Switch({
         {description ? <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{description}</Text> : null}
       </View>
       <NativeSwitch
+        accessibilityHint={[description, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(". ") || undefined}
         accessibilityLabel={label}
         accessibilityState={{ busy: busy || loading, disabled: unavailable, checked }}
         disabled={unavailable}
@@ -263,12 +272,13 @@ export function Checkbox({
   ...props
 }: CheckboxProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const [resolved, setResolved] = useControllableState({ defaultValue: defaultChecked, onChange: onCheckedChange, value: checked });
   const unavailable = disabled || loading || readOnly;
   return (
     <Pressable
-      accessibilityLabel={`${label}${required ? ", required" : ""}${invalid ? ", invalid" : ""}`}
-      accessibilityHint={[description, readOnly ? "Read only" : undefined].filter(Boolean).join(". ") || undefined}
+      accessibilityLabel={[label, required ? controlCopy.required : undefined, invalid ? controlCopy.invalid : undefined].filter(Boolean).join(", ")}
+      accessibilityHint={[description, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(". ") || undefined}
       accessibilityRole="checkbox"
       accessibilityState={{ busy: loading, checked: indeterminate ? "mixed" : resolved, disabled: unavailable }}
       disabled={unavailable}
@@ -327,6 +337,7 @@ export function RadioGroup({
   ...props
 }: RadioGroupProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const [selected, setSelected] = useControllableState({ defaultValue, onChange: onValueChange, value });
   const isInvalid = invalid || Boolean(error);
   return (
@@ -342,7 +353,7 @@ export function RadioGroup({
         return (
           <Pressable
             accessibilityHint={[option.description, error].filter(Boolean).join(". ") || undefined}
-            accessibilityLabel={[option.label, label, required ? "required" : undefined, isInvalid ? "invalid" : undefined, readOnly ? "read only" : undefined].filter(Boolean).join(", ")}
+            accessibilityLabel={[option.label, label, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(", ")}
             accessibilityRole="radio"
             accessibilityState={{ busy: loading, checked, disabled: unavailable }}
             disabled={unavailable}
@@ -404,6 +415,7 @@ export function Slider({
   ...props
 }: SliderProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const safeMin = Number.isFinite(min) ? min : 0;
   const finiteMax = Number.isFinite(max) ? max : safeMin + 100;
   const safeMax = finiteMax > safeMin ? finiteMax : safeMin + 1;
@@ -428,8 +440,8 @@ export function Slider({
       <FieldChrome error={error} helperText={helperText} invalid={isInvalid} label={label} required={required}>
       <View
         accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
-        accessibilityHint={[error ?? helperText, readOnly ? "Read only" : undefined].filter(Boolean).join(". ") || undefined}
-        accessibilityLabel={[label, required ? "required" : undefined, isInvalid ? "invalid" : undefined].filter(Boolean).join(", ")}
+        accessibilityHint={[error ?? helperText, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(". ") || undefined}
+        accessibilityLabel={[label, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined].filter(Boolean).join(", ")}
         accessibilityRole="adjustable"
         accessibilityState={{ busy: loading, disabled: unavailable }}
         accessibilityValue={{ max: safeMax, min: safeMin, now: current, text: formatValue(current) }}
@@ -499,6 +511,7 @@ export function NumberField({
   ...props
 }: NumberFieldProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const min = minimum !== undefined && Number.isFinite(minimum) ? minimum : Number.MIN_SAFE_INTEGER;
   const max = maximum !== undefined && Number.isFinite(maximum) ? maximum : Number.MAX_SAFE_INTEGER;
   const safeMax = max >= min ? max : min;
@@ -531,7 +544,7 @@ export function NumberField({
     <FieldChrome error={error} helperText={helperText} invalid={isInvalid} label={label} required={required} style={containerStyle}>
       <View style={styles.numberRow}>
         <Button
-          accessibilityLabel={`Decrease ${label}`}
+          accessibilityLabel={controlCopy.decreaseLabel(label)}
           disabled={unavailable || previous === current}
           onPress={() => commit(previous)}
           size="sm"
@@ -542,8 +555,8 @@ export function NumberField({
         <TextInput
           {...inputProps}
           accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
-          accessibilityHint={[accessibilityHint, error ?? helperText, readOnly ? "Read only" : undefined].filter(Boolean).join(". ") || undefined}
-          accessibilityLabel={[accessibilityLabel ?? label, required ? "required" : undefined, isInvalid ? "invalid" : undefined].filter(Boolean).join(", ")}
+          accessibilityHint={[accessibilityHint, error ?? helperText, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(". ") || undefined}
+          accessibilityLabel={[accessibilityLabel ?? label, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined].filter(Boolean).join(", ")}
           accessibilityRole="adjustable"
           accessibilityState={{ busy: loading, disabled: unavailable }}
           accessibilityValue={{ max: hasMaximum ? safeMax : undefined, min: hasMinimum ? min : undefined, now: current, text: String(current) }}
@@ -574,7 +587,7 @@ export function NumberField({
           value={text}
         />
         <Button
-          accessibilityLabel={`Increase ${label}`}
+          accessibilityLabel={controlCopy.increaseLabel(label)}
           disabled={unavailable || next === current}
           onPress={() => commit(next)}
           size="sm"
@@ -596,10 +609,13 @@ export type FileUploadProps = Omit<ViewProps, "children"> &
     onRequestFiles: () => void;
     onRemoveFile?: (file: NativeFile, index: number) => void;
     error?: string;
+    removeLabel?: string;
+    removeFileLabel?: (file: NativeFile) => string;
+    selectingLabel?: string;
   };
 
 export function FileUpload({
-  description = "Choose files from this device.",
+  description,
   disabled = false,
   error,
   files = [],
@@ -608,18 +624,23 @@ export function FileUpload({
   loading = false,
   onRemoveFile,
   onRequestFiles,
+  removeFileLabel,
+  removeLabel,
   required = false,
+  selectingLabel,
   style,
   ...props
 }: FileUploadProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedDescription = description ?? controlCopy.uploadDescription;
   const unavailable = disabled || loading;
   return (
     <View style={[styles.field, style]} {...props}>
       <FieldChrome error={error} invalid={invalid || Boolean(error)} label={label} required={required}>
       <Pressable
-        accessibilityHint={description}
-        accessibilityLabel={[label, required ? "required" : undefined, invalid || error ? "invalid" : undefined].filter(Boolean).join(", ")}
+        accessibilityHint={resolvedDescription}
+        accessibilityLabel={[label, required ? controlCopy.required : undefined, invalid || error ? controlCopy.invalid : undefined].filter(Boolean).join(", ")}
         accessibilityRole="button"
         accessibilityState={{ busy: loading, disabled: unavailable }}
         disabled={unavailable}
@@ -634,13 +655,13 @@ export function FileUpload({
           }
         ]}
       >
-        <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontWeight: "600" }}>{loading ? "Selecting…" : label}</Text>
-        <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{description}</Text>
+        <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontWeight: "600" }}>{loading ? selectingLabel ?? controlCopy.selecting : label}</Text>
+        <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{resolvedDescription}</Text>
       </Pressable>
       {files.map((file, index) => (
         <View key={`${file.uri ?? file.name}-${index}`} style={styles.fileRow}>
           <Text numberOfLines={1} style={{ color: theme.colors.text, flex: 1, fontFamily: theme.fonts.mono, fontSize: 12 }}>{file.name}</Text>
-          {onRemoveFile ? <Button accessibilityLabel={`Remove ${file.name}`} disabled={unavailable} onPress={() => onRemoveFile(file, index)} size="sm" variant="ghost">Remove</Button> : null}
+          {onRemoveFile ? <Button accessibilityLabel={removeFileLabel?.(file) ?? controlCopy.removeFileLabel(file.name)} disabled={unavailable} onPress={() => onRemoveFile(file, index)} size="sm" variant="ghost">{removeLabel ?? controlCopy.remove}</Button> : null}
         </View>
       ))}
       </FieldChrome>

@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useId,
   useRef,
   type ButtonHTMLAttributes,
@@ -8,6 +9,15 @@ import {
 } from "react";
 
 import { useControllableState, useDismissLayer, useViewportShift } from "./foundation.js";
+
+const focusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
 
 export type PopoverPlacement = "top" | "right" | "bottom" | "left";
 
@@ -43,7 +53,18 @@ export function Popover({
   const rootRef = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
   const [isOpen, setOpen] = useControllableState({ defaultValue: defaultOpen, onChange: onOpenChange, value: open });
+
+  useEffect(() => {
+    const wasOpen = wasOpenRef.current;
+    wasOpenRef.current = isOpen;
+    if (!isOpen || wasOpen) return;
+
+    const surface = surfaceRef.current;
+    const target = surface?.querySelector<HTMLElement>(focusableSelector) ?? surface;
+    target?.focus({ preventScroll: true });
+  }, [isOpen]);
 
   useDismissLayer({
     enabled: isOpen,
@@ -85,7 +106,15 @@ export function Popover({
       >
         {trigger}
       </button>
-      <div aria-label={label} className="ag-popover__surface" hidden={!isOpen} id={panelId} ref={surfaceRef} role="dialog">
+      <div
+        aria-label={label}
+        className="ag-popover__surface"
+        hidden={!isOpen}
+        id={panelId}
+        ref={surfaceRef}
+        role="dialog"
+        tabIndex={-1}
+      >
         {children}
       </div>
     </div>

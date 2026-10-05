@@ -1,6 +1,7 @@
 import { type ReactElement, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 
+import { useAurelglyphControlCopy } from "./control-copy.js";
 import { clamp, useControllableState, type ControlStateProps } from "./foundation.js";
 import { Button } from "./primitives.js";
 import { useAurelglyphTheme } from "./theme.js";
@@ -20,7 +21,7 @@ export function Tabs({
   defaultValue,
   disabled = false,
   items,
-  label = "Tabs",
+  label,
   loading = false,
   onValueChange,
   style,
@@ -29,6 +30,8 @@ export function Tabs({
   ...props
 }: TabsProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedLabel = label ?? controlCopy.tabs;
   const accentInk = theme.appearance === "quiet" && theme.mode === "dark" ? theme.colors.focus : theme.colors.accentStrong;
   const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accent;
   const firstEnabled = items.find((item) => !item.disabled)?.id ?? "";
@@ -43,7 +46,7 @@ export function Tabs({
             const unavailable = disabled || loading || item.disabled;
             return (
               <Pressable
-                accessibilityLabel={`${label}, ${item.label}`}
+                accessibilityLabel={`${resolvedLabel}, ${item.label}`}
                 accessibilityRole="tab"
                 accessibilityState={{ busy: loading, disabled: disabled || loading || item.disabled, selected: isSelected }}
                 disabled={unavailable}
@@ -92,6 +95,7 @@ export function SegmentedControl({
   ...props
 }: SegmentedControlProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accent;
   const { fontScale } = useWindowDimensions();
   const segmentMinWidth = Math.min(192, 96 * (Number.isFinite(fontScale) ? Math.max(1, fontScale) : 1));
@@ -109,7 +113,7 @@ export function SegmentedControl({
         const unavailable = disabled || loading || readOnly || item.disabled;
         return (
           <Pressable
-            accessibilityLabel={[item.label, label, readOnly ? "read only" : undefined].filter(Boolean).join(", ")}
+            accessibilityLabel={[item.label, label, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(", ")}
             accessibilityRole="radio"
             accessibilityState={{ busy: loading, checked, disabled: unavailable }}
             disabled={unavailable}
@@ -145,7 +149,7 @@ export type PaginationProps = Omit<ViewProps, "children"> &
 
 export function Pagination({
   disabled = false,
-  label = "Pagination",
+  label,
   loading = false,
   onPageChange,
   page,
@@ -155,6 +159,8 @@ export function Pagination({
   ...props
 }: PaginationProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedLabel = label ?? controlCopy.pagination;
   const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accentStrong;
   const count = Number.isFinite(pageCount) && pageCount >= 1 ? Math.floor(pageCount) : 1;
   const current = Number.isFinite(page) ? Math.floor(clamp(page, 1, count)) : 1;
@@ -165,11 +171,11 @@ export function Pagination({
   const unavailable = disabled || loading;
   return (
     <View accessible={false} style={[styles.pagination, style]} {...props}>
-      <Button accessibilityLabel={`${label}, previous page`} disabled={unavailable || current === 1} onPress={() => onPageChange(current - 1)} size="sm" variant="secondary">Previous</Button>
+      <Button accessibilityLabel={controlCopy.previousPageLabel(resolvedLabel)} disabled={unavailable || current === 1} onPress={() => onPageChange(current - 1)} size="sm" variant="secondary">{controlCopy.previous}</Button>
       {start > 1 ? <Text accessible={false} style={{ color: theme.colors.muted }}>…</Text> : null}
       {pages.map((item) => (
         <Pressable
-          accessibilityLabel={`${label}, page ${item}`}
+          accessibilityLabel={controlCopy.pageLabel(resolvedLabel, item)}
           accessibilityRole="button"
           accessibilityState={{ disabled: unavailable, selected: item === current }}
           disabled={unavailable}
@@ -189,7 +195,7 @@ export function Pagination({
         </Pressable>
       ))}
       {end < count ? <Text accessible={false} style={{ color: theme.colors.muted }}>…</Text> : null}
-      <Button accessibilityLabel={`${label}, next page`} disabled={unavailable || current === count} onPress={() => onPageChange(current + 1)} size="sm" variant="secondary">Next</Button>
+      <Button accessibilityLabel={controlCopy.nextPageLabel(resolvedLabel)} disabled={unavailable || current === count} onPress={() => onPageChange(current + 1)} size="sm" variant="secondary">{controlCopy.next}</Button>
     </View>
   );
 }
@@ -208,7 +214,7 @@ export function TabBar({
   defaultValue,
   disabled = false,
   items,
-  label = "Primary navigation",
+  label,
   loading = false,
   onValueChange,
   style,
@@ -216,6 +222,8 @@ export function TabBar({
   ...props
 }: TabBarProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedLabel = label ?? controlCopy.primaryNavigation;
   const accentInk = theme.appearance === "quiet" && theme.mode === "dark" ? theme.colors.focus : theme.colors.accentStrong;
   const selectionIndicator = theme.appearance === "quiet" ? theme.colors.focus : theme.colors.accent;
   const { fontScale } = useWindowDimensions();
@@ -236,7 +244,7 @@ export function TabBar({
           const unavailable = disabled || loading || item.disabled;
           return (
             <Pressable
-              accessibilityLabel={`${label}, ${item.label}`}
+              accessibilityLabel={`${resolvedLabel}, ${item.label}`}
               accessibilityRole="tab"
               accessibilityState={{ busy: loading, disabled: unavailable, selected: isSelected }}
               disabled={unavailable}

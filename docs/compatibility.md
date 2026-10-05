@@ -9,7 +9,7 @@ range after validating their own supported platforms.
 
 | Surface | Supported baseline |
 | --- | --- |
-| CSS and React | Current and previous major releases of Chrome, Edge, Firefox, and Safari; iOS Safari 17+ |
+| CSS and React | Chromium, Firefox, and WebKit engines shipped by the pinned Playwright release |
 | React | React 19.1 and 19.2; client components in React Server Component applications |
 | React Native | React Native 0.86 and 0.87; iOS 15.1+ and Android API 24+ consumer hosts |
 | SwiftUI | Swift tools 5.9+, iOS 17+, and macOS 14+ |
@@ -19,9 +19,13 @@ range after validating their own supported platforms.
 The full web accessibility and responsive suite runs in Chromium. A smaller
 cross-browser contract runs in Chromium, Firefox, and WebKit for native select
 fallback theming, light/dark mode, menu dismissal, and focus restoration.
+This is an engine-level automated support baseline, not a claim of release-gated
+coverage for previous-major browsers, branded Edge or Safari builds, or physical
+iOS Safari. Those broader browser and device matrices remain pre-1.0 evidence
+work.
 SwiftUI and React Native each have a real iOS Simulator consumer host. The React
-Native gate also creates a minified Android production bundle and validates its
-native project configuration.
+Native gate also creates a minified Android production bundle and compiles its
+native project into a release APK through Gradle.
 
 Clean-consumer package tests install React 19.1 and 19.2 plus React Native 0.86
 and 0.87 with normal strict peer resolution. The Rails CI matrix executes the
@@ -56,6 +60,14 @@ overlay insets while deliberately delegating host ownership. Consumer-owned
 native modal roots need an inner `AurelglyphOverlayHost` when tooltips or
 anchored surfaces must appear above modal content.
 
+React Native 0.87 applications using CocoaPods must currently set
+`ENV['RCT_USE_PREBUILT_RNCORE'] = '0'` before
+`prepare_react_native_project!`. The 0.87 prebuilt framework nests Fabric
+headers differently from the `<React/...>` public imports generated for
+community components such as `react-native-safe-area-context`; building RNCore
+from source restores that public header layout. The native host validates this
+workaround until the upstream prebuilt contract is compatible.
+
 ## Security and release evidence
 
 Every release must pass linting, type checks, unit tests, package builds,
@@ -66,15 +78,17 @@ the reviewed dependency-audit policy. Time-bounded audit exceptions are kept in
 and affected ranges, severity, and installed dependency path. Expired, changed,
 stale, or unreviewed fingerprints fail the release gate.
 
-The release workflow builds and preflights every registry artifact, publishes
-npm packages with provenance in dependency order, publishes the Rails gem, and
-creates the GitHub release only after the release contract succeeds. Retries
-verify and skip exact-version artifacts with matching integrity, so a partial
-registry outage is recoverable and mismatched immutable artifacts fail closed.
-The protected `release` environment requires `NPM_BOOTSTRAP_TOKEN` for new npm
-package names and `RUBYGEMS_API_KEY` for a missing gem version; npm trusted
-publishing handles later versions. These credentials and the environment must
-be configured by the repository owner.
+Pre-1.0 and prerelease tags are GitHub/source releases only; the workflow marks
+prereleases on GitHub and deliberately skips npm and RubyGems publication.
+Starting with stable `1.0.0`, the release workflow builds and preflights every
+registry artifact, publishes npm packages with provenance
+in dependency order, publishes the Rails gem, and creates the GitHub release
+only after the registry contract succeeds. Retries verify and skip exact-version
+artifacts with matching integrity, so a partial registry outage is recoverable
+and mismatched immutable artifacts fail closed. The protected `release`
+environment then requires `NPM_BOOTSTRAP_TOKEN` for new npm package names and
+`RUBYGEMS_API_KEY` for a missing gem version; npm trusted publishing handles
+later versions. These credentials must be configured before the 1.0.0 tag.
 
 ## Known scope limits before 1.0
 

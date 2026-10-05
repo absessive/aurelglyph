@@ -196,7 +196,8 @@ final class AurelglyphSwiftUISmokeUITests: XCTestCase {
     app.terminate()
     launch(arguments: [
       "-UIPreferredContentSizeCategoryName",
-      "UICTContentSizeCategoryAccessibilityXXXL"
+      "UICTContentSizeCategoryAccessibilityXXXL",
+      "-aurelglyph-long-information"
     ])
 
     let title = app.staticTexts["Native workbench"]
@@ -209,6 +210,14 @@ final class AurelglyphSwiftUISmokeUITests: XCTestCase {
     XCTAssertTrue(
       scrollUntilVisible(app.buttons["form.more-information"]),
       "The form remained unreachable at an accessibility content size"
+    )
+    tapWhenHittable(
+      app.buttons["form.more-information"],
+      message: "The information trigger was not reachable at an accessibility content size"
+    )
+    XCTAssertTrue(
+      scrollUntilVisible(app.staticTexts["form.more-information.last"], maximumSwipes: 12),
+      "Long More information content was not scrollable at an accessibility content size"
     )
   }
 
@@ -239,7 +248,11 @@ final class AurelglyphSwiftUISmokeUITests: XCTestCase {
     timeout: TimeInterval = 8,
     message: String
   ) {
-    XCTAssertTrue(waitForHittable(element, timeout: timeout), message)
+    let isReady = waitForHittable(element, timeout: timeout)
+    if !isReady {
+      print("[swiftui-smoke] Unhittable element: \(element)\n\(app.debugDescription)")
+    }
+    XCTAssertTrue(isReady, message)
     if element.exists && element.isHittable {
       element.tap()
     }

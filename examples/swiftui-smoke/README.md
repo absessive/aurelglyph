@@ -21,6 +21,6 @@ npm run test:ios
 ```
 
 The UI suite verifies launch, select and menu interaction, dialog and contextual
-information presentation, deterministic accessibility-size layout, and the
-reliable XCTest accessibility audit categories available on iOS 17 or newer.
-Xcode and an installed iOS Simulator runtime are required.
+information presentation, long contextual-copy scrolling at an accessibility
+text size, and the reliable XCTest accessibility audit categories available on
+iOS 17 or newer. Xcode and an installed iOS Simulator runtime are required.

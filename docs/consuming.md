@@ -2,7 +2,10 @@
 
 This guide documents the minimum configuration needed to consume the current
 Aurelglyph workspace outputs. It covers local workspace usage, Git consumption,
-and the package shape used by published npm, RubyGems, and SwiftPM consumers.
+and the package shape used by npm, RubyGems, and SwiftPM consumers. Before
+`1.0.0`, npm and RubyGems publication is intentionally disabled; use Git,
+SwiftPM, or a local workspace while treating those sections as the 1.0 package
+contract.
 
 ## GitHub Pages
 
@@ -114,6 +117,9 @@ Install the CSS package for tokens, locally packaged OFL fonts, reset/base
 styles, semantic CSS variables, and the shared component class layer. Add the
 React package when you need typed React components.
 
+The npm commands in this guide document the `1.0.0` package contract. They are
+not a claim that a pre-1.0 package exists in the public registry.
+
 ```bash
 npm install @aurelglyph/css @aurelglyph/react
 ```
@@ -206,6 +212,9 @@ interaction foundations add overlays, complete choice/numeric inputs, feedback,
 and responsive layout:
 
 ```tsx
+const [layout, setLayout] = useState("grid");
+const [section, setSection] = useState("overview");
+
 <AppShell
   topBar={<TopBar title="Workbench" subtitle="Systems" />}
   footer={<TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} />}
@@ -218,12 +227,12 @@ and responsive layout:
   <Switch label="Quiet mode" name="quiet" />
   <NavigationStack title="Workbench">
     <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
-      <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
+      <SegmentedControl activeId={layout} items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} onValueChange={setLayout} />
       <Alert title="Package ready" tone="success">Design tokens and native controls are ready to use.</Alert>
       <Badge tone="accent">Live</Badge>
     </NavigationPage>
   </NavigationStack>
-  <Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}>Review generated package status.</Tabs>
+  <Tabs activeId={section} items={[{ id: "overview", label: "Overview" }, { id: "activity", label: "Activity" }]} onValueChange={setSection}>Review generated package status.</Tabs>
   <Metric label="Latency" value="42ms" delta="Stable" />
   <Progress value={72} />
   <CommandPalette items={[{ icon: "search", id: "search", label: "Search systems", shortcut: "Cmd-K" }]} />

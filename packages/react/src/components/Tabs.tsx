@@ -18,7 +18,9 @@ export type TabsProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 function safePart(value: string): string {
-  return encodeURIComponent(value).replaceAll("%", "-");
+  // Keep the readable URI encoding while escaping literal hyphens first so
+  // values such as `a/b` and `a-2Fb` cannot collapse to the same DOM id.
+  return encodeURIComponent(value).replaceAll("-", "--").replaceAll("%", "-");
 }
 
 export function Tabs({

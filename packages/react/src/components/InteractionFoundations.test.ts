@@ -92,6 +92,26 @@ describe("roving selection controls", () => {
     expect(container.querySelectorAll("[role='tabpanel'][hidden]")).toHaveLength(2);
   });
 
+  it("keeps tab relationships unique when encoded item ids resemble literal ids", () => {
+    render(
+      createElement(Tabs, {
+        activeId: "a/b",
+        children: "Panel",
+        id: "collision-tabs",
+        items: [
+          { id: "a/b", label: "Encoded" },
+          { id: "a-2Fb", label: "Literal" }
+        ]
+      })
+    );
+
+    const tabs = [...container.querySelectorAll<HTMLButtonElement>("[role='tab']")];
+    const panels = [...container.querySelectorAll<HTMLElement>("[role='tabpanel']")];
+    expect(new Set(tabs.map((tab) => tab.id)).size).toBe(tabs.length);
+    expect(new Set(panels.map((panel) => panel.id)).size).toBe(panels.length);
+    expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual(panels.map((panel) => panel.id));
+  });
+
   it("supports Home and End in segmented controls", () => {
     const onValueChange = vi.fn();
     render(
@@ -316,6 +336,26 @@ describe("existing component completion", () => {
 });
 
 describe("overlay foundations", () => {
+  it("opens menus at the requested keyboard edge without a focus race", async () => {
+    render(
+      createElement(Menu, {
+        items: [
+          { id: "first", label: "First" },
+          { disabled: true, id: "middle", label: "Middle" },
+          { id: "last", label: "Last" }
+        ],
+        label: "Actions"
+      })
+    );
+
+    const trigger = container.querySelector<HTMLButtonElement>(".ag-menu__trigger") as HTMLButtonElement;
+    fire(trigger, new KeyboardEvent("keydown", { bubbles: true, key: "ArrowUp" }));
+    await act(async () => undefined);
+
+    const items = container.querySelectorAll<HTMLButtonElement>("[role='menuitem']");
+    expect(document.activeElement).toBe(items[2]);
+  });
+
   it("navigates menu items and restores trigger focus on Escape", async () => {
     const onOpenChange = vi.fn();
     const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
@@ -350,11 +390,37 @@ describe("overlay foundations", () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it("dismisses popovers on outside pointer interaction", () => {
+  it("uses an explicit text value for typeahead on rich menu labels", async () => {
+    render(
+      createElement(Menu, {
+        defaultOpen: true,
+        items: [
+          { id: "inspect-system", label: createElement("span", null, "Inspect"), textValue: "Inspect" },
+          { id: "archive-system", label: createElement("span", null, "Archive"), textValue: "Archive" }
+        ],
+        label: "Actions"
+      })
+    );
+    await act(async () => undefined);
+
+    const items = container.querySelectorAll<HTMLButtonElement>("[role='menuitem']");
+    fire(items[0] as HTMLButtonElement, new KeyboardEvent("keydown", { bubbles: true, key: "a" }));
+    expect(document.activeElement).toBe(items[1]);
+  });
+
+  it("moves focus into popovers and dismisses them on outside pointer interaction", () => {
     const onOpenChange = vi.fn();
-    render(createElement(Popover, { children: "Panel", label: "Details", onOpenChange, trigger: "Open" }));
+    render(
+      createElement(Popover, {
+        children: createElement("button", { type: "button" }, "Apply"),
+        label: "Details",
+        onOpenChange,
+        trigger: "Open"
+      })
+    );
     act(() => (container.querySelector(".ag-popover__trigger") as HTMLButtonElement).click());
     expect(onOpenChange).toHaveBeenCalledWith(true);
+    expect(document.activeElement?.textContent).toBe("Apply");
     fire(document.body, new Event("pointerdown", { bubbles: true }));
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
@@ -381,6 +447,8 @@ describe("overlay foundations", () => {
     act(() => trigger.click());
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(panel.hidden).toBe(false);
+    expect(panel.getAttribute("tabindex")).toBe("-1");
+    expect(document.activeElement).toBe(panel);
     expect(panel.textContent).toContain("Use a short operational name.");
   });
 

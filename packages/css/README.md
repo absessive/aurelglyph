@@ -3,6 +3,9 @@
 Aurelglyph tokens, local OFL web fonts, base styles, and shared component
 classes for web and Rails-aligned surfaces.
 
+Public npm publication begins with Aurelglyph `1.0.0`; before then, consume this
+package from the Git repository or workspace.
+
 ```bash
 npm install @aurelglyph/css
 ```

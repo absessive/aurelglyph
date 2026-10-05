@@ -5,17 +5,32 @@
 ## 0.8.0
 
 - Establish the 0.8 production release foundation with checked-in Web, Rails,
-  SwiftUI, and React Native CI; controlled npm provenance, RubyGems, and GitHub
-  publication; pinned Node and Rails toolchains; synchronized dependency and
+  SwiftUI, and React Native CI; controlled GitHub publication and a staged npm
+  provenance/RubyGems path for 1.0.0; pinned Node and Rails toolchains;
+  synchronized dependency and
   lockfile version checks; promoted release-note validation; clean-consumer npm
   and gem smoke tests; strict-peer React 19.1/19.2 and React Native 0.86/0.87
   consumer installs with SSR and type compilation; package-size budgets; and an
   explicit compatibility, semantic-versioning, deprecation, and support policy.
-  Registry publication now preflights all artifacts, uses a qualifying pinned
+  Pre-1.0 and prerelease tags now remain source-only by policy and prereleases
+  are marked correctly on GitHub. The stable 1.0.0 registry path
+  preflights all artifacts, uses a qualifying pinned
   trusted-publishing toolchain, and recovers from partial failures by verifying
-  and skipping exact matching immutable versions. The exhaustive UX harness now
-  fails fast outside POSIX environments and bounds process-group and HTTP-server
-  teardown so a completed audit cannot leave CI hanging.
+  and skipping exact matching immutable versions. CI and release jobs pin Linux
+  runner images and external actions to immutable revisions, receive automated
+  weekly action-update proposals, and restrict write and OIDC permissions to the
+  exact publication jobs that require them. GitHub release creation verifies and
+  skips an exact existing release, including after an ambiguous publication
+  response, so workflow retries remain idempotent. The exhaustive UX and
+  cross-browser harnesses now bound process-group and HTTP-server teardown, and
+  the UX harness fails fast outside POSIX environments, so a completed audit
+  cannot leave CI hanging. Custom UX artifact
+  roots are constrained to workspace or temporary-directory descendants, and
+  each audit writes to a fresh child without recursively deleting caller data.
+  Direct `npm test` now builds ignored package artifacts before checking them;
+  CI reuses its explicit build through the non-duplicating unit-test entry.
+  Consumer documentation labels 0.8.0 as a GitHub/source release so registry
+  install examples cannot be mistaken for already-published packages.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form
@@ -24,6 +39,10 @@
   Declare the React entry as a client boundary and add server-render/hydration
   evidence plus Chromium, Firefox, and WebKit fallback coverage for selects,
   modes, menus, and restored focus.
+- Move focus into React Popover and More Information dialog surfaces when they
+  open, preferring their first interactive child and falling back to the labeled
+  panel for explanatory-only content, while preserving Escape focus restoration
+  and the existing Rails interaction contract.
 - Upgrade the private React Native consumer host to the 0.87 toolchain while
   retaining declared 0.86 compatibility. Gate releases with a reviewed,
   expiring security policy: public packages permit no unreviewed runtime
@@ -36,7 +55,18 @@
   while validation errors and live status remain visible. React Native overlays
   now use the maintained safe-area-context implementation instead of the
   deprecated core SafeAreaView. Publish all 19 families and 95 platform claims
-  with component-specific React Native implementation evidence.
+  with component-specific React Native implementation evidence. The Android
+  consumer gate now compiles a release APK through Gradle with a pinned JDK,
+  exercising the native scaffold, Kotlin compilation, autolinking, and packaged
+  JavaScript rather than stopping at CLI configuration and Metro output.
+- Make React Native-owned state, action, selection, file, pagination, and modal
+  copy replaceable through a scoped control-copy provider while retaining
+  component-level overrides. Keep Switch descriptions and read-only state on
+  the focused native control. Document and enforce the RN 0.87 source-RNCore
+  CocoaPods workaround, and bundle clean consumers against both RN 0.86 and
+  0.87. Expand the native host across theme, Select/Menu, disabled-row, and More
+  Information interactions. Bound SwiftUI More Information content in a
+  scrollable region and verify long copy at an accessibility text size.
 - Theme dropdown surfaces end to end. Web and Rails selects retain native form,
   validation, keyboard, and no-script behavior while progressively adopting the
   standards-based customizable picker with Aurelglyph surfaces, focus rails,
@@ -47,6 +77,16 @@
   traversal, Escape dismissal, and trigger focus restoration; React, React
   Native, examples, and regression coverage document and enforce the same
   dropdown contract.
+- Close release-candidate web edge cases: React tab relationships remain unique
+  for URI-like and literal item identifiers; Arrow Up opens menus on the last
+  enabled item without a focus race; rich menu labels expose an explicit
+  typeahead value; controlled Tabs and SegmentedControl documentation
+  demonstrates live state updates; and the standalone preview uses the canonical
+  semantic success and danger colors.
+- Align the public browser baseline with the evidence actually run for 0.8.0:
+  pinned Playwright Chromium, Firefox, and WebKit engines. Previous-major,
+  branded Edge/Safari, and physical iOS Safari coverage remain explicit pre-1.0
+  evidence work instead of unsupported release claims.
 
 ## 0.7.0
 

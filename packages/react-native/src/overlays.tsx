@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAurelglyphControlCopy } from "./control-copy.js";
 import { clamp, useControllableState } from "./foundation.js";
 import { Icon } from "./icons.js";
 import { AurelglyphOverlayHost, useAurelglyphOverlayHost, type OverlayHostFrame } from "./overlay-host.js";
@@ -45,6 +46,8 @@ export type DialogProps = Omit<ModalProps, "children" | "onDismiss" | "onRequest
   children: ReactNode;
   footer?: ReactNode;
   variant?: DialogVariant;
+  closeLabel?: string;
+  closeText?: string;
   closeOnScrimPress?: boolean;
   contentContainerStyle?: StyleProp<ViewStyle>;
   keyboardAvoidingBehavior?: KeyboardAvoidingViewProps["behavior"];
@@ -57,7 +60,9 @@ export type DialogProps = Omit<ModalProps, "children" | "onDismiss" | "onRequest
 export function Dialog({
   animationType = "fade",
   children,
+  closeLabel,
   closeOnScrimPress = true,
+  closeText,
   contentContainerStyle,
   description,
   footer,
@@ -76,6 +81,7 @@ export function Dialog({
   ...props
 }: DialogProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
   const reduceMotion = useReducedMotion();
   const maxWidth = variant === "compact" ? 420 : variant === "wide" ? 760 : 560;
   const resolvedScreenInset = Number.isFinite(screenInset) ? Math.max(0, screenInset) : 16;
@@ -140,12 +146,12 @@ export function Dialog({
                     {description ? <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, lineHeight: 21 }}>{description}</Text> : null}
                   </View>
                   <Pressable
-                    accessibilityLabel={`Close ${title}`}
+                    accessibilityLabel={closeLabel ?? controlCopy.closeLabel(title)}
                     accessibilityRole="button"
                     onPress={() => dismiss("close")}
                     style={({ pressed }) => [styles.closeButton, { borderColor: theme.colors.borderStrong, opacity: pressed ? 0.72 : 1 }]}
                   >
-                    <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontSize: 12 }}>Close</Text>
+                    <Text style={{ color: theme.colors.text, fontFamily: theme.fonts.ui, fontSize: 12 }}>{closeText ?? controlCopy.close}</Text>
                   </Pressable>
                 </View>
                 {scrollable ? (
@@ -266,20 +272,23 @@ export function MoreInformation({
   children,
   defaultOpen = false,
   disabled = false,
-  label = "More information",
+  label,
   onOpenChange,
   open,
-  triggerLabel = "More information",
+  triggerLabel,
   ...props
 }: MoreInformationProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedLabel = label ?? controlCopy.moreInformation;
+  const resolvedTriggerLabel = triggerLabel ?? controlCopy.moreInformation;
   const [isOpen, setOpen] = useControllableState({ defaultValue: defaultOpen, onChange: onOpenChange, value: open });
   const resolvedOpen = isOpen && !disabled;
 
   return (
     <View style={styles.moreInformation}>
       <Pressable
-        accessibilityLabel={label}
+        accessibilityLabel={resolvedLabel}
         accessibilityRole="button"
         accessibilityState={{ disabled, expanded: resolvedOpen }}
         disabled={disabled}
@@ -294,18 +303,19 @@ export function MoreInformation({
         ]}
       >
         <Icon color={resolvedOpen ? theme.colors.focus : theme.colors.muted} name="info" size={16} />
-        {triggerLabel ? (
+        {resolvedTriggerLabel ? (
           <Text style={{ color: theme.colors.muted, fontFamily: theme.fonts.mono, fontSize: 12 }}>
-            {triggerLabel}
+            {resolvedTriggerLabel}
           </Text>
         ) : null}
       </Pressable>
       <Popover
         {...props}
-        accessibilityLabel={label}
+        accessibilityLabel={resolvedLabel}
+        closeLabel={props.closeLabel ?? controlCopy.closeLabel(resolvedLabel)}
         onOpenChange={(nextOpen) => setOpen(nextOpen)}
         open={resolvedOpen}
-        title={label}
+        title={resolvedLabel}
       >
         {children}
       </Popover>

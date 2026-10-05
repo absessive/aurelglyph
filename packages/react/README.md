@@ -2,6 +2,9 @@
 
 Accessible React controls that implement the Aurelglyph component contract.
 
+Public npm publication begins with Aurelglyph `1.0.0`; before then, consume this
+package from the Git repository or workspace.
+
 ```bash
 npm install @aurelglyph/css @aurelglyph/react
 ```
@@ -96,7 +99,8 @@ Composite widgets implement their expected keyboard model:
 - `Tabs` and `SegmentedControl`: Arrow keys, Home, and End with disabled-item
   skipping. Horizontal arrows follow the computed writing direction in RTL.
 - `Menu`: Arrow Up/Down, Home, End, typeahead, Enter/Space opening, Escape
-  dismissal, and focus restoration.
+  dismissal, and focus restoration. Supply `textValue` when an item's `label`
+  is rich React content so typeahead follows the visible label.
 - `CommandPalette` and `Combobox`: filtering, active-descendant tracking,
   Arrow Up/Down, Home, End, Enter selection, and Escape dismissal.
 - `Tooltip`: focus and pointer activation with Escape dismissal.
@@ -116,7 +120,9 @@ application also controls the query.
 Use `MoreInformation` for optional explanatory copy that would otherwise stay
 visible beside a control or panel. It composes the Popover behavior into a
 compact, icon-backed trigger with an accessible contextual label. Keep
-validation errors and live status messages inline.
+validation errors and live status messages inline. Opening a Popover moves
+keyboard focus to its first interactive child, or to the labeled panel when it
+contains only explanatory copy; Escape dismisses it and restores trigger focus.
 
 ```tsx
 <MoreInformation label="Project name information">

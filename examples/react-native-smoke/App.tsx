@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {
   Modal,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -13,6 +14,9 @@ import {
   Icon,
   IconButton,
   MoreInformation,
+  Menu,
+  SegmentedControl,
+  Select,
   Tooltip,
   useAurelglyphTheme,
 } from '@aurelglyph/react-native';
@@ -31,6 +35,7 @@ export const smokeLabels = {
   screenInformation: 'About the native overlay host',
   tooltip: 'Hosted modal signal · bounded precision overlay calibration',
   underlyingAction: 'Underlying action',
+  operations: 'Operations',
 } as const;
 
 function NativeModalSmoke({insets, onClose}: {insets: EdgeInsets; onClose: () => void}) {
@@ -127,10 +132,16 @@ function SmokeWorkbench() {
   const theme = useAurelglyphTheme();
   const insets = useSafeAreaInsets();
   const [modalOpen, setModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [releaseChannel, setReleaseChannel] = useState('stable');
+  const [lastAction, setLastAction] = useState('None');
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
-      <StatusBar barStyle="light-content" />
+    <ScrollView
+      bounces={false}
+      contentContainerStyle={styles.container}
+      style={[styles.scroll, {backgroundColor: theme.colors.background}]}>
+      <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} />
       <View style={[styles.calibrationLine, {borderTopColor: theme.colors.focus}]} />
       <View style={styles.workbenchHeader}>
         <View style={styles.headingGroup}>
@@ -165,16 +176,99 @@ function SmokeWorkbench() {
       <Button accessibilityLabel={smokeLabels.openModal} onPress={() => setModalOpen(true)}>
         Open native modal
       </Button>
+      <View style={styles.controlStack}>
+        <Select
+          label="Release channel"
+          onValueChange={setReleaseChannel}
+          options={[
+            {label: 'Stable', value: 'stable'},
+            {disabled: true, label: 'Nightly', value: 'nightly'},
+            {label: 'Beta', value: 'beta'},
+          ]}
+          value={releaseChannel}
+        />
+        <Text
+          accessibilityLabel={`Channel: ${releaseChannel === 'beta' ? 'Beta' : 'Stable'}`}
+          style={[styles.counter, {color: theme.colors.text}]}>
+          Channel: {releaseChannel === 'beta' ? 'Beta' : 'Stable'}
+        </Text>
+        <Button
+          accessibilityLabel={smokeLabels.operations}
+          onPress={() => setMenuOpen(true)}
+          variant="secondary">
+          Operations
+        </Button>
+        <Text
+          accessibilityLabel={`Last action: ${lastAction}`}
+          style={[styles.counter, {color: theme.colors.text}]}>
+          Last action: {lastAction}
+        </Text>
+        <Menu
+          accessibilityLabel={smokeLabels.operations}
+          items={[
+            {label: 'Sync now', onSelect: () => setLastAction('Sync requested'), value: 'sync'},
+            {disabled: true, label: 'Requires approval', value: 'approval'},
+            {danger: true, label: 'Archive draft', onSelect: () => setLastAction('Draft archived'), value: 'archive'},
+          ]}
+          onOpenChange={setMenuOpen}
+          open={menuOpen}
+        />
+      </View>
       {modalOpen ? <NativeModalSmoke insets={insets} onClose={() => setModalOpen(false)} /> : null}
+    </ScrollView>
+  );
+}
+
+function SmokeThemeControls({
+  appearance,
+  mode,
+  onAppearanceChange,
+  onModeChange,
+}: {
+  appearance: 'atelier' | 'quiet';
+  mode: 'dark' | 'light';
+  onAppearanceChange: (appearance: 'atelier' | 'quiet') => void;
+  onModeChange: (mode: 'dark' | 'light') => void;
+}) {
+  const theme = useAurelglyphTheme();
+  return (
+    <View style={[styles.themeControls, {backgroundColor: theme.colors.background}]}>
+      <SegmentedControl
+        items={[{label: 'Light', value: 'light'}, {label: 'Dark', value: 'dark'}]}
+        label="Color mode"
+        onValueChange={value => onModeChange(value as 'dark' | 'light')}
+        value={mode}
+      />
+      <SegmentedControl
+        items={[{label: 'Quiet', value: 'quiet'}, {label: 'Atelier', value: 'atelier'}]}
+        label="Surface language"
+        onValueChange={value => onAppearanceChange(value as 'atelier' | 'quiet')}
+        value={appearance}
+      />
+      <Text
+        accessibilityLabel={`Theme: ${mode === 'dark' ? 'Dark' : 'Light'} · ${appearance === 'atelier' ? 'Atelier' : 'Quiet'}`}
+        style={[styles.counter, {color: theme.colors.text}]}>
+        Theme: {mode === 'dark' ? 'Dark' : 'Light'} · {appearance === 'atelier' ? 'Atelier' : 'Quiet'}
+      </Text>
     </View>
   );
 }
 
 function ThemedSmokeHost() {
   const insets = useSafeAreaInsets();
+  const [appearance, setAppearance] = useState<'atelier' | 'quiet'>('quiet');
+  const [mode, setMode] = useState<'dark' | 'light'>('dark');
   return (
-    <AurelglyphProvider accent="royal-purple" appearance="quiet" mode="dark" overlayInsets={insets}>
-      <SmokeWorkbench />
+    <AurelglyphProvider accent="royal-purple" appearance={appearance} mode={mode} overlayInsets={insets}>
+      <View style={styles.host}>
+        <SmokeThemeControls
+          appearance={appearance}
+          mode={mode}
+          onAppearanceChange={setAppearance}
+          onModeChange={setMode}
+        />
+        <SmokeWorkbench />
+      </View>
     </AurelglyphProvider>
   );
 }
@@ -189,11 +283,14 @@ function App() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     gap: 20,
     justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 48,
+  },
+  controlStack: {
+    gap: 12,
   },
   actionStack: {
     gap: 12,
@@ -228,6 +325,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  host: {
+    flex: 1,
+  },
   instrumentPanel: {
     borderWidth: StyleSheet.hairlineWidth,
     gap: 18,
@@ -255,6 +355,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
   },
+  scroll: {
+    flex: 1,
+  },
   signalDot: {
     borderRadius: 5,
     height: 10,
@@ -263,6 +366,11 @@ const styles = StyleSheet.create({
   statusCopy: {
     flex: 1,
     gap: 3,
+  },
+  themeControls: {
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingTop: 24,
   },
   statusPanel: {
     alignItems: 'center',

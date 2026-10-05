@@ -5,16 +5,19 @@ import { access, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/p
 import { tmpdir } from "node:os";
 import { extname, join, normalize, resolve, sep } from "node:path";
 
+import { resolveUxOutputRoot } from "./ux-output.mjs";
+
 if (process.platform === "win32") {
   throw new Error("The Aurelglyph UX regression harness requires POSIX process groups. Run it on Linux, macOS, or WSL2.");
 }
 
 const workspace = resolve(import.meta.dirname, "..");
 const exampleDist = join(workspace, "examples/react-vite/dist");
-const outputDirectory = process.env.AURELGLYPH_UX_OUTPUT || join(tmpdir(), "aurelglyph-ux-regression");
+const outputRoot = resolveUxOutputRoot(process.env.AURELGLYPH_UX_OUTPUT, { workspace });
 const axeSource = await readFile(join(workspace, "node_modules/axe-core/axe.min.js"), "utf8");
 const childProcesses = new Set();
 const chromeProfiles = new Set();
+let outputDirectory;
 let staticServer;
 let navigationSequence = 0;
 
@@ -1367,8 +1370,8 @@ process.once("SIGINT", () => { cleanup().finally(() => process.exit(130)); });
 process.once("SIGTERM", () => { cleanup().finally(() => process.exit(143)); });
 
 try {
-  await rm(outputDirectory, { force: true, recursive: true });
-  await mkdir(outputDirectory, { recursive: true });
+  await mkdir(outputRoot, { recursive: true });
+  outputDirectory = await mkdtemp(join(outputRoot, "run-"));
   const [previewPort, staticPort] = await Promise.all([availablePort(), availablePort()]);
   const previewProcess = await startPreview(previewPort);
   childProcesses.add(previewProcess);

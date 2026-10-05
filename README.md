@@ -7,13 +7,16 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.8.0`
+Current version: `0.8.0` (GitHub/source distribution; npm and RubyGems
+publication begins with `1.0.0`)
 
 ## Status
 
 This repository is the Aurelglyph workspace. The package-manager examples below
 show the current consumer API for npm, RubyGems, Swift Package Manager, Git, and
-local workspace paths.
+local workspace paths. Before `1.0.0`, use Git, Swift Package Manager, or a local
+workspace; the npm and RubyGems examples document the package contract that will
+be published at `1.0.0`.
 
 Version 0.8.0 establishes a production release foundation around the existing
 catalog: bidirectional Web and Rails behavior, safer controlled values, React
@@ -52,6 +55,10 @@ and current pre-1.0 scope limits are documented in
 ## Install
 
 Install only the packages your app needs.
+
+The npm commands below document the `1.0.0` package contract. For `0.8.0`, use
+this Git repository or a local workspace; npm and RubyGems publication is
+intentionally deferred until `1.0.0`.
 
 ### React
 
@@ -143,6 +150,8 @@ import {
 
 export function DesignSystemSetup() {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [layout, setLayout] = useState("grid");
+  const [section, setSection] = useState("overview");
 
   return (
     <AppShell
@@ -158,7 +167,7 @@ export function DesignSystemSetup() {
       <Switch label="Quiet mode" name="quiet" />
       <NavigationStack title="Workbench">
         <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
-          <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
+          <SegmentedControl activeId={layout} items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} onValueChange={setLayout} />
           <Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} />
           <Alert title="Package ready" tone="success">Design tokens and native controls are ready to use.</Alert>
           <Avatar name="Ajit Chakrapani" />
@@ -169,7 +178,7 @@ export function DesignSystemSetup() {
         </NavigationPage>
       </NavigationStack>
       <Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} />
-      <Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}>Review generated package status.</Tabs>
+      <Tabs activeId={section} items={[{ id: "overview", label: "Overview" }, { id: "activity", label: "Activity" }]} onValueChange={setSection}>Review generated package status.</Tabs>
       <Metric label="Latency" value="42ms" delta="Stable" />
       <Progress value={72} />
       <Skeleton />
@@ -289,9 +298,11 @@ native dialog close requests can update application state. Opening moves focus
 into the modal; closing restores focus to the invoking control.
 
 ```tsx
+const [layout, setLayout] = useState("grid");
+
 <NavigationStack title="Workbench">
   <NavigationPage actions={<Toolbar><Button icon="save">Save</Button></Toolbar>} title="Systems">
-    <SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} />
+    <SegmentedControl activeId={layout} items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} onValueChange={setLayout} />
     <Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} />
     <Alert title="Package ready" tone="success">Design tokens and native controls are ready to use.</Alert>
     <Avatar name="Ajit Chakrapani" />
@@ -312,8 +323,10 @@ value, `DataTable` and `Pagination` handle bounded result sets, and
 `CommandPalette` exposes keyboard-first actions.
 
 ```tsx
+const [section, setSection] = useState("overview");
+
 <Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} />
-<Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}>Review generated package status.</Tabs>
+<Tabs activeId={section} items={[{ id: "overview", label: "Overview" }, { id: "activity", label: "Activity" }]} onValueChange={setSection}>Review generated package status.</Tabs>
 <Metric label="Latency" value="42ms" delta="Stable" />
 <Progress value={72} />
 <Skeleton />
@@ -573,7 +586,15 @@ npm install @aurelglyph/react-native react-native-safe-area-context
 
 The adapter targets React Native 0.86 or newer and React 19.2.3 or newer. Wrap
 the app once for mode/accent resolution, then compose the same component
-vocabulary used by the web, SwiftUI, and Rails adapters:
+vocabulary used by the web, SwiftUI, and Rails adapters.
+
+React Native 0.87 iOS consumers must currently set
+`ENV['RCT_USE_PREBUILT_RNCORE'] = '0'` before
+`prepare_react_native_project!` in their Podfile so generated community Fabric
+components can import the public `<React/...>` headers. React Native 0.86 does
+not require this workaround.
+
+For example:
 
 ```tsx
 import {
@@ -610,7 +631,9 @@ export function Settings() {
 `resolveAurelglyphTheme(mode, accent, appearance)` returns mode- and
 appearance-aware native values. In `quiet`, the selected accent is retained so
 switching back to `atelier` is lossless while rendered controls use the reduced
-violet signal palette.
+violet signal palette. `AurelglyphControlCopyProvider` replaces package-owned
+visible and accessibility copy for localized subtrees; explicit component copy
+props remain the final override.
 Overlays use React Native `Modal` inside bounded safe-area and keyboard-aware
 shells backed by `react-native-safe-area-context`; tooltip behavior combines
 `accessibilityHint` with the provider's
@@ -645,8 +668,10 @@ Bare React Native apps can link the same files from the package's
 The private `examples/react-native-smoke` workspace is a real React Native 0.87
 iOS and Android host for adapter integration work. Its native iOS UI contract
 opens a consumer-owned `Modal` and verifies overlay-host layering,
-remeasurement, viewport clamping, and touch pass-through against a release
-Hermes bundle.
+remeasurement, viewport clamping, touch pass-through, themed selection
+surfaces, More Information, and the light/dark atelier/quiet controls against a
+release Hermes bundle. Clean-consumer package checks also create minified iOS
+bundles with both React Native 0.86 and 0.87.
 
 ### SwiftUI
 
@@ -834,8 +859,10 @@ warning, danger, and info colors remain distinct from the active signal color.
 Forced modes also set the browser `color-scheme`, so native fields, menus, and
 scrollbars follow the same light or dark contract. Quiet control boundaries and
 selected-state rails meet the 3:1 non-text contrast target across its surfaces.
-`Menu` and `Combobox` always render tokenized Aurelglyph popup surfaces. Native
-web and Rails `Select` controls progressively use the customizable-select
+`Menu` and `Combobox` always render tokenized Aurelglyph popup surfaces. Rich
+React menu labels can supply `textValue` so keyboard typeahead follows the
+visible label. Native web and Rails `Select` controls progressively use the
+customizable-select
 picker for the same surfaces, focus rail, option states, radius, and elevation;
 browsers without that capability keep accessible platform behavior with
 mode-aware option paint. SwiftUI `AurelglyphMenu` and `AurelglyphSelect`, plus
@@ -846,7 +873,9 @@ expose their placeholders, state values, hints, empty states, and generated
 option labels through `AurelglyphControlCopy` for localization.
 The React gallery persists appearance, mode, and atelier accent choices before
 rendering, exposes branded keyboard focus on its custom controls, and announces
-client-side page changes.
+client-side page changes. React Popover and More Information panels move focus
+inside when opened and restore their trigger after Escape dismissal, matching
+the Rails interaction contract.
 
 Components should use semantic variables like
 `--ag-color-semantic-background`, `--ag-color-semantic-surface`,
@@ -987,6 +1016,10 @@ npm run version:sync -- "Describe the changelog item"
 npm run verify
 ```
 
+`npm test` builds publishable outputs before running Vitest, so package-artifact
+contracts also work from a clean checkout. CI and `npm run verify` use the
+internal `test:unit` command after their explicit build step to avoid rebuilding.
+
 `npm run lint` applies the workspace ESLint flat configuration to JavaScript,
 TypeScript, React, and React Native source, including React Hooks correctness,
 with zero warnings allowed. Generated artifacts, vendored native outputs, and
@@ -1000,17 +1033,21 @@ path exactly match the reviewed policy. Changed or stale fingerprints fail.
 and compiles SSR and type contracts against React 19.1/19.2 and React Native
 0.86/0.87, so compatibility claims are exercised outside the workspace graph.
 
-Tagged releases build every registry artifact before publication and verify
-existing exact-version artifacts by integrity. A retry safely skips matching
-packages after a partial registry outage and fails closed on different bytes.
-The protected `release` environment needs `NPM_BOOTSTRAP_TOKEN` for the first
+Pre-1.0 and prerelease tags create validated GitHub/source releases and
+deliberately skip npm and RubyGems publication. Starting with stable `1.0.0`,
+tagged releases build every
+registry artifact before publication and verify existing exact-version
+artifacts by integrity. A retry safely skips matching packages after a partial
+registry outage and fails closed on different bytes. At that point, the
+protected `release` environment needs `NPM_BOOTSTRAP_TOKEN` for the first
 publication of each npm package name and `RUBYGEMS_API_KEY` while the Rails gem
 is missing; later npm versions use trusted publishing.
 
 `npm run test:react-native-host` runs the Jest renderer contract, validates the
-Android native project and production bundle, and runs the native iOS XCTest
-contract. The iOS check requires Xcode, CocoaPods, and an installed Simulator
-runtime; a full Android Gradle build requires an Android SDK and compatible JDK.
+Android native project by compiling its production bundle and release APK, and
+runs the native iOS XCTest contract. The iOS check requires Xcode, CocoaPods,
+and an installed Simulator runtime; the Android check requires an Android SDK
+and JDK 17.
 
 `npm run test:ux` builds the React example and drives real headless Chrome. The
 responsive matrix covers 320×568 compact portrait, 568×320 phone landscape,
@@ -1029,7 +1066,9 @@ retry, while product and accessibility assertions fail immediately.
 The lifecycle harness requires POSIX process-group semantics and therefore runs
 on Linux, macOS, or WSL2 rather than native Windows. It bounds child-process and
 HTTP-server teardown so a completed audit cannot leave CI waiting on inherited
-pipes or persistent connections.
+pipes or persistent connections. `AURELGLYPH_UX_OUTPUT` may select an artifact
+root inside the workspace or operating-system temporary directory; every run
+uses a new child directory and never recursively deletes the caller's path.
 
 ## Versioning
 

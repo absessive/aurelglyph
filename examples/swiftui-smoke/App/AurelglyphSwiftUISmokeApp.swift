@@ -27,6 +27,7 @@ private struct NativeWorkbench: View {
   @State private var retryCount = 2.0
   @State private var lastAction = "None"
   private let controlCopy: AurelglyphControlCopy
+  private let usesLongInformation: Bool
 
   private let modes = [
     AurelglyphSegmentedItem(id: "light", title: "Light"),
@@ -51,6 +52,7 @@ private struct NativeWorkbench: View {
     _colorMode = State(initialValue: configuration.colorMode)
     _appearance = State(initialValue: configuration.appearance)
     _showingDialog = State(initialValue: configuration.showsDialog)
+    usesLongInformation = configuration.usesLongInformation
     controlCopy = configuration.usesLocalizedControlCopy
       ? AurelglyphControlCopy(
           collapsed: "Replié",
@@ -181,7 +183,16 @@ private struct NativeWorkbench: View {
           selection: $deploymentRegion
         )
         AurelglyphMoreInformation("Form details") {
-          Text("Telemetry is optional. Local runs on-device; Staging targets the shared release candidate.")
+          if usesLongInformation {
+            VStack(alignment: .leading, spacing: 12) {
+              ForEach(1...12, id: \.self) { step in
+                Text("Release detail \(step): verify the calibrated native contract before distribution.")
+                  .accessibilityIdentifier(step == 12 ? "form.more-information.last" : "form.more-information.detail.\(step)")
+              }
+            }
+          } else {
+            Text("Telemetry is optional. Local runs on-device; Staging targets the shared release candidate.")
+          }
         }
         .accessibilityIdentifier("form.more-information")
         AurelglyphSlider(
@@ -219,6 +230,7 @@ private struct SwiftUISmokeLaunchConfiguration {
   let appearance: String
   let showsDialog: Bool
   let usesLocalizedControlCopy: Bool
+  let usesLongInformation: Bool
 
   static var current: SwiftUISmokeLaunchConfiguration {
     let arguments = ProcessInfo.processInfo.arguments
@@ -226,7 +238,8 @@ private struct SwiftUISmokeLaunchConfiguration {
       colorMode: value(after: "-aurelglyph-mode", in: arguments, allowed: ["light", "dark"]) ?? "light",
       appearance: value(after: "-aurelglyph-appearance", in: arguments, allowed: ["quiet", "atelier"]) ?? "quiet",
       showsDialog: arguments.contains("-aurelglyph-show-dialog"),
-      usesLocalizedControlCopy: arguments.contains("-aurelglyph-localized-control-copy")
+      usesLocalizedControlCopy: arguments.contains("-aurelglyph-localized-control-copy"),
+      usesLongInformation: arguments.contains("-aurelglyph-long-information")
     )
   }
 

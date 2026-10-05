@@ -756,7 +756,7 @@
       height: 8px;
       margin-top: 6px;
       border-radius: 50%;
-      background: #7fad68;
+      background: #8fbe76;
     }
 
     .ag-alert__content,
@@ -1148,6 +1148,7 @@
     <article class="panel markdown">
       <h1>Usage</h1>
       <p>Use Aurelglyph by installing the package for your platform, importing the generated styles or token values, then setting the theme attributes on the root surface. Pin exact versions for applications and loosen ranges only when you are ready to adopt compatible updates.</p>
+      <p><strong>Pre-1.0 distribution:</strong> Version 0.8.0 is a GitHub/source release. The npm commands below document the package contract planned for public registry publication at 1.0.0.</p>
       <h2>React and CSS exact version</h2>
       <pre aria-label="Code example" tabindex="0"><code>npm install @aurelglyph/css@0.8.0 @aurelglyph/react@0.8.0</code></pre>
       <h2>React and CSS compatible range</h2>
@@ -1175,6 +1176,9 @@
 &lt;TextArea label="Notes" name="notes" placeholder="Describe the app surface." /&gt;
 &lt;FileUpload accept=".json,.css,.ts,.tsx,.swift,.rb" label="Generated outputs" name="outputs" /&gt;
 
+const [layout, setLayout] = useState("grid");
+const [section, setSection] = useState("overview");
+
 &lt;AppShell
   topBar={&lt;TopBar title="Workbench" subtitle="Systems" /&gt;}
   footer={&lt;TabBar activeId="systems" items={[{ id: "systems", label: "Systems", href: "#systems", icon: "settings" }]} /&gt;}
@@ -1187,7 +1191,7 @@
   &lt;Switch label="Quiet mode" name="quiet" /&gt;
   &lt;NavigationStack title="Workbench"&gt;
     &lt;NavigationPage actions={&lt;Toolbar&gt;&lt;Button icon="save"&gt;Save&lt;/Button&gt;&lt;/Toolbar&gt;} title="Systems"&gt;
-      &lt;SegmentedControl activeId="grid" items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} /&gt;
+      &lt;SegmentedControl activeId={layout} items={[{ id: "grid", label: "Grid" }, { id: "list", label: "List" }]} onValueChange={setLayout} /&gt;
       &lt;Select label="Theme" name="theme" options={[{ label: "Royal purple", value: "royal-purple" }]} /&gt;
       &lt;Alert title="Package ready" tone="success"&gt;Design tokens and native controls are ready to use.&lt;/Alert&gt;
       &lt;Avatar name="Ajit Chakrapani" /&gt;
@@ -1198,7 +1202,7 @@
     &lt;/NavigationPage&gt;
   &lt;/NavigationStack&gt;
   &lt;Breadcrumbs items={[{ href: "#workbench", label: "Workbench" }, { current: true, label: "Systems" }]} /&gt;
-  &lt;Tabs activeId="overview" items={[{ id: "overview", label: "Overview" }]}&gt;Review generated package status.&lt;/Tabs&gt;
+  &lt;Tabs activeId={section} items={[{ id: "overview", label: "Overview" }, { id: "activity", label: "Activity" }]} onValueChange={setSection}&gt;Review generated package status.&lt;/Tabs&gt;
   &lt;Metric label="Latency" value="42ms" delta="Stable" /&gt;
   &lt;Progress value={72} /&gt;
   &lt;Skeleton /&gt;

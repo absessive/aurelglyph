@@ -25,6 +25,8 @@ export type MenuItem = {
   id: string;
   label: ReactNode;
   shortcut?: string;
+  /** Keyboard typeahead value for labels that are not plain strings. */
+  textValue?: string;
 };
 
 export type MenuPlacement = "bottom-start" | "bottom-end" | "top-start" | "top-end";
@@ -62,6 +64,7 @@ export function Menu({
   const itemsRef = useRef(items);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const pendingFocusEdgeRef = useRef<"first" | "last" | undefined>(undefined);
   const typeaheadRef = useRef("");
   const typeaheadTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [isOpen, setOpen] = useControllableState({ defaultValue: defaultOpen, onChange: onOpenChange, value: open });
@@ -88,8 +91,10 @@ export function Menu({
   useEffect(() => {
     if (!isOpen || !rootRef.current) return;
     const currentItems = itemsRef.current;
-    const first = edgeEnabledIndex(currentItems.length, (index) => Boolean(currentItems[index]?.disabled), "first");
-    if (first >= 0) queueMicrotask(() => rootRef.current && focusAt(rootRef.current, "[role='menuitem']", first, { preventScroll: true }));
+    const edge = pendingFocusEdgeRef.current ?? "first";
+    pendingFocusEdgeRef.current = undefined;
+    const target = edgeEnabledIndex(currentItems.length, (index) => Boolean(currentItems[index]?.disabled), edge);
+    if (target >= 0) queueMicrotask(() => rootRef.current && focusAt(rootRef.current, "[role='menuitem']", target, { preventScroll: true }));
   }, [isOpen]);
 
   useEffect(
@@ -100,12 +105,13 @@ export function Menu({
   );
 
   const openFromKeyboard = (edge: "first" | "last"): void => {
+    pendingFocusEdgeRef.current = edge;
     setOpen(true);
-    queueMicrotask(() => {
-      if (!rootRef.current) return;
-      const target = edgeEnabledIndex(items.length, (index) => Boolean(items[index]?.disabled), edge);
-      if (target >= 0) focusAt(rootRef.current, "[role='menuitem']", target, { preventScroll: true });
-    });
+    if (!isOpen) return;
+
+    pendingFocusEdgeRef.current = undefined;
+    const target = edgeEnabledIndex(items.length, (index) => Boolean(items[index]?.disabled), edge);
+    if (target >= 0 && rootRef.current) focusAt(rootRef.current, "[role='menuitem']", target, { preventScroll: true });
   };
 
   const handleTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
@@ -144,7 +150,7 @@ export function Menu({
       for (let offset = 1; offset <= items.length; offset += 1) {
         const candidate = (index + offset) % items.length;
         const item = items[candidate];
-        const text = typeof item?.label === "string" ? item.label : item?.id;
+        const text = item?.textValue ?? (typeof item?.label === "string" ? item.label : item?.id);
         if (item && !item.disabled && text?.toLocaleLowerCase().startsWith(search)) {
           target = candidate;
           break;

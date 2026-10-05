@@ -9,6 +9,15 @@ export type {
   ResolvedAurelglyphNativeTheme
 } from "./theme.js";
 export type { ControlStateProps } from "./foundation.js";
+export {
+  AurelglyphControlCopyProvider,
+  aurelglyphControlCopy,
+  useAurelglyphControlCopy
+} from "./control-copy.js";
+export type {
+  AurelglyphControlCopy,
+  AurelglyphControlCopyProviderProps
+} from "./control-copy.js";
 export { AurelglyphOverlayHost } from "./overlay-host.js";
 export type { AurelglyphOverlayHostProps, OverlayHostFrame } from "./overlay-host.js";
 export { Icon } from "./icons.js";

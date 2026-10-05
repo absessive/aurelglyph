@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
 
+import { useAurelglyphControlCopy } from "./control-copy.js";
 import { labelForValue, useControllableState, type ControlStateProps } from "./foundation.js";
 import { Icon } from "./icons.js";
 import { Dialog, type OverlayOpenChangeDetails } from "./overlays.js";
@@ -31,16 +32,19 @@ export type MenuProps = {
 export function Menu({
   accessibilityLabel,
   closeOnSelect = true,
-  emptyMessage = "No actions available.",
+  emptyMessage,
   items,
   onOpenChange,
   onSelect,
   open,
   placement = "center",
   selectedValue,
-  title = "Actions"
+  title
 }: MenuProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedTitle = title ?? controlCopy.actions;
+  const resolvedEmptyMessage = emptyMessage ?? controlCopy.noActions;
   return (
     <Dialog
       onOpenChange={onOpenChange}
@@ -50,13 +54,13 @@ export function Menu({
         placement === "top" ? { marginBottom: "auto", marginTop: 56 } : placement === "bottom" ? { marginBottom: 40, marginTop: "auto" } : undefined
       ]}
       scrollable={false}
-      title={title}
+      title={resolvedTitle}
       variant="compact"
     >
       <ScrollView accessible={false} bounces={false} style={styles.selectionList}>
         <View style={{ gap: theme.space[1] }}>
           {items.length === 0 ? (
-            <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{emptyMessage}</Text>
+            <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{resolvedEmptyMessage}</Text>
           ) : (
             items.map((item) => {
               const selected = item.value === selectedValue;
@@ -119,7 +123,7 @@ export type ComboboxProps = Omit<ViewProps, "children"> &
 export function Combobox({
   defaultValue = "",
   disabled = false,
-  emptyMessage = "No matching options.",
+  emptyMessage,
   error,
   helperText,
   invalid = false,
@@ -127,15 +131,19 @@ export function Combobox({
   loading = false,
   onValueChange,
   options,
-  placeholder = "Select an option",
+  placeholder,
   readOnly = false,
   required = false,
-  searchPlaceholder = "Search options",
+  searchPlaceholder,
   style,
   value,
   ...props
 }: ComboboxProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedEmptyMessage = emptyMessage ?? controlCopy.noOptions;
+  const resolvedPlaceholder = placeholder ?? controlCopy.selectPlaceholder;
+  const resolvedSearchPlaceholder = searchPlaceholder ?? controlCopy.searchOptions;
   const [selected, setSelected] = useControllableState({ defaultValue, onChange: onValueChange, value });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -157,8 +165,8 @@ export function Combobox({
         {label}{required ? " *" : ""}
       </Text>
       <Pressable
-        accessibilityHint="Opens a searchable option list"
-        accessibilityLabel={[label, required ? "required" : undefined, isInvalid ? "invalid" : undefined, readOnly ? "read only" : undefined].filter(Boolean).join(", ")}
+        accessibilityHint={controlCopy.selectHint}
+        accessibilityLabel={[label, required ? controlCopy.required : undefined, isInvalid ? controlCopy.invalid : undefined, readOnly ? controlCopy.readOnly : undefined].filter(Boolean).join(", ")}
         accessibilityRole="combobox"
         accessibilityState={{ busy: loading, disabled: unavailable, expanded: open && !unavailable }}
         disabled={unavailable}
@@ -176,7 +184,7 @@ export function Combobox({
         ]}
       >
         <Text style={{ color: selected ? theme.colors.text : theme.colors.muted, flex: 1, flexShrink: 1, fontFamily: theme.fonts.ui, minWidth: 0 }}>
-          {selected ? labelForValue(options, selected) : loading ? "Loading…" : placeholder}
+          {selected ? labelForValue(options, selected) : loading ? controlCopy.loadingSelection : resolvedPlaceholder}
         </Text>
         <Icon color={theme.colors.muted} name="chevron-down" size={16} />
       </Pressable>
@@ -193,10 +201,10 @@ export function Combobox({
         variant="compact"
       >
         <TextInput
-          accessibilityLabel={searchPlaceholder}
+          accessibilityLabel={resolvedSearchPlaceholder}
           autoFocus
           onChangeText={setQuery}
-          placeholder={searchPlaceholder}
+          placeholder={resolvedSearchPlaceholder}
           placeholderTextColor={theme.colors.subtle}
           selectionColor={theme.colors.accent}
           style={[
@@ -214,7 +222,7 @@ export function Combobox({
         <ScrollView bounces={false} keyboardShouldPersistTaps="handled" style={styles.selectionList}>
           <View accessible={false} style={{ gap: theme.space[1] }}>
             {results.length === 0 ? (
-              <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{emptyMessage}</Text>
+              <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{resolvedEmptyMessage}</Text>
             ) : (
               results.map((option) => {
                 const active = option.value === selected;
@@ -261,10 +269,11 @@ export const Autocomplete = Combobox;
 export type AutocompleteProps = ComboboxProps;
 
 export type SelectOption = ComboboxOption;
-export type SelectProps = Omit<ComboboxProps, "emptyMessage" | "searchPlaceholder">;
+export type SelectProps = Omit<ComboboxProps, "emptyMessage">;
 
-export function Select(props: SelectProps): ReactElement {
-  return <Combobox searchPlaceholder="Filter options" {...props} />;
+export function Select({ searchPlaceholder, ...props }: SelectProps): ReactElement {
+  const controlCopy = useAurelglyphControlCopy();
+  return <Combobox searchPlaceholder={searchPlaceholder ?? controlCopy.filterOptions} {...props} />;
 }
 
 export type CommandPaletteItem = {
@@ -289,16 +298,20 @@ export type CommandPaletteProps = {
 
 export function CommandPalette({
   defaultQuery = "",
-  emptyMessage = "No matching commands.",
+  emptyMessage,
   items,
   onOpenChange,
   onQueryChange,
   open,
-  placeholder = "Search commands",
+  placeholder,
   query: controlledQuery,
-  title = "Command palette"
+  title
 }: CommandPaletteProps): ReactElement {
   const theme = useAurelglyphTheme();
+  const controlCopy = useAurelglyphControlCopy();
+  const resolvedEmptyMessage = emptyMessage ?? controlCopy.noCommands;
+  const resolvedPlaceholder = placeholder ?? controlCopy.searchCommands;
+  const resolvedTitle = title ?? controlCopy.commandPalette;
   const [internalQuery, setInternalQuery] = useState(defaultQuery);
   const query = controlledQuery ?? internalQuery;
   const wasOpen = useRef(open);
@@ -331,14 +344,14 @@ export function CommandPalette({
       open={open}
       panelStyle={{ maxHeight: "82%", maxWidth: 680 }}
       scrollable={false}
-      title={title}
+      title={resolvedTitle}
       variant="wide"
     >
       <TextInput
-        accessibilityLabel={placeholder}
+        accessibilityLabel={resolvedPlaceholder}
         autoFocus
         onChangeText={setQuery}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         placeholderTextColor={theme.colors.subtle}
         selectionColor={theme.colors.accent}
         style={[
@@ -349,11 +362,11 @@ export function CommandPalette({
       />
       <ScrollView bounces={false} keyboardShouldPersistTaps="handled" style={styles.selectionList}>
         <View accessible={false} style={{ gap: theme.space[1] }}>
-          {results.length === 0 ? <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{emptyMessage}</Text> : null}
+          {results.length === 0 ? <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{resolvedEmptyMessage}</Text> : null}
           {results.map((item) => (
             <Pressable
               accessibilityHint={item.description}
-              accessibilityLabel={`${title}, ${item.label}`}
+              accessibilityLabel={`${resolvedTitle}, ${item.label}`}
               accessibilityRole="button"
               accessibilityState={{ disabled: item.disabled }}
               disabled={item.disabled}

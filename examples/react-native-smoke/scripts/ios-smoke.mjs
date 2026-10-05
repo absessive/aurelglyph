@@ -1,5 +1,5 @@
 import {execFileSync, spawnSync} from 'node:child_process';
-import {existsSync, mkdtempSync, rmSync} from 'node:fs';
+import {existsSync, mkdtempSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 
@@ -24,7 +24,70 @@ function availableIphone() {
   );
 }
 
+function testCaseAttempts(nodes, parentTest) {
+  return nodes.flatMap(node => {
+    const testName = node.nodeType === 'Test Case' ? node.name : parentTest;
+    const repetitions = (node.children ?? []).some(child => child.nodeType === 'Repetition');
+    const isAttempt = node.nodeType === 'Repetition' || (node.nodeType === 'Test Case' && !repetitions);
+    return [
+      ...(isAttempt
+        ? [{
+            attempt: node.nodeType === 'Repetition' ? node.name : 'Only run',
+            identifier: node.nodeIdentifier ?? testName ?? '<unknown>',
+            name: testName ?? node.name ?? '<unknown>',
+            result: node.result ?? 'Unknown',
+          }]
+        : []),
+      ...testCaseAttempts(node.children ?? [], testName),
+    ];
+  });
+}
+
+function retryTelemetry(testReport, buildOutput) {
+  const attempts = testCaseAttempts(testReport?.testNodes ?? []);
+  const byIdentifier = new Map();
+  for (const attempt of attempts) {
+    const key = attempt.name;
+    const entries = byIdentifier.get(key) ?? [];
+    entries.push(attempt.result);
+    byIdentifier.set(key, entries);
+  }
+  const recoveredTests = [...byIdentifier.entries()]
+    .filter(([, results]) => results.includes('Failed') && results.at(-1) === 'Passed')
+    .map(([identifier, results]) => ({identifier, results}));
+  const retryLog = buildOutput
+    .split('\n')
+    .filter(line => /retry|repetition/i.test(line))
+    .map(line => line.trim())
+    .filter(Boolean);
+  return {
+    attempts,
+    maxAttempts: 2,
+    policy: 'xcode-retry-tests-on-failure',
+    recoveredTests,
+    retryLog,
+  };
+}
+
 try {
+  const podfile = readFileSync(join(projectRoot, 'ios/Podfile'), 'utf8');
+  const sourceCoreSetting = podfile.indexOf("ENV['RCT_USE_PREBUILT_RNCORE'] = '0'");
+  const prepareCall = podfile.indexOf('prepare_react_native_project!');
+  if (sourceCoreSetting < 0 || prepareCall < 0 || sourceCoreSetting > prepareCall) {
+    throw new Error(
+      "The RN 0.87 iOS host must disable prebuilt RNCore before prepare_react_native_project! so community Fabric headers remain importable.",
+    );
+  }
+  const fabricHeader = join(
+    projectRoot,
+    'ios/Pods/Headers/Public/React-RCTFabric/React/RCTComponentViewProtocol.h',
+  );
+  if (!existsSync(fabricHeader)) {
+    throw new Error(
+      'The React-RCTFabric public headers are missing. Run bundle exec pod install --project-directory=ios before the iOS smoke.',
+    );
+  }
+
   const device = availableIphone();
   if (!device) {
     throw new Error('No available iPhone simulator was found. Install an iOS simulator runtime with Xcode.');
@@ -61,6 +124,7 @@ try {
   process.stderr.write(test.stderr);
 
   let summary;
+  let testReport;
   if (existsSync(resultBundle)) {
     try {
       const summaryOutput = execFileSync(
@@ -69,6 +133,13 @@ try {
         {encoding: 'utf8'},
       );
       summary = JSON.parse(summaryOutput);
+      testReport = JSON.parse(
+        execFileSync(
+          'xcrun',
+          ['xcresulttool', 'get', 'test-results', 'tests', '--path', resultBundle],
+          {encoding: 'utf8'},
+        ),
+      );
       if (summary.testFailures?.length) {
         process.stderr.write(
           `[rn-smoke] Native UI failures:\n${JSON.stringify(summary.testFailures, null, 2)}\n`,
@@ -96,6 +167,11 @@ try {
     }
   }
 
+  if (!testReport) {
+    throw new Error('xcodebuild did not produce a readable UI test report.');
+  }
+  const telemetry = retryTelemetry(testReport, `${test.stdout}\n${test.stderr}`);
+  process.stdout.write(`[rn-smoke] retry-telemetry ${JSON.stringify(telemetry)}\n`);
   if (test.status !== 0) {
     throw new Error(`xcodebuild failed with status ${test.status ?? 1}`);
   }
@@ -103,7 +179,7 @@ try {
   if (!summary) {
     throw new Error('xcodebuild did not produce a readable UI test summary.');
   }
-  if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 2) {
+  if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 4) {
     throw new Error(`Unexpected UI test summary: ${JSON.stringify(summary)}`);
   }
   process.stdout.write(

@@ -68,9 +68,10 @@ and atelier compatibility complete the shared UX contract.
 controlled-value handling, adds bidirectional keyboard and logical-layout
 behavior across React and Rails, strengthens themed dropdown fallbacks, and
 adds React server-render/hydration evidence. A real SwiftUI consumer host now
-exercises compact presentation, focus restoration, disabled-item traversal,
-localizable copy, and accessibility values in light/dark atelier and quiet
-appearances.
+exercises compact presentation and recovery, disabled-row semantics,
+localizable copy, accessibility-sized scrolling, and accessibility values in
+light/dark atelier and quiet appearances; package tests cover the enabled-item
+navigation helpers.
 
 Optional supporting copy now uses the shared More Information disclosure
 instead of permanently occupying primary work surfaces; validation and live
@@ -79,8 +80,9 @@ context contract rather than the deprecated core safe-area view.
 
 The release also adds pinned toolchains, clean-consumer npm and gem smoke tests,
 package-size budgets, time-bounded security triage, reproducible CI on Web,
-Rails, SwiftUI, and React Native hosts, and a controlled provenance-enabled
-publication workflow. The compatibility policy makes browser, platform,
+Rails, SwiftUI, and React Native hosts, and a source-only pre-1.0 release path
+with provenance-enabled registry publication staged for 1.0.0. The compatibility
+policy makes browser, platform,
 semantic-versioning, deprecation, and pre-1.0 limits explicit.
 
 ## Planned — Catalog expansion

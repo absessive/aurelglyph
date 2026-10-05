@@ -3,6 +3,9 @@
 Canonical, generated Aurelglyph design tokens for CSS, TypeScript, React
 Native, SwiftUI, and Rails adapters.
 
+Public npm publication begins with Aurelglyph `1.0.0`; before then, consume this
+package from the Git repository or workspace.
+
 ```bash
 npm install @aurelglyph/tokens
 ```

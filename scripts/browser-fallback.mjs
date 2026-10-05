@@ -92,5 +92,21 @@ try {
     }
   }
 } finally {
-  await new Promise((resolveClose, reject) => server.close((error) => (error ? reject(error) : resolveClose())));
+  await new Promise((resolveClose, reject) => {
+    let settled = false;
+    const finish = (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (error) reject(error);
+      else resolveClose();
+    };
+    const timer = setTimeout(() => {
+      server.closeAllConnections?.();
+      finish();
+    }, 2_000);
+    server.close(finish);
+    server.closeIdleConnections?.();
+    server.closeAllConnections?.();
+  });
 }

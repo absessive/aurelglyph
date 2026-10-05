@@ -8,6 +8,8 @@ const cliPath = resolve(projectRoot, '../../node_modules/react-native/cli.js');
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'aurelglyph-rn-android-smoke-'));
 const bundleOutput = join(temporaryRoot, 'index.android.bundle');
 const assetsDestination = join(temporaryRoot, 'assets');
+const androidRoot = join(projectRoot, 'android');
+const releaseApk = join(androidRoot, 'app', 'build', 'outputs', 'apk', 'release', 'app-release.apk');
 
 try {
   const config = JSON.parse(
@@ -49,7 +51,16 @@ try {
   if (statSync(bundleOutput).size < 1_024 || !bundle.includes('aurelglyph-overlay-host')) {
     throw new Error('The Android release bundle did not include the Aurelglyph overlay host contract.');
   }
-  process.stdout.write('[rn-smoke] Android release bundle and native project configuration passed.\n');
+
+  execFileSync(
+    join(androidRoot, 'gradlew'),
+    ['--no-daemon', '--stacktrace', ':app:assembleRelease'],
+    {cwd: androidRoot, stdio: 'inherit'},
+  );
+  if (statSync(releaseApk).size < 1_024_000) {
+    throw new Error('The Android release APK was not produced or is unexpectedly small.');
+  }
+  process.stdout.write('[rn-smoke] Android release APK, JavaScript bundle, autolinking, and native project passed.\n');
 } finally {
   rmSync(temporaryRoot, {force: true, recursive: true});
 }
