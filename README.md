@@ -1026,6 +1026,10 @@ suites use isolated disposable Chrome processes so each lifecycle is measured
 independently from prior interaction, accessibility, and screenshot
 instrumentation. CDP transport timeouts receive one recorded fresh-process
 retry, while product and accessibility assertions fail immediately.
+The lifecycle harness requires POSIX process-group semantics and therefore runs
+on Linux, macOS, or WSL2 rather than native Windows. It bounds child-process and
+HTTP-server teardown so a completed audit cannot leave CI waiting on inherited
+pipes or persistent connections.
 
 ## Versioning
 

@@ -5,6 +5,10 @@ import { access, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/p
 import { tmpdir } from "node:os";
 import { extname, join, normalize, resolve, sep } from "node:path";
 
+if (process.platform === "win32") {
+  throw new Error("The Aurelglyph UX regression harness requires POSIX process groups. Run it on Linux, macOS, or WSL2.");
+}
+
 const workspace = resolve(import.meta.dirname, "..");
 const exampleDist = join(workspace, "examples/react-vite/dist");
 const outputDirectory = process.env.AURELGLYPH_UX_OUTPUT || join(tmpdir(), "aurelglyph-ux-regression");
@@ -71,6 +75,7 @@ async function findChrome() {
 function startProcess(command, args, label) {
   const processHandle = spawn(command, args, {
     cwd: workspace,
+    detached: true,
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -79,6 +84,10 @@ function startProcess(command, args, label) {
   processHandle.stdout.on("data", (chunk) => { log += chunk.toString(); });
   processHandle.stderr.on("data", (chunk) => { log += chunk.toString(); });
   processHandle.once("exit", (code, signal) => {
+    // A launcher can exit before processes that inherited its output pipes.
+    // Reap the whole detached process group before the handle is removed from
+    // the cleanup registry.
+    signalProcessTree(processHandle, "SIGKILL");
     childProcesses.delete(processHandle);
     if (code && !processHandle.killed) {
       process.stderr.write(`${label} exited ${code}${signal ? ` (${signal})` : ""}\n${log}\n`);
@@ -87,19 +96,36 @@ function startProcess(command, args, label) {
   return { processHandle, readLog: () => log };
 }
 
+function signalProcessTree(processHandle, signal) {
+  if (processHandle.pid) {
+    try {
+      process.kill(-processHandle.pid, signal);
+      return;
+    } catch (error) {
+      if (!["EPERM", "ESRCH"].includes(error.code)) throw error;
+    }
+  }
+  processHandle.kill(signal);
+}
+
 async function stopProcess(processHandle) {
-  if (processHandle.exitCode !== null || processHandle.signalCode !== null) return;
-  processHandle.kill("SIGTERM");
+  if (processHandle.exitCode !== null || processHandle.signalCode !== null) {
+    signalProcessTree(processHandle, "SIGKILL");
+    childProcesses.delete(processHandle);
+    return;
+  }
   await new Promise((resolveExit) => {
     const timer = setTimeout(() => {
-      processHandle.kill("SIGKILL");
+      signalProcessTree(processHandle, "SIGKILL");
       resolveExit();
     }, 2_000);
     processHandle.once("exit", () => {
       clearTimeout(timer);
       resolveExit();
     });
+    signalProcessTree(processHandle, "SIGTERM");
   });
+  childProcesses.delete(processHandle);
 }
 
 async function startPreview(port) {
@@ -1311,7 +1337,26 @@ async function runResponsiveRegression(client, exampleUrl, staticUrl, report) {
 async function cleanup() {
   const processes = [...childProcesses];
   await Promise.all(processes.map(stopProcess));
-  if (staticServer) await new Promise((resolveClose) => staticServer.close(resolveClose));
+  if (staticServer) {
+    const server = staticServer;
+    staticServer = undefined;
+    await new Promise((resolveClose) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolveClose();
+      };
+      const timer = setTimeout(() => {
+        server.closeAllConnections?.();
+        finish();
+      }, 2_000);
+      server.close(finish);
+      server.closeIdleConnections?.();
+      server.closeAllConnections?.();
+    });
+  }
   await Promise.all([...chromeProfiles].map((profile) =>
     rm(profile, { force: true, maxRetries: 5, recursive: true, retryDelay: 100 })
   ));

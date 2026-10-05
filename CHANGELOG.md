@@ -13,7 +13,9 @@
   explicit compatibility, semantic-versioning, deprecation, and support policy.
   Registry publication now preflights all artifacts, uses a qualifying pinned
   trusted-publishing toolchain, and recovers from partial failures by verifying
-  and skipping exact matching immutable versions.
+  and skipping exact matching immutable versions. The exhaustive UX harness now
+  fails fast outside POSIX environments and bounds process-group and HTTP-server
+  teardown so a completed audit cannot leave CI hanging.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form
