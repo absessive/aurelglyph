@@ -143,8 +143,7 @@ final class SmokeUITests: XCTestCase {
 
     let optionSearch = app.textFields["Search options"].firstMatch
     XCTAssertTrue(waitUntilHittable(optionSearch, timeout: 5), "Combobox search was not ready")
-    optionSearch.typeText("Bet")
-    XCTAssertEqual(optionSearch.value as? String, "Bet", "Combobox search did not receive focused keyboard input")
+    typeTextSynchronously("Bet", into: optionSearch, description: "Combobox search")
 
     let beta = app.buttons["Searchable channel, Beta"].firstMatch
     XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The filtered Combobox option was not interactive")
@@ -173,8 +172,7 @@ final class SmokeUITests: XCTestCase {
 
     let commandSearch = app.textFields["Search commands"].firstMatch
     XCTAssertTrue(waitUntilHittable(commandSearch, timeout: 5), "Command Palette search was not ready")
-    commandSearch.typeText("Arc")
-    XCTAssertEqual(commandSearch.value as? String, "Arc", "Command Palette search did not receive focused keyboard input")
+    typeTextSynchronously("Arc", into: commandSearch, description: "Command Palette search")
 
     let archive = app.buttons["Command palette, Archive systems"].firstMatch
     XCTAssertTrue(waitUntilHittable(archive, timeout: 5), "The filtered Command Palette action was not interactive")
@@ -208,6 +206,37 @@ final class SmokeUITests: XCTestCase {
     }
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
     return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+  }
+
+  private func typeTextSynchronously(
+    _ text: String,
+    into field: XCUIElement,
+    description: String,
+    file: StaticString = #filePath,
+    line: UInt = #line
+  ) {
+    var expectedValue = ""
+
+    for character in text {
+      field.typeText(String(character))
+      expectedValue.append(character)
+      let settledValue = expectedValue
+      let predicate = NSPredicate { candidate, _ in
+        guard let candidate = candidate as? XCUIElement else { return false }
+        return candidate.value as? String == settledValue
+      }
+      let expectation = XCTNSPredicateExpectation(predicate: predicate, object: field)
+      let result = XCTWaiter.wait(for: [expectation], timeout: 3)
+
+      XCTAssertEqual(
+        result,
+        .completed,
+        "\(description) did not accept \(settledValue); observed \(String(describing: field.value))",
+        file: file,
+        line: line
+      )
+      if result != .completed { return }
+    }
   }
 
   private enum ScrollDirection {

@@ -684,8 +684,11 @@ iOS and Android host for adapter integration work. Its native iOS UI contract
 opens a consumer-owned `Modal` and verifies overlay-host layering,
 remeasurement, viewport clamping, touch pass-through, themed selection
 surfaces, More Information, and the light/dark atelier/quiet controls against a
-release Hermes bundle. Clean-consumer package checks also create minified iOS
-bundles with both React Native 0.86 and 0.87.
+release Hermes bundle. Autofocus regressions synchronize each native XCTest
+keystroke with the committed React Native input value before exercising the
+filtered action, avoiding simulator-dependent burst input loss without masking
+focus failures. Clean-consumer package checks also create minified iOS bundles
+with both React Native 0.86 and 0.87.
 
 ### SwiftUI
 
