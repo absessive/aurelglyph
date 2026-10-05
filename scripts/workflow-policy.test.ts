@@ -39,6 +39,12 @@ describe("GitHub Actions policy", () => {
     expect(build).toContain('buildToolsVersion = "37.0.0"');
     expect(build).toContain("compileSdkVersion = 37");
     expect(build).toContain('kotlinVersion = "2.2.0"');
+    expect(appBuild).toContain(
+      'def hermesCompiler = System.getProperty("os.name").startsWith("Windows") ? "hermesc.exe" : "hermesc"'
+    );
+    expect(appBuild).toContain(
+      'hermesCommand = file("../../../../node_modules/hermes-compiler/hermesc/%OS-BIN%/${hermesCompiler}").absolutePath'
+    );
     expect(appBuild).toContain('getDefaultProguardFile("proguard-android-optimize.txt")');
     expect(appBuild).not.toContain('getDefaultProguardFile("proguard-android.txt")');
   });

@@ -44,7 +44,9 @@
   to the Gradle 9.4.1 minimum required by the React Native 0.87 plugin and verify
   its distribution checksum before compiling the release APK. Align the host's
   SDK, Kotlin, and AGP 9 compatibility settings with the upstream 0.87 template
-  so the explicitly applied Kotlin plugin and native Android build remain valid.
+  so the explicitly applied Kotlin plugin and native Android build remain valid,
+  and resolve the platform-specific Hermes compiler executable from the
+  monorepo's hoisted dependency graph.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

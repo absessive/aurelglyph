@@ -34,7 +34,9 @@ npm run test:android -w @aurelglyph/example-react-native-smoke
 The checked-in wrapper pins Gradle 9.4.1 and verifies the distribution checksum
 before the React Native 0.87 Android release build runs. The native scaffold
 tracks the 0.87 template's Build Tools 37, compile SDK 37, Kotlin 2.2, and
-temporary AGP 9 built-in-Kotlin/new-DSL opt-outs.
+temporary AGP 9 built-in-Kotlin/new-DSL opt-outs. Its explicit Hermes compiler
+path accounts for this monorepo's workspace-hoisted dependencies and selects
+the correct executable on macOS, Linux, and Windows.
 
 ## iOS native regression
 

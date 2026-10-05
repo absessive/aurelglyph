@@ -1057,7 +1057,9 @@ runs the native iOS XCTest contract. The iOS check requires Xcode, CocoaPods,
 and an installed Simulator runtime; the Android check requires an Android SDK
 and JDK 17. The Android host pins Gradle 9.4.1 with checksum verification so the
 native gate uses the reviewed toolchain required by React Native 0.87. Its AGP,
-Kotlin, SDK, and compatibility settings remain aligned with the 0.87 template.
+Kotlin, SDK, and compatibility settings remain aligned with the 0.87 template,
+while its cross-platform Hermes compiler path is resolved from the workspace
+root.
 
 `npm run test:ux` builds the React example and drives real headless Chrome. The
 responsive matrix covers 320×568 compact portrait, 568×320 phone landscape,
