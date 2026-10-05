@@ -103,8 +103,14 @@ Aurelglyph `Button` or `IconButton` when the library should also own the trigger
 paint. All option surfaces use tokenized Aurelglyph dialogs rather than
 browser-style defaults. Actionable menu and selection rows expose native button
 semantics while retaining disabled and selected state. Searchable option lists
-preserve option taps while the native keyboard is focused, including during its
-opening transition.
+preserve option taps while the native keyboard is focused. `Select` leaves its
+optional search field unfocused so the expanded list is immediately ready for a
+choice without forcing the keyboard; `Combobox` focuses search by default. Set
+`autoFocusSearch` explicitly to override either behavior. When a searchable
+control is nested inside an application-owned `ScrollView`, set that ancestor's
+`keyboardShouldPersistTaps="always"` as well; React Native ancestor responders
+run before the modal's internal option list. Autofocus is applied after native
+modal presentation so its first settled option action remains available.
 
 Use `MoreInformation` for optional supporting copy that should not occupy the
 primary working surface. It provides a 44-point accessible trigger and a

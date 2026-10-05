@@ -140,7 +140,7 @@ vi.mock("react-native", async () => {
     children
   );
 
-  const TextInput = ({
+  const TextInput = React.forwardRef<{ focus: () => void }, Record<string, unknown>>(({
     defaultValue,
     editable = true,
     onBlur,
@@ -149,17 +149,27 @@ vi.mock("react-native", async () => {
     style,
     value,
     ...props
-  }: Record<string, unknown>) => React.createElement("input", {
-    ...accessibilityProps(props),
-    "data-rn": "TextInput",
-    "data-style": JSON.stringify(flattenStyle(style)),
-    defaultValue: defaultValue as string | undefined,
-    disabled: editable === false,
-    onBlur: onBlur as ((event: unknown) => void) | undefined,
-    onChange: (event: { currentTarget: { value: string } }) => (onChangeText as ((value: string) => void) | undefined)?.(event.currentTarget.value),
-    placeholder: placeholder as string | undefined,
-    value: value as string | undefined
+  }, ref) => {
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    React.useImperativeHandle(ref, () => ({
+      focus: () => {
+        inputRef.current?.focus();
+      }
+    }), []);
+    return React.createElement("input", {
+      ...accessibilityProps(props),
+      "data-rn": "TextInput",
+      "data-style": JSON.stringify(flattenStyle(style)),
+      defaultValue: defaultValue as string | undefined,
+      disabled: editable === false,
+      onBlur: onBlur as ((event: unknown) => void) | undefined,
+      onChange: (event: { currentTarget: { value: string } }) => (onChangeText as ((value: string) => void) | undefined)?.(event.currentTarget.value),
+      placeholder: placeholder as string | undefined,
+      ref: inputRef,
+      value: value as string | undefined
+    });
   });
+  TextInput.displayName = "MockTextInput";
 
   const Modal = ({
     animationType,
@@ -515,6 +525,7 @@ describe("React Native rendered interaction contracts", () => {
   it("resets uncontrolled and controlled command queries across external close", () => {
     const items = [{ id: "sync", label: "Sync systems", onSelect: vi.fn() }];
     const rendered = render(<CommandPalette items={items} onOpenChange={vi.fn()} open />);
+    expect(document.activeElement).toBe(rendered.container.querySelector("input"));
     expect(rendered.container.querySelector('button[aria-label="Command palette, Sync systems"]')).not.toBeNull();
     expect(rendered.container.querySelector('[data-accessible="false"][role]')).toBeNull();
     type(rendered.container.querySelector("input")!, "sync");
@@ -539,7 +550,11 @@ describe("React Native rendered interaction contracts", () => {
     click(rendered.container.querySelector('[role="combobox"]')!);
     expect(rendered.container.querySelector('[data-rn="Modal"]')).not.toBeNull();
     expect(rendered.container.querySelector('button[aria-label="Mode, Quiet"]')).not.toBeNull();
+    expect(document.activeElement).toBe(rendered.container.querySelector("input"));
     expect(rendered.container.querySelector('[data-accessible="false"][role]')).toBeNull();
+    const unfocused = render(<Combobox autoFocusSearch={false} label="Mode" options={options} />);
+    click(unfocused.container.querySelector('[role="combobox"]')!);
+    expect(document.activeElement).not.toBe(unfocused.container.querySelector("input"));
     rendered.rerender(<Combobox disabled label="Mode" options={options} />);
     expect(rendered.container.querySelector('[data-rn="Modal"]')).toBeNull();
     expect(rendered.container.querySelector('[role="combobox"]')?.getAttribute("aria-disabled")).toBe("true");
@@ -565,10 +580,15 @@ describe("React Native rendered interaction contracts", () => {
     expect(JSON.parse(container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
       .toEqual({ text: "Stable" });
     click(container.querySelector('[role="combobox"]')!);
+    expect(document.activeElement).not.toBe(container.querySelector("input"));
     click(container.querySelector('button[aria-label="Release channel, Beta"]')!);
     expect(onValueChange).toHaveBeenLastCalledWith("beta");
     expect(JSON.parse(container.querySelector('[role="combobox"]')?.getAttribute("data-accessibility-value") ?? "{}"))
       .toEqual({ text: "Beta" });
+
+    const focusedSelect = render(<Select autoFocusSearch label="Focused channel" options={options} />);
+    click(focusedSelect.container.querySelector('[role="combobox"]')!);
+    expect(document.activeElement).toBe(focusedSelect.container.querySelector("input"));
   });
 
   it("composes NumberField blur with internal numeric commit", () => {

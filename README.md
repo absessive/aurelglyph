@@ -645,9 +645,16 @@ non-modal, safe-bound overlay host; and the dependency-free slider exposes
 native `adjustable` actions. Actionable menu and selection rows expose native
 button semantics while retaining disabled and selected state, and searchable
 selection and command lists deliver option taps while the native keyboard is
-focused. Responsive grids measure their actual container for split-view and
-nested-panel layouts, while compact controls preserve real 44-point touch
-bounds. The overlay host reserves an elevated, non-blocking root
+focused. Native `Select` leaves optional search unfocused for immediate choice,
+while `Combobox` focuses search by default; `autoFocusSearch` overrides either
+behavior. Application-owned ancestor `ScrollView` instances around searchable
+controls must also set `keyboardShouldPersistTaps="always"`. Autofocus is
+applied after native modal presentation. The native smoke host independently
+verifies browse-first Select and keyboard-focused Combobox and Command Palette
+activation without retry recovery. Responsive grids measure their actual
+container for split-view and nested-panel layouts, while compact controls
+preserve real 44-point touch bounds.
+The overlay host reserves an elevated, non-blocking root
 layer so regular application panels do not cover active tooltips. Set
 `overlayHost={false}` when the application supplies its own hosts, and place an
 `AurelglyphOverlayHost` inside any consumer-owned native `Modal` that contains

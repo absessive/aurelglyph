@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputInstance, type ViewProps } from "react-native";
 
 import { useAurelglyphControlCopy } from "./control-copy.js";
 import { labelForValue, useControllableState, type ControlStateProps } from "./foundation.js";
@@ -108,6 +108,7 @@ export type DropdownProps = MenuProps;
 export type ComboboxOption = { value: string; label: string; description?: string; disabled?: boolean; keywords?: readonly string[] };
 export type ComboboxProps = Omit<ViewProps, "children"> &
   Pick<ControlStateProps, "disabled" | "loading" | "readOnly" | "required" | "invalid"> & {
+    autoFocusSearch?: boolean;
     label: string;
     options: readonly ComboboxOption[];
     value?: string;
@@ -121,6 +122,7 @@ export type ComboboxProps = Omit<ViewProps, "children"> &
   };
 
 export function Combobox({
+  autoFocusSearch = true,
   defaultValue = "",
   disabled = false,
   emptyMessage,
@@ -147,6 +149,10 @@ export function Combobox({
   const [selected, setSelected] = useControllableState({ defaultValue, onChange: onValueChange, value });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const searchInputRef = useRef<TextInputInstance>(null);
+  const focusSearchAfterPresentation = useCallback((): void => {
+    if (autoFocusSearch) searchInputRef.current?.focus();
+  }, [autoFocusSearch]);
   const displayedValue = selected
     ? labelForValue(options, selected)
     : loading
@@ -196,6 +202,7 @@ export function Combobox({
       </Pressable>
       {error || helperText ? <Text accessibilityLiveRegion={error ? "polite" : "none"} style={{ color: error ? theme.colors.danger : theme.colors.muted, fontFamily: theme.fonts.ui, fontSize: 12 }}>{error ?? helperText}</Text> : null}
       <Dialog
+        onShow={focusSearchAfterPresentation}
         onOpenChange={(next) => {
           setOpen(next);
           if (!next) setQuery("");
@@ -208,7 +215,6 @@ export function Combobox({
       >
         <TextInput
           accessibilityLabel={resolvedSearchPlaceholder}
-          autoFocus
           onChangeText={setQuery}
           placeholder={resolvedSearchPlaceholder}
           placeholderTextColor={theme.colors.subtle}
@@ -223,6 +229,7 @@ export function Combobox({
               fontFamily: theme.fonts.ui
             }
           ]}
+          ref={searchInputRef}
           value={query}
         />
         <ScrollView bounces={false} keyboardShouldPersistTaps="always" style={styles.selectionList}>
@@ -277,9 +284,9 @@ export type AutocompleteProps = ComboboxProps;
 export type SelectOption = ComboboxOption;
 export type SelectProps = Omit<ComboboxProps, "emptyMessage">;
 
-export function Select({ searchPlaceholder, ...props }: SelectProps): ReactElement {
+export function Select({ autoFocusSearch = false, searchPlaceholder, ...props }: SelectProps): ReactElement {
   const controlCopy = useAurelglyphControlCopy();
-  return <Combobox searchPlaceholder={searchPlaceholder ?? controlCopy.filterOptions} {...props} />;
+  return <Combobox autoFocusSearch={autoFocusSearch} searchPlaceholder={searchPlaceholder ?? controlCopy.filterOptions} {...props} />;
 }
 
 export type CommandPaletteItem = {
@@ -319,6 +326,7 @@ export function CommandPalette({
   const resolvedPlaceholder = placeholder ?? controlCopy.searchCommands;
   const resolvedTitle = title ?? controlCopy.commandPalette;
   const [internalQuery, setInternalQuery] = useState(defaultQuery);
+  const searchInputRef = useRef<TextInputInstance>(null);
   const query = controlledQuery ?? internalQuery;
   const wasOpen = useRef(open);
   const setQuery = useCallback((next: string): void => {
@@ -337,8 +345,12 @@ export function CommandPalette({
     if (!needle) return items;
     return items.filter((item) => [item.label, item.description ?? "", ...(item.keywords ?? [])].some((part) => part.toLocaleLowerCase().includes(needle)));
   }, [items, query]);
+  const focusSearchAfterPresentation = useCallback((): void => {
+    searchInputRef.current?.focus();
+  }, []);
   return (
     <Dialog
+      onShow={focusSearchAfterPresentation}
       onOpenChange={(next, details) => {
         if (!next && details.reason === "back" && query) {
           setQuery("");
@@ -355,7 +367,6 @@ export function CommandPalette({
     >
       <TextInput
         accessibilityLabel={resolvedPlaceholder}
-        autoFocus
         onChangeText={setQuery}
         placeholder={resolvedPlaceholder}
         placeholderTextColor={theme.colors.subtle}
@@ -364,6 +375,7 @@ export function CommandPalette({
           styles.searchInput,
           { backgroundColor: theme.colors.surface, borderColor: theme.colors.borderStrong, borderRadius: theme.radii.sm, color: theme.colors.text, fontFamily: theme.fonts.ui }
         ]}
+        ref={searchInputRef}
         value={query}
       />
       <ScrollView bounces={false} keyboardShouldPersistTaps="always" style={styles.selectionList}>

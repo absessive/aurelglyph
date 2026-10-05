@@ -11,6 +11,8 @@ import {
   AurelglyphOverlayHost,
   AurelglyphProvider,
   Button,
+  Combobox,
+  CommandPalette,
   Icon,
   IconButton,
   MoreInformation,
@@ -31,6 +33,7 @@ export const smokeLabels = {
   modalActive: 'Native modal active',
   modalInformation: 'About modal calibration',
   moveAnchor: 'Move tooltip anchor',
+  openCommandPalette: 'Open command palette',
   openModal: 'Open native modal',
   screenInformation: 'About the native overlay host',
   tooltip: 'Hosted modal signal · bounded precision overlay calibration',
@@ -133,13 +136,17 @@ function SmokeWorkbench() {
   const insets = useSafeAreaInsets();
   const [modalOpen, setModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [releaseChannel, setReleaseChannel] = useState('stable');
+  const [searchableChannel, setSearchableChannel] = useState('stable');
   const [lastAction, setLastAction] = useState('None');
+  const [lastCommand, setLastCommand] = useState('None');
 
   return (
     <ScrollView
       bounces={false}
       contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="always"
       style={[styles.scroll, {backgroundColor: theme.colors.background}]}>
       <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} />
       <View style={[styles.calibrationLine, {borderTopColor: theme.colors.focus}]} />
@@ -192,6 +199,42 @@ function SmokeWorkbench() {
           style={[styles.counter, {color: theme.colors.text}]}>
           Channel: {releaseChannel === 'beta' ? 'Beta' : 'Stable'}
         </Text>
+        <Combobox
+          label="Searchable channel"
+          onValueChange={setSearchableChannel}
+          options={[
+            {label: 'Stable', value: 'stable'},
+            {label: 'Beta', value: 'beta'},
+          ]}
+          value={searchableChannel}
+        />
+        <Button
+          accessibilityLabel={smokeLabels.openCommandPalette}
+          onPress={() => setCommandPaletteOpen(true)}
+          variant="secondary">
+          Open command palette
+        </Button>
+        <Text
+          accessibilityLabel={`Last command: ${lastCommand}`}
+          style={[styles.counter, {color: theme.colors.text}]}>
+          Last command: {lastCommand}
+        </Text>
+        <CommandPalette
+          items={[
+            {
+              id: 'archive',
+              label: 'Archive systems',
+              onSelect: () => setLastCommand('Archive systems'),
+            },
+            {
+              id: 'synchronize',
+              label: 'Synchronize systems',
+              onSelect: () => setLastCommand('Synchronize systems'),
+            },
+          ]}
+          onOpenChange={setCommandPaletteOpen}
+          open={commandPaletteOpen}
+        />
         <Button
           accessibilityLabel={smokeLabels.operations}
           onPress={() => setMenuOpen(true)}

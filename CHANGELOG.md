@@ -51,10 +51,18 @@
   invalidate native regression results, and make the iOS Select assertion
   re-query the native combobox while reporting its observed accessibility value
   on failure. Preserve taps in searchable React Native Select, Combobox, and
-  Command Palette lists while the native keyboard is focused, including during
-  its opening transition on iOS 18.5. Expose actionable native Menu and
-  selection rows with button activation semantics while retaining disabled and
-  selected state.
+  Command Palette lists while the native keyboard is focused. Expose actionable
+  native Menu and selection rows with button activation semantics while
+  retaining disabled and selected state. Keep native Select presentation
+  immediately actionable on iOS 18.5 by leaving optional search unfocused,
+  while preserving Combobox search autofocus and an explicit
+  `autoFocusSearch` override for both controls. Gate the browse-first Select,
+  autofocus Combobox, and autofocus Command Palette as independent native iOS
+  regressions, requiring focused text input before the latter two first-tap
+  activation checks, and document the matching `keyboardShouldPersistTaps`
+  contract for application-owned ancestor ScrollViews so they cannot capture
+  those keyboard-era touches. Sequence search focus after native modal
+  presentation and reject retry-recovered iOS smoke tests as flaky.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

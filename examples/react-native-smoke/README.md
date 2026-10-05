@@ -8,8 +8,11 @@ measurement, viewport clamping, and touch pass-through. The host uses the
 `quiet` dark appearance so the native consumer path also verifies its reduced
 palette, radius, and elevation contract. Focused native checks also switch
 between light/dark and atelier/quiet, operate themed Select and Menu surfaces,
-verify disabled rows and the Select trigger's announced value, and present and
-dismiss More Information.
+verify disabled rows and the Select trigger's announced value, exercise
+keyboard-focused Combobox and Command Palette actions, and present and dismiss
+More Information. Its application-owned `ScrollView` sets
+`keyboardShouldPersistTaps="always"`, matching React Native's requirement for
+keyboard-era descendant activation.
 
 ## Workspace checks
 
@@ -70,7 +73,9 @@ The runner selects an available iPhone simulator, builds a self-contained
 Hermes bundle, and uses XCTest to verify that the tooltip stays inside the
 native modal window, moves after anchor and viewport changes, and leaves the
 underlying action hittable. It also covers the theme controls, Select/Menu
-interaction, disabled rows, and More Information presentation. Xcode and an
+interaction, disabled rows, single-tap Combobox and Command Palette actions
+after post-presentation autofocus accepts input, and More Information
+presentation. The gate rejects retry-recovered tests as flaky. Xcode and an
 installed iOS Simulator runtime are required.
 
 ## Manual hosts

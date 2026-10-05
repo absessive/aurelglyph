@@ -86,7 +86,7 @@ final class SmokeUITests: XCTestCase {
     let filter = app.textFields["Filter options"].firstMatch
     XCTAssertTrue(
       waitUntilHittable(filter, timeout: 5),
-      "The release-channel filter was not ready for keyboard-backed selection"
+      "The release-channel filter was not ready for optional search"
     )
     let nightly = app.buttons["Release channel, Nightly"].firstMatch
     XCTAssertTrue(nightly.waitForExistence(timeout: 5), "The disabled Nightly option was not exposed")
@@ -134,6 +134,55 @@ final class SmokeUITests: XCTestCase {
     XCTAssertTrue(waitUntilHittable(close, timeout: 5))
     close.tap()
     XCTAssertTrue(waitUntilHittable(information, timeout: 5), "Focus did not return to an interactive trigger")
+  }
+
+  func testAutofocusedComboboxAcceptsFirstSelection() {
+    let combobox = app.otherElements["Searchable channel"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(combobox), "The searchable-channel combobox was not reachable")
+    combobox.tap()
+
+    let optionSearch = app.textFields["Search options"].firstMatch
+    XCTAssertTrue(waitUntilHittable(optionSearch, timeout: 5), "Combobox search was not ready")
+    optionSearch.typeText("Bet")
+    XCTAssertEqual(optionSearch.value as? String, "Bet", "Combobox search did not receive focused keyboard input")
+
+    let beta = app.buttons["Searchable channel, Beta"].firstMatch
+    XCTAssertTrue(waitUntilHittable(beta, timeout: 5), "The filtered Combobox option was not interactive")
+    beta.tap()
+    let selectedSearchableChannel = NSPredicate { _, _ in
+      let currentCombobox = self.app.otherElements["Searchable channel"].firstMatch
+      return currentCombobox.exists && currentCombobox.value as? String == "Beta"
+    }
+    let searchableChannelExpectation = XCTNSPredicateExpectation(
+      predicate: selectedSearchableChannel,
+      object: app
+    )
+    let searchableChannelResult = XCTWaiter.wait(for: [searchableChannelExpectation], timeout: 5)
+    let currentCombobox = app.otherElements["Searchable channel"].firstMatch
+    XCTAssertEqual(
+      searchableChannelResult,
+      .completed,
+      "The first Combobox option tap did not commit; observed \(String(describing: currentCombobox.value))"
+    )
+  }
+
+  func testAutofocusedCommandPaletteAcceptsFirstAction() {
+    let commandTrigger = app.buttons["Open command palette"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(commandTrigger), "The command-palette trigger was not reachable")
+    commandTrigger.tap()
+
+    let commandSearch = app.textFields["Search commands"].firstMatch
+    XCTAssertTrue(waitUntilHittable(commandSearch, timeout: 5), "Command Palette search was not ready")
+    commandSearch.typeText("Arc")
+    XCTAssertEqual(commandSearch.value as? String, "Arc", "Command Palette search did not receive focused keyboard input")
+
+    let archive = app.buttons["Command palette, Archive systems"].firstMatch
+    XCTAssertTrue(waitUntilHittable(archive, timeout: 5), "The filtered Command Palette action was not interactive")
+    archive.tap()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["Last command: Archive systems"].firstMatch.waitForExistence(timeout: 5),
+      "The first Command Palette action tap did not commit"
+    )
   }
 
   override func tearDownWithError() throws {

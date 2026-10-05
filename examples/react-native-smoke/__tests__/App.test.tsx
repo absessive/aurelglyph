@@ -17,6 +17,9 @@ test('mounts a modal-local host and leaves underlying controls operable', async 
     const mountedRenderer = renderer;
     if (!mountedRenderer) throw new Error('Smoke host did not mount');
     const root = mountedRenderer.root;
+    expect(
+      root.findAllByProps({keyboardShouldPersistTaps: 'always'}).length,
+    ).toBeGreaterThanOrEqual(1);
     expect(StyleSheet.flatten(root.findByProps({testID: 'quiet-smoke-status'}).props.style)).toMatchObject({
       backgroundColor: '#1d1d1e',
       borderRadius: 12,

@@ -175,11 +175,14 @@ try {
   if (test.status !== 0) {
     throw new Error(`xcodebuild failed with status ${test.status ?? 1}`);
   }
+  if (telemetry.recoveredTests.length > 0) {
+    throw new Error(`Native UI tests required retry recovery: ${JSON.stringify(telemetry.recoveredTests)}`);
+  }
 
   if (!summary) {
     throw new Error('xcodebuild did not produce a readable UI test summary.');
   }
-  if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 4) {
+  if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 6) {
     throw new Error(`Unexpected UI test summary: ${JSON.stringify(summary)}`);
   }
   process.stdout.write(
