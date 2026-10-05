@@ -101,7 +101,8 @@ be controlled separately with `query`/`onQueryChange`.
 `Menu`/`Dropdown` theme the controlled expanded list; pair them with an
 Aurelglyph `Button` or `IconButton` when the library should also own the trigger
 paint. All option surfaces use tokenized Aurelglyph dialogs rather than
-browser-style defaults.
+browser-style defaults. Searchable option lists preserve option taps while the
+native keyboard is focused, including during its opening transition.
 
 Use `MoreInformation` for optional supporting copy that should not occupy the
 primary working surface. It provides a 44-point accessible trigger and a

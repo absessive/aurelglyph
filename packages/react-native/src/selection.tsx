@@ -225,7 +225,7 @@ export function Combobox({
           ]}
           value={query}
         />
-        <ScrollView bounces={false} keyboardShouldPersistTaps="handled" style={styles.selectionList}>
+        <ScrollView bounces={false} keyboardShouldPersistTaps="always" style={styles.selectionList}>
           <View accessible={false} style={{ gap: theme.space[1] }}>
             {results.length === 0 ? (
               <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{resolvedEmptyMessage}</Text>
@@ -366,7 +366,7 @@ export function CommandPalette({
         ]}
         value={query}
       />
-      <ScrollView bounces={false} keyboardShouldPersistTaps="handled" style={styles.selectionList}>
+      <ScrollView bounces={false} keyboardShouldPersistTaps="always" style={styles.selectionList}>
         <View accessible={false} style={{ gap: theme.space[1] }}>
           {results.length === 0 ? <Text accessibilityLiveRegion="polite" role="status" style={{ color: theme.colors.muted, fontFamily: theme.fonts.ui, padding: 12 }}>{resolvedEmptyMessage}</Text> : null}
           {results.map((item) => (

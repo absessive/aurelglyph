@@ -83,6 +83,11 @@ final class SmokeUITests: XCTestCase {
     let select = app.otherElements["Release channel"].firstMatch
     XCTAssertTrue(scrollUntilHittable(select), "The release-channel select was not reachable")
     select.tap()
+    let filter = app.textFields["Filter options"].firstMatch
+    XCTAssertTrue(
+      waitUntilHittable(filter, timeout: 5),
+      "The release-channel filter was not ready for keyboard-backed selection"
+    )
     let nightly = app.descendants(matching: .any)["Release channel, Nightly"].firstMatch
     XCTAssertTrue(nightly.waitForExistence(timeout: 5), "The disabled Nightly option was not exposed")
     XCTAssertFalse(nightly.isEnabled, "The disabled Nightly option was interactive")

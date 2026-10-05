@@ -205,12 +205,13 @@ vi.mock("react-native", async () => {
     type: "button"
   });
 
-  const ScrollView = ({ children, contentContainerStyle, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
+  const ScrollView = ({ children, contentContainerStyle, keyboardShouldPersistTaps, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
     "div",
     {
       ...accessibilityProps(props),
       "data-content-style": JSON.stringify(flattenStyle(contentContainerStyle)),
       "data-horizontal": String(Boolean(props.horizontal)),
+      "data-keyboard-should-persist-taps": keyboardShouldPersistTaps as string | undefined,
       "data-rn": "ScrollView",
       "data-style": JSON.stringify(flattenStyle(style))
     },
@@ -738,6 +739,7 @@ describe("React Native rendered interaction contracts", () => {
     );
     const commandList = rendered.container.querySelector('[data-rn="ScrollView"]');
     expect(styleOf(commandList)).toMatchObject({ flexShrink: 1, minHeight: 0 });
+    expect(commandList?.getAttribute("data-keyboard-should-persist-taps")).toBe("always");
     const commandTitle = rendered.container.querySelector('[role="dialog"]');
     expect(styleOf(commandTitle?.parentElement?.parentElement?.parentElement).maxHeight).toBe("82%");
 
@@ -745,6 +747,7 @@ describe("React Native rendered interaction contracts", () => {
     click(rendered.container.querySelector('[role="combobox"]')!);
     const comboList = rendered.container.querySelector('[data-rn="ScrollView"]');
     expect(styleOf(comboList)).toMatchObject({ flexShrink: 1, minHeight: 0 });
+    expect(comboList?.getAttribute("data-keyboard-should-persist-taps")).toBe("always");
   });
 
   it("preserves compact visuals with 44pt touch areas and full-size navigation targets", () => {
