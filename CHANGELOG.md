@@ -40,7 +40,9 @@
   reject stale interpreter patches in the security gate, and assert the public
   gem rejects Ruby 3.2 while accepting Ruby 3.3. Load Ruby's URI library
   explicitly before Action View helpers so the Rails 7 contract is independent
-  of removed interpreter-default side effects.
+  of removed interpreter-default side effects. Pin the Android consumer wrapper
+  to the Gradle 9.4.1 minimum required by the React Native 0.87 plugin and verify
+  its distribution checksum before compiling the release APK.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

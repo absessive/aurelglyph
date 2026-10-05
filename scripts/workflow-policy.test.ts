@@ -19,6 +19,23 @@ describe("GitHub Actions policy", () => {
     }
   });
 
+  it("pins the Android consumer gate to its reviewed Gradle distribution", async () => {
+    const wrapper = await readFile(
+      join(
+        root,
+        "examples/react-native-smoke/android/gradle/wrapper/gradle-wrapper.properties"
+      ),
+      "utf8"
+    );
+
+    expect(wrapper).toContain(
+      "distributionUrl=https\\://services.gradle.org/distributions/gradle-9.4.1-bin.zip"
+    );
+    expect(wrapper).toContain(
+      "distributionSha256Sum=2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb"
+    );
+  });
+
   it("grants release write and OIDC privileges only to the jobs that need them", async () => {
     const workflow = await readFile(join(root, ".github/workflows/release.yml"), "utf8");
 

@@ -31,6 +31,9 @@ without starting an emulator:
 npm run test:android -w @aurelglyph/example-react-native-smoke
 ```
 
+The checked-in wrapper pins Gradle 9.4.1 and verifies the distribution checksum
+before the React Native 0.87 Android release build runs.
+
 ## iOS native regression
 
 Install pods after cloning or changing native dependencies:
