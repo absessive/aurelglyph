@@ -666,6 +666,11 @@ Failed native iOS attempts retain their original assertion details even when a
 retry passes. CI and release runs keep the Xcode log and result bundle as a
 seven-day diagnostic artifact; local failures retain them in the host's ignored
 `build/ios-smoke-*` directory.
+Development tooling locks the patched `source-map-js` 1.2.2 and makes the
+tested Istanbul coverage loader an explicit development dependency with a
+scoped `js-yaml` 4.3.2 override, removing its obsolete `sprintf-js` dependency.
+YAML inheritance, configuration normalization, and npm dependency integrity
+are regression-tested; published runtime dependencies are unchanged.
 The overlay host reserves an elevated, non-blocking root
 layer so regular application panels do not cover active tooltips. Set
 `overlayHost={false}` when the application supplies its own hosts, and place an

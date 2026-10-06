@@ -77,6 +77,11 @@
   remain diagnosable. Dismiss the identified iOS first-use keyboard tutorial on
   fresh simulators before asserting search readiness, without tapping the
   search field to manufacture autofocus or allowing retry-recovered passes.
+  Update development source-map processing to patched `source-map-js` 1.2.2
+  and make the tested Istanbul coverage loader an explicit development
+  dependency with a scoped `js-yaml` 4.3.2 override to remove vulnerable
+  `sprintf-js`, with YAML inheritance, normalization, and npm dependency-integrity
+  regression coverage and no changes to published runtime dependencies.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

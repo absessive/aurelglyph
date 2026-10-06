@@ -40,8 +40,14 @@
     "verify": "npm run version:check && npm run lint && npm run build && npm run build:pages && npm run test:unit && npm run test:rails && npm run test:swift && npm run test:swift-host && npm run test:react-native-host && npm run typecheck && npm run test:ux && npm run test:browsers && npm run security:check && npm run security:ruby && npm run pack:check && npm run pack:gem",
     "verify:release": "npm run version:release-check && npm run verify"
   },
+  "overrides": {
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "4.3.2"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@istanbuljs/load-nyc-config": "1.1.0",
     "@react-native/metro-config": "0.87.1",
     "@types/node": "^22.15.18",
     "@types/react": "^19.2.3",
