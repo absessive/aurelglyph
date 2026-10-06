@@ -74,7 +74,9 @@
   Preserve the original native iOS failure details for retry-recovered tests,
   flush concise diagnostics before failing, and retain the Xcode log and result
   bundle locally and as seven-day CI/release artifacts so cold-host regressions
-  remain diagnosable.
+  remain diagnosable. Dismiss the identified iOS first-use keyboard tutorial on
+  fresh simulators before asserting search readiness, without tapping the
+  search field to manufacture autofocus or allowing retry-recovered passes.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

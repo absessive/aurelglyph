@@ -142,10 +142,9 @@ final class SmokeUITests: XCTestCase {
     combobox.tap()
 
     let optionSearch = app.textFields["Search options"].firstMatch
-    XCTAssertTrue(waitUntilHittable(optionSearch, timeout: 5), "Combobox search was not ready")
     XCTAssertTrue(
-      waitUntilKeyboardReady(timeout: 10),
-      "Combobox autofocus did not present a ready software keyboard"
+      waitUntilAutofocusedSearchReady(optionSearch, timeout: 15),
+      "Combobox autofocus did not present an interactive search and ready software keyboard"
     )
     optionSearch.tap()
     let stable = app.buttons["Searchable channel, Stable"].firstMatch
@@ -195,10 +194,9 @@ final class SmokeUITests: XCTestCase {
     commandTrigger.tap()
 
     let commandSearch = app.textFields["Search commands"].firstMatch
-    XCTAssertTrue(waitUntilHittable(commandSearch, timeout: 5), "Command Palette search was not ready")
     XCTAssertTrue(
-      waitUntilKeyboardReady(timeout: 10),
-      "Command Palette autofocus did not present a ready software keyboard"
+      waitUntilAutofocusedSearchReady(commandSearch, timeout: 15),
+      "Command Palette autofocus did not present an interactive search and ready software keyboard"
     )
     commandSearch.tap()
     let archive = app.buttons["Command palette, Archive systems"].firstMatch
@@ -265,10 +263,52 @@ final class SmokeUITests: XCTestCase {
     return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
   }
 
-  private func waitUntilKeyboardReady(timeout: TimeInterval) -> Bool {
+  private func waitUntilAutofocusedSearchReady(_ search: XCUIElement, timeout: TimeInterval) -> Bool {
     let keyboard = app.keyboards.firstMatch
-    guard keyboard.waitForExistence(timeout: timeout) else { return false }
-    return keyboard.keys.firstMatch.waitForExistence(timeout: timeout)
+    let tutorialLabel = "Speed up your typing by sliding your finger across the letters to compose a word."
+    let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+    let deadline = Date().addingTimeInterval(timeout)
+    let tutorialScopes = [app!, system]
+    var readySince: Date?
+    var tutorialScope: XCUIApplication?
+
+    while deadline.timeIntervalSinceNow > 0 {
+      let readiness = NSPredicate { _, _ in
+        tutorialScope = tutorialScopes.first { $0.staticTexts[tutorialLabel].firstMatch.exists }
+        if tutorialScope != nil {
+          readySince = nil
+          return true
+        }
+        guard search.exists && search.isHittable && keyboard.exists && keyboard.keys.firstMatch.exists else {
+          readySince = nil
+          return false
+        }
+        if readySince == nil { readySince = Date() }
+        // Keep observing while the cold keyboard settles: its tutorial can
+        // arrive after the field and keys first become accessible.
+        return Date().timeIntervalSince(readySince!) >= 2
+      }
+      let readinessExpectation = XCTNSPredicateExpectation(predicate: readiness, object: app)
+      guard XCTWaiter.wait(
+        for: [readinessExpectation],
+        timeout: max(0, deadline.timeIntervalSinceNow)
+      ) == .completed else { return false }
+      guard let scope = tutorialScope else { return true }
+
+      // A fresh simulator can hide the focused field behind iOS's QuickPath
+      // tutorial. Dismiss only that identified system UI, never a host action.
+      let continueButton = scope.buttons["Continue"].firstMatch
+      guard waitUntilHittable(continueButton, timeout: max(0, deadline.timeIntervalSinceNow)) else { return false }
+      XCTContext.runActivity(named: "Dismiss iOS first-use keyboard tutorial") { _ in
+        continueButton.tap()
+      }
+      guard waitUntilAbsent(
+        scope.staticTexts[tutorialLabel].firstMatch,
+        timeout: max(0, deadline.timeIntervalSinceNow)
+      ) else { return false }
+      readySince = nil
+    }
+    return false
   }
 
   private func typeTextSynchronously(

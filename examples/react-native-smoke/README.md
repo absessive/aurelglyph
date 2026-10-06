@@ -79,7 +79,10 @@ presentation. Autofocus must first expose a ready software keyboard, and each
 native input is re-targeted only after that autofocus assertion. Each search
 keystroke is then synchronized with both its committed native value and the
 resulting controlled filter state so a cold keyboard or bridge cannot hide or
-manufacture a focus failure. The gate rejects retry-recovered tests as flaky.
+manufacture a focus failure. Fresh simulators may present iOS's first-use
+QuickPath keyboard tutorial; the host dismisses only that identified system
+tutorial, then requires the same interactive search and ready keyboard without
+manually focusing the field. The gate rejects retry-recovered tests as flaky.
 Xcode and an installed iOS Simulator runtime are required.
 
 The runner reports the original failed attempt even when Xcode's final summary

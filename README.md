@@ -654,7 +654,9 @@ presentation. The native smoke host independently
 verifies browse-first Select and keyboard-focused Combobox and Command Palette
 activation without retry recovery, waiting for software-keyboard readiness and
 re-targeting the already-focused native input before verifying controlled filter
-results after each accepted search keystroke. Responsive grids
+results after each accepted search keystroke. On fresh simulators the host
+dismisses only iOS's identified first-use keyboard tutorial before requiring
+the same interactive search and software-keyboard autofocus checks. Responsive grids
 measure their actual container for split-view and nested-panel layouts, while
 compact controls preserve real 44-point touch bounds.
 The private host's full renderer integration smoke has a bounded 15-second
