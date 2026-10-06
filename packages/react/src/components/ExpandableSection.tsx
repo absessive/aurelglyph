@@ -6,7 +6,9 @@ import { Icon } from "./Icon.js";
 export type ExpandableSectionProps = Omit<HTMLAttributes<HTMLElement>, "children" | "title"> & {
   children: ReactNode;
   defaultOpen?: boolean;
+  disabled?: boolean;
   eyebrow?: ReactNode;
+  headingLevel?: 2 | 3 | 4 | 5 | 6;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
   title: ReactNode;
@@ -16,7 +18,9 @@ export function ExpandableSection({
   children,
   className,
   defaultOpen = false,
+  disabled = false,
   eyebrow,
+  headingLevel,
   id,
   onOpenChange,
   open,
@@ -26,12 +30,14 @@ export function ExpandableSection({
   const generatedId = useId();
   const sectionId = id ?? generatedId;
   const panelId = `${sectionId}-panel`;
+  const triggerId = `${sectionId}-trigger`;
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
   const classNames = ["ag-disclosure", className].filter(Boolean).join(" ");
 
   const toggleOpen = (): void => {
+    if (disabled) return;
     const nextOpen = !isOpen;
 
     if (!isControlled) {
@@ -41,12 +47,13 @@ export function ExpandableSection({
     onOpenChange?.(nextOpen);
   };
 
-  return (
-    <section {...props} className={classNames} data-open={isOpen ? true : undefined} id={sectionId}>
-      <button
+  const trigger = (
+    <button
         aria-controls={panelId}
         aria-expanded={isOpen}
         className="ag-disclosure__trigger"
+        disabled={disabled}
+        id={triggerId}
         onClick={toggleOpen}
         type="button"
       >
@@ -56,12 +63,20 @@ export function ExpandableSection({
         </span>
         <Icon className="ag-disclosure__icon" decorative name={isOpen ? "contract" : "expand"} />
       </button>
+  );
+  const Heading = `h${headingLevel ?? 3}` as "h3";
+
+  return (
+    <section {...props} className={classNames} data-open={isOpen ? true : undefined} id={sectionId}>
+      {headingLevel ? <Heading className="ag-disclosure__heading-level">{trigger}</Heading> : trigger}
       <div
         aria-hidden={!isOpen}
+        aria-labelledby={headingLevel ? triggerId : undefined}
         className="ag-disclosure__panel"
         hidden={!isOpen}
         id={panelId}
         inert={!isOpen ? true : undefined}
+        role={headingLevel ? "region" : undefined}
       >
         <div className="ag-disclosure__panel-inner">{children}</div>
       </div>

@@ -100,3 +100,20 @@ export type {
   TabsItem,
   TabsProps
 } from "./navigation.js";
+
+export { Accordion, Chip, ExpandableSection, InputGroup, Link, PasswordField, Rating, Stepper, ValidationSummary } from "./components-expansion.js";
+export type {
+  AccordionItem,
+  AccordionProps,
+  ChipProps,
+  ExpandableSectionProps,
+  InputGroupProps,
+  LinkProps,
+  PasswordFieldProps,
+  RatingProps,
+  StepperItem,
+  StepperProps,
+  StepStatus,
+  ValidationError,
+  ValidationSummaryProps
+} from "./components-expansion.js";

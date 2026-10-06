@@ -44,7 +44,7 @@ try {
     "-I",
     join(temporaryRoot, unpackedName, "lib"),
     "-e",
-    `require "aurelglyph"; abort "load failed" unless Aurelglyph::Rails::VERSION == ${JSON.stringify(version)}`
+    `require "aurelglyph"; abort "load failed" unless Aurelglyph::Rails::VERSION == ${JSON.stringify(version)}; %i[aurelglyph_link aurelglyph_chip aurelglyph_password_field aurelglyph_input_group aurelglyph_validation_summary aurelglyph_accordion aurelglyph_stepper aurelglyph_rating].each { |name| abort "missing #{name}" unless Aurelglyph::Rails::Helper.instance_methods.include?(name) }`
   ]);
   process.stdout.write(`Gem smoke passed: aurelglyph-rails ${version} builds, contains its runtime assets, and loads.\n`);
 } finally {

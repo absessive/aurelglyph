@@ -56,6 +56,41 @@ and current pre-1.0 scope limits are documented in
   support matrix, and [feature-completeness roadmap](docs/roadmap.md)
 - A static preview and a Vite React example app that consume the packages
 
+The current workspace adds eight [catalog essentials](docs/roadmap.md#current-component-gap-audit-2026-10-06):
+Link, Password Field, Input Group, Validation Summary, grouped Accordion,
+interactive Chip, workflow Stepper, and integer Rating across all five surfaces.
+React Native also gains standalone ExpandableSection. These are **Unreleased**
+additions, not part of the immutable 0.8.0 release. The core-control matrix now
+includes nine previously omitted five-adapter families and explicitly separates
+released evidence from workspace additions. It is not an exhaustive catalog;
+older React Native shell, feedback, and data-display parity remains follow-on work.
+
+Use Link for destinations and Button for actions. Unavailable links have no
+destination or activation. Standalone Web links retain a minimum 24px target;
+inline prose links keep natural text flow. Chip keeps selection and removal as separate controls;
+static labels remain Badge. InputGroup owns one labeled input; string addons are
+decorative, so provide `addonDescription` for meaningful units and independently
+label action addons. Read-only Web input-group values and units retain readable
+foreground paint. PasswordField starts masked and preserves the native input
+when revealing. ValidationSummary accepts application-owned issues and explicit
+once-per-submission focus/announcement requests; reused keys do not repeat while
+mounted. It does not validate forms. Web Chip and Rating restore uncontrolled
+defaults on a native form reset without firing change callbacks; controlled
+values remain application-owned.
+Accordion coordinates disclosures, Stepper describes workflow status, and Rating
+selects whole-number values. Disclosure icons use mode-aware semantic accent
+paint for visibility on light and dark surfaces. Package-owned labels and native announcements are
+localizable; see each adapter guide for its copy contract.
+
+Local verification for this Unreleased batch (2026-10-06): unit, lint/type,
+three-browser, full Web UX/accessibility, and clean-consumer package checks pass.
+Native Release builds compile, but native verification is incomplete: SwiftUI
+passed 8/9 iOS cases, and React Native's corrected new-control subset passed 2/3;
+software-keyboard readiness prevented the remaining assertions. SwiftUI password
+retention/masking passed before the keyboard prerequisite failure. Android APK
+compilation requires a JDK unavailable on this host. These results do not qualify
+the batch for release; the strict native gates remain required.
+
 ## Install
 
 Install only the packages your app needs.

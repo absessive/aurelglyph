@@ -54,6 +54,7 @@ import {
   TopBar
 } from "@aurelglyph/react";
 import type { AurelglyphIconName } from "@aurelglyph/react";
+import { CatalogEssentialsPreview } from "./CatalogEssentialsPreview";
 
 const mediaTools = [
   { name: "settings", label: "Token source", detail: "Color, type, spacing, radius, and motion values." },
@@ -530,6 +531,7 @@ function ComponentsPage() {
         ))}
       </div>
       <div className="example-component-previews">
+        <CatalogEssentialsPreview />
         <section className="example-preview-card">
           <h2>Interaction foundations</h2>
           <Stack gap="md">

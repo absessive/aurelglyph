@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "component-foundations": {
+      "targetKind": "new-ui",
+      "projectId": "0bb4cf64-dafe-45c9-94c4-0e45375a8a5a",
+      "activeDraftId": "66ee13f1-eba7-4199-b72a-1ced6ef573d8",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        ".superdesign/init/theme.md",
+        "packages/react/src/components/Button.tsx",
+        "packages/react/src/components/TextField.tsx",
+        "packages/react/src/components/ExpandableSection.tsx",
+        "packages/react/src/components/RadioGroup.tsx",
+        "packages/react/src/components/Icon.tsx",
+        "packages/react/src/styles.css:1:322",
+        "packages/react/src/styles.css:1188:1222",
+        "packages/react/src/styles.css:1916:2079",
+        "packages/react/src/styles.css:2507:2588"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "d9f26ddff1f8552bfa60b27ccdcda25fa2696cca00e16ae5d5ed428afed9a193",
+        ".superdesign/init/theme.md": "7f058189af0b701d8417ff6a1f5f0e52ddddfa0169326123e23cca15b45988e8",
+        "packages/react/src/components/Button.tsx": "4b755b6d55f22fc36acf053569226924c4524fc5f4c61d309ff1ee0ac04002b0",
+        "packages/react/src/components/TextField.tsx": "2b7ad5406436697d2d66ffb4245b119b8fbebb7edea8f480db3e8b54176e89b8",
+        "packages/react/src/components/ExpandableSection.tsx": "ab85223eeca0fcf8e7db2c18981a647d960639b76f2acc40372a58edf217708f",
+        "packages/react/src/components/RadioGroup.tsx": "fc6214c98a1e4e48f6f82b1770faa231763627d8beedc7575d3d1840ab5262e9",
+        "packages/react/src/components/Icon.tsx": "60c327d1bedda206852d1ddaf0a317880da70636b4e4400e36f2ad2f425e0e97",
+        "packages/react/src/styles.css": "9e412bef261d52591720680839c5bf0b16cf7dde472978058160a22859c430ca"
+      },
+      "drafts": {
+        "66ee13f1-eba7-4199-b72a-1ced6ef573d8": {
+          "title": "Aurelglyph Component Foundations",
+          "visualDirection": "quiet compact matching light/dark component specimens",
+          "currentVersion": 3
+        }
+      },
+      "updatedAt": "2026-10-06T12:07:54.513Z",
+      "referenceIds": [
+        "packages-css-src-fonts-ofl-atkinson-hyperlegible-400.woff2",
+        "packages-css-src-fonts-ofl-atkinson-hyperlegible-700.woff2",
+        "packages-css-src-fonts-ofl-libre-baskerville-400.woff2",
+        "packages-css-src-fonts-ofl-space-mono-400.woff2"
+      ]
+    }
+  }
+}

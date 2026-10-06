@@ -96,6 +96,78 @@ states, expanded/collapsed values, hints, and generated option-group labels.
 Shared state phrases and generated labels can be replaced once per hierarchy
 with `.aurelglyphControlCopy(AurelglyphControlCopy(...))`.
 
+## Catalog essentials (unreleased)
+
+Eight native families now complement the interaction foundations:
+`AurelglyphLink`, `AurelglyphChip`, `AurelglyphPasswordField`,
+`AurelglyphInputGroup`, `AurelglyphValidationSummary`, `AurelglyphAccordion`,
+`AurelglyphStepper`, and `AurelglyphRating`. They use the existing semantic
+palette in light/dark and quiet/atelier appearances; no new package version is
+implied by this workspace addition.
+
+Links use native navigation semantics. A disabled or missing destination renders
+non-interactive text with an unavailable value and no URL or activation action.
+Chips own selection and a separate removal button; use `AurelglyphBadge` for
+static labels. Selection, accordion expansion, and ratings accept an optional
+binding or a default value plus change callback for local state.
+
+Password fields start concealed, use password/new-password autofill hints, and
+retain native value, selection, and focus while toggling visibility on iOS and
+macOS. Internal secure-editor restoration does not write the binding or register
+an undo action. Read-only prevents edits but permits visibility changes;
+disabled/loading prevents both. Input groups own exactly one native field. Prefix/suffix text is
+decorative; supply `unitDescription` for meaningful units. Custom leading and
+trailing views keep actions separate from the field; callers own action state
+(for example, disable a clear action when the field is read-only). Labels and
+help/error text are read by the field without a second inline announcement. A
+changing `focusRequest` token focuses the owned field.
+
+```swift
+@State private var accessKey = ""
+@State private var budget = "240"
+@State private var openIDs: Set<String> = ["network"]
+@State private var rating = 3
+
+AurelglyphPasswordField("Access key", text: $accessKey, isRequired: true)
+AurelglyphInputGroup("Budget", text: $budget, prefix: "$", suffix: "USD",
+  unitDescription: "US dollars")
+AurelglyphAccordion(items: [
+  .init(id: "network", title: "Network") { Text("Network settings") },
+  .init(id: "storage", title: "Storage") { Text("Storage settings") }
+], openIDs: $openIDs, mode: .single)
+AurelglyphRating("Readiness", value: $rating)
+```
+
+Validation summaries render nothing when empty. Supply issues with optional
+field-focus callbacks; increment `focusRequest` after a failed submit to focus
+the heading once and read only its localized title/count, not every issue.
+The summary does not own validation or automatically announce on rerender.
+Accordion uses `AurelglyphExpandableSection`, native heading/button semantics
+(configurable `headingLevel`, default `.h3`),
+disabled toggles, and single/multiple-open policies. Collapsed panels are absent
+from the native accessibility tree and follow Reduce Motion.
+
+Stepper exposes ordered current/completed/upcoming/error/disabled status through
+numbers and symbols as well as localized text. Only enabled steps become buttons
+when a callback is supplied. `currentID` selects one current step independently
+of its status, so a current error retains its error indicator and speaks both
+localized states. Omitted statuses derive completed/current/upcoming from the
+current position. Rating is an integer 0-to-maximum choice (maximum is
+bounded to 1–20), with direct touch targets, RTL-aware keyboard arrows, an
+adjustable screen-reader value, and an optional clear action. Home selects one,
+End selects the maximum, Up decrements, and Down increments. Required/read-only
+ratings omit Clear. Required ratings can initially be zero but cannot be cleared
+or decremented back to zero; validity
+remains application-owned. Invalid ratings show a warning symbol and message
+even when no custom error string is supplied. Read-only/disabled/loading ratings
+cannot change and use neutral, filled/outline indicators rather than active
+accent paint.
+All built-in visibility, removal, validation-count, step-state, and rating copy
+can be replaced through `AurelglyphControlCopy`.
+
+The Swift smoke host includes the complete catalog and a focused
+`-aurelglyph-catalog` launch path for native interaction regression tests.
+
 ## Responsive behavior
 
 Interactive controls owned by Aurelglyph enforce a minimum 44-point iOS target.

@@ -53,7 +53,65 @@ Environments without native `showModal()` receive the same focus containment,
 background isolation, pointer blocking, and scroll locking through the tested
 fallback path.
 
-## Interaction foundations
+## Catalog essentials (Unreleased)
+
+`Link`, `Chip`, `PasswordField`, `InputGroup`, `ValidationSummary`, `Accordion`,
+`Stepper`, and `Rating` are workspace additions, not exports in the 0.8.0 tag.
+They use existing semantic tokens in both appearances and modes.
+
+```tsx
+<Link external externalLabel="Opens in a new tab" href="https://example.com">Guide</Link>
+<Chip defaultSelected label="Local" onRemove={removeLocal} removeLabel="Remove Local" />
+<PasswordField autoComplete="new-password" label="Password" name="password" />
+<InputGroup addonDescription="US dollars" label="Amount" leading="$" name="amount" trailing="USD" />
+<ValidationSummary errors={issues} focusKey={submissionCount} />
+<Accordion defaultValue={["one"]} items={[{ id: "one", title: "Workspace", content: "Local changes" }]} type="single" />
+<Stepper currentId="review" items={steps} onStepChange={navigateToStep} />
+<Rating defaultValue={3} label="Experience" name="rating" />
+```
+
+Unavailable Link renders a non-focusable placeholder without destination or
+event handlers. New-tab destinations get a visible icon and localizable
+`externalLabel` notice, including when supplied through `target="_blank"` alone.
+Chip supports controlled `selected` or `defaultSelected`;
+selection and explicitly labeled removal are sibling buttons. Use
+`selectable={false}` for removal-only items and Badge for static labels.
+
+InputGroup owns exactly one input and its label/help/error relationships. String
+addons are decorative; describe meaningful units with `addonDescription`. Action
+addons must be independently labeled and supplied with their own disabled state.
+PasswordField accepts ordinary native input props/ref, `showLabel`/`hideLabel`,
+and password-manager `autoComplete`. Read-only permits reveal, not value edits;
+disabled/loading prevents both. The server initially renders a masked input.
+Reveal retains the same input, selection, value, and prior focus intent, including
+controlled inputs and React 19 callback-ref cleanup.
+
+ValidationSummary issues are `{ id, message, fieldId?, onFocus? }`. It renders
+nothing when empty; `focusKey` and `announcementKey` are optional once-only
+submission request identifiers for the lifetime of the mounted summary, even
+when keys cycle. Prefer one request method per submission to
+avoid duplicate announcements; announcement text must not contain
+field values. `announcementLabel(title, count)` formats the complete phrase,
+including localized word order. Inline validation and form state remain application-owned.
+
+Accordion uses array `value`/`defaultValue` and `onValueChange` for either
+single or multiple policy; `headingLevel` defaults to 3. Its existing
+ExpandableSection primitive remains independently available. Collapsed panels
+are hidden and inert. Stepper is an ordered status list; only enabled items
+with `href` or a supplied `onStepChange` become controls. Override all generated
+phrases with `statusLabels`.
+
+Rating uses `value`/`defaultValue`, `onValueChange`, whole-number `max` (1–20),
+and native radios/form values. Zero means unselected; optional fields offer
+`clearLabel`, required fields cannot clear. Read-only preserves value without
+mutation. `valueLabel(value, max)` supplies localized labels, including zero.
+Keyboard arrows follow RTL and Home/End select bounds. No validation engine,
+workflow routing, or fractional rating is implied.
+Native form reset silently restores uncontrolled Chip/Rating defaults and
+resynchronizes their form value and selection paint. Controlled values stay
+owner-supplied; a cancelled reset changes nothing.
+
+## Interaction behavior
 
 The interaction layer includes collision-safe IDs, controlled and uncontrolled
 state helpers, roving keyboard focus, outside-click and Escape dismissal, focus

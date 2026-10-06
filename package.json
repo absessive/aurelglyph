@@ -16,7 +16,7 @@
   "scripts": {
     "build": "npm run build:assets && npm run build --workspaces --if-present",
     "build:assets": "node --experimental-strip-types scripts/font-assets.ts",
-    "build:pages": "node --experimental-strip-types scripts/pages.ts",
+    "build:pages": "npm run build:tokens && tsx --tsconfig tsconfig.base.json scripts/pages.ts",
     "build:tokens": "npm run build -w @aurelglyph/tokens",
     "check:components": "vitest run scripts/component-manifest.test.ts",
     "lint": "eslint . --max-warnings 0",

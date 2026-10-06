@@ -23,6 +23,24 @@ public struct AurelglyphControlCopy {
   public var loadingLabel: (String) -> String
   public var decreaseLabel: (String) -> String
   public var increaseLabel: (String) -> String
+  public var unavailable: String
+  public var externalLink: String
+  public var showPassword: String
+  public var hidePassword: String
+  public var required: String
+  public var invalid: String
+  public var validationSummary: String
+  public var clearRating: String
+  public var currentStep: String
+  public var completedStep: String
+  public var upcomingStep: String
+  public var errorStep: String
+  public var disabledStep: String
+  public var removeLabel: (String) -> String
+  public var validationCount: (Int) -> String
+  public var stepValue: (Int, Int, String, String) -> String
+  public var ratingValue: (Int, Int) -> String
+  public var ratingChoice: (Int, Int) -> String
 
   public init(
     loading: String = "Loading",
@@ -45,7 +63,25 @@ public struct AurelglyphControlCopy {
     optionsLabel: @escaping (String) -> String = { "\($0) options" },
     loadingLabel: @escaping (String) -> String = { "Loading \($0)" },
     decreaseLabel: @escaping (String) -> String = { "Decrease \($0)" },
-    increaseLabel: @escaping (String) -> String = { "Increase \($0)" }
+    increaseLabel: @escaping (String) -> String = { "Increase \($0)" },
+    unavailable: String = "Unavailable",
+    externalLink: String = "External link",
+    showPassword: String = "Show password",
+    hidePassword: String = "Hide password",
+    required: String = "Required",
+    invalid: String = "Invalid",
+    validationSummary: String = "Check the form",
+    clearRating: String = "Clear rating",
+    currentStep: String = "Current",
+    completedStep: String = "Completed",
+    upcomingStep: String = "Upcoming",
+    errorStep: String = "Needs attention",
+    disabledStep: String = "Unavailable",
+    removeLabel: @escaping (String) -> String = { "Remove \($0)" },
+    validationCount: @escaping (Int) -> String = { $0 == 1 ? "1 error" : "\($0) errors" },
+    stepValue: @escaping (Int, Int, String, String) -> String = { "Step \($0) of \($1), \($2), \($3)" },
+    ratingValue: @escaping (Int, Int) -> String = { "\($0) of \($1)" },
+    ratingChoice: @escaping (Int, Int) -> String = { "Rate \($0) of \($1)" }
   ) {
     self.loading = loading
     self.readOnly = readOnly
@@ -68,6 +104,24 @@ public struct AurelglyphControlCopy {
     self.loadingLabel = loadingLabel
     self.decreaseLabel = decreaseLabel
     self.increaseLabel = increaseLabel
+    self.unavailable = unavailable
+    self.externalLink = externalLink
+    self.showPassword = showPassword
+    self.hidePassword = hidePassword
+    self.required = required
+    self.invalid = invalid
+    self.validationSummary = validationSummary
+    self.clearRating = clearRating
+    self.currentStep = currentStep
+    self.completedStep = completedStep
+    self.upcomingStep = upcomingStep
+    self.errorStep = errorStep
+    self.disabledStep = disabledStep
+    self.removeLabel = removeLabel
+    self.validationCount = validationCount
+    self.stepValue = stepValue
+    self.ratingValue = ratingValue
+    self.ratingChoice = ratingChoice
   }
 
   public static let standard = AurelglyphControlCopy()

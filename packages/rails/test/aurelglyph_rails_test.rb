@@ -20,6 +20,14 @@ class AurelglyphRailsTest < Minitest::Test
     assert asset_path.join("fonts/aurelglyph/OFL-1.1.txt").exist?
   end
 
+  def test_generated_disclosure_icons_use_mode_aware_semantic_focus_paint
+    css = Aurelglyph::Rails.asset_path.join("stylesheets/aurelglyph.css").read
+
+    assert_match(/\.ag-disclosure__icon\s*\{[^}]*color: var\(--ag-color-semantic-focus\);/m, css)
+    assert_match(/\.ag-disclosure\[open\] \.ag-disclosure__icon\s*\{[^}]*color: var\(--ag-color-semantic-focus\);/m, css)
+    refute_match(/\.ag-disclosure__icon\s*\{[^}]*color: var\(--ag-accent-(?:100|200)\);/m, css)
+  end
+
   def test_helper_reads_generated_tokens
     helper = view_context
 
@@ -1112,6 +1120,284 @@ class AurelglyphRailsTest < Minitest::Test
         items: [{ label: "Grid", role: "menuitemcheckbox", checked: "yes" }]
       )
     end
+  end
+
+  def test_component_expansion_link_and_chip_contracts
+    helper = view_context
+    external = helper.aurelglyph_link("Reference", href: "https://example.com", external: true, external_label: "External destination")
+    unavailable = helper.aurelglyph_link(
+      "Unavailable reference",
+      href: "/systems",
+      unavailable: true,
+      unavailable_label: "Unavailable",
+      role: "link",
+      tabindex: 0,
+      onclick: "activate()",
+      data: { action: "click->links#open", testid: "safe-marker" }
+    )
+    missing_destination = helper.aurelglyph_link("Pending", href: nil, unavailable_label: "Pending destination")
+
+    assert_match(/\A<a[^>]*class="ag-link ag-link--external"/, external)
+    assert_includes external, 'href="https://example.com"'
+    assert_includes external, 'data-icon="external-link"'
+    assert_includes external, ">External destination<"
+    assert_match(/\A<span[^>]*class="ag-link is-unavailable"/, unavailable)
+    assert_includes unavailable, 'aria-disabled="true"'
+    assert_includes unavailable, 'data-disabled="true"'
+    assert_includes unavailable, 'data-testid="safe-marker"'
+    refute_includes unavailable, "href="
+    refute_includes unavailable, "onclick="
+    refute_includes unavailable, "tabindex="
+    refute_includes unavailable, 'role="link"'
+    refute_includes unavailable, "click-&gt;links#open"
+    assert_includes missing_destination, "is-unavailable"
+    assert_includes missing_destination, "Pending destination"
+
+    chip = helper.aurelglyph_chip(
+      label: "Stable",
+      selected: true,
+      removable: true,
+      name: "channels[]",
+      value: "stable",
+      selected_label: "Chosen",
+      unselected_label: "Not chosen",
+      remove_label: "Remove Stable"
+    )
+    disabled_chip = helper.aurelglyph_chip(label: "Locked", selected: true, disabled: true, name: "channels[]")
+
+    assert_includes chip, 'class="ag-chip is-selected"'
+    assert_equal 2, chip.scan(/<button/).length
+    assert_includes chip, 'aria-pressed="true"'
+    assert_includes chip, 'data-default-selected="true"'
+    assert_includes chip, 'data-aurelglyph-chip-value=""'
+    assert_includes chip, 'name="channels[]"'
+    assert_includes chip, 'value="stable"'
+    assert_includes chip, 'aria-label="Remove Stable"'
+    assert_includes chip, ">Chosen<"
+    assert_includes disabled_chip, "is-disabled"
+    assert_operator disabled_chip.scan('disabled="disabled"').length, :>=, 2
+    assert_raises(ArgumentError) { helper.aurelglyph_chip(label: "Static", selectable: false) }
+  end
+
+  def test_component_expansion_password_and_input_group_contracts
+    helper = view_context
+    password = helper.aurelglyph_password_field(
+      name: "account[password]",
+      label: "Password",
+      value: "secret",
+      autocomplete: "new-password",
+      help_text: "Use twelve characters.",
+      error: "Password is too short.",
+      read_only: true,
+      show_label: "Reveal password",
+      hide_label: "Conceal password"
+    )
+
+    assert_includes password, 'class="ag-field ag-input-group ag-password-field is-readonly is-invalid"'
+    assert_includes password, 'type="password"'
+    assert_includes password, 'name="account[password]"'
+    assert_includes password, 'autocomplete="new-password"'
+    assert_includes password, 'readonly="readonly"'
+    assert_includes password, 'aria-label="Reveal password"'
+    assert_includes password, 'data-show-label="Reveal password"'
+    assert_includes password, 'data-hide-label="Conceal password"'
+    assert_includes password, 'data-aurelglyph-password-show-icon=""'
+    assert_includes password, 'data-aurelglyph-password-hide-icon=""'
+    refute_match(/data-aurelglyph-password-toggle=""[^>]*disabled=/, password)
+    assert_includes password, 'aria-invalid="true"'
+    assert_includes password, 'aria-live="polite"'
+
+    action = helper.content_tag(:button, "Apply", type: "button", "aria-label": "Apply amount")
+    group = helper.aurelglyph_input_group(
+      name: "amount",
+      label: "Amount",
+      value: "42",
+      prefix: "$",
+      prefix_description: "US dollars",
+      suffix: "USD",
+      suffix_description: "Currency code",
+      trailing_action: action,
+      help_text: "Whole dollars only"
+    )
+
+    assert_equal 1, group.scan(/<input/).length
+    assert_includes group, 'class="ag-field ag-input-group"'
+    assert_includes group, 'class="ag-input ag-input-group__input"'
+    assert_includes group, 'class="ag-input-group__control"'
+    assert_includes group, 'class="ag-input-group__addon ag-input-group__addon--leading"'
+    assert_includes group, ">US dollars<"
+    assert_includes group, 'class="ag-input-group__action ag-input-group__action--trailing"'
+    assert_includes group, 'aria-label="Apply amount"'
+    assert_raises(ArgumentError) { helper.aurelglyph_input_group(name: "amount", label: "Amount", prefix: "$") }
+  end
+
+  def test_component_expansion_validation_summary_and_accordion_contracts
+    helper = view_context
+    summary = helper.aurelglyph_validation_summary(
+      id: "profile-errors",
+      title: "Resolve these issues",
+      focus_key: "submission-4-focus",
+      announcement_key: "submission-4-announce",
+      issues: [
+        { field_id: "email", message: "Enter an email" },
+        { field_id: "password", message: "Enter a password" }
+      ]
+    )
+
+    assert_nil helper.aurelglyph_validation_summary(issues: [])
+    assert_includes summary, 'class="ag-validation-summary"'
+    assert_includes summary, 'aria-labelledby="profile-errors-title"'
+    assert_includes summary, 'tabindex="-1"'
+    assert_includes summary, 'data-focus-key="submission-4-focus"'
+    assert_includes summary, 'data-announcement-key="submission-4-announce"'
+    assert_includes summary, 'aria-live="polite"'
+    assert_includes summary, 'href="#email"'
+    assert_includes summary, 'data-aurelglyph-validation-target="password"'
+    refute_includes summary, 'role="alert"'
+
+    accordion = helper.aurelglyph_accordion(
+      id: "settings",
+      heading_level: 4,
+      items: [
+        { id: "network", title: "Network", content: helper.content_tag(:p, "Network settings"), open: true },
+        { id: "storage", title: "Storage", content: helper.content_tag(:p, "Storage settings"), open: true },
+        { id: "locked", title: "Locked", content: helper.content_tag(:p, "Locked settings"), disabled: true }
+      ]
+    )
+
+    assert_includes accordion, 'class="ag-accordion"'
+    assert_equal 2, accordion.scan(/<details/).length
+    assert_equal 1, accordion.scan(/<details[^>]* open=/).length
+    assert_equal 2, accordion.scan('name="settings"').length
+    assert_includes accordion, 'class="ag-disclosure__heading-level" role="heading" aria-level="4"'
+    assert_includes accordion, 'role="region"'
+    assert_includes accordion, 'aria-labelledby="settings-item-0-summary"'
+    assert_includes accordion, 'data-item-key="network"'
+    assert_includes accordion, '<section id="settings-item-2" class="ag-accordion__item ag-disclosure is-disabled" aria-disabled="true" data-item-key="locked"'
+    assert_equal 2, accordion.scan(/<summary/).length
+
+    second_accordion = helper.aurelglyph_accordion(
+      id: "advanced-settings",
+      items: [{ id: "network", title: "Network", content: "Advanced network settings" }]
+    )
+    assert_includes second_accordion, 'id="advanced-settings-item-0-summary"'
+    refute_includes second_accordion, 'id="settings-item-0-summary"'
+
+    disabled_open = helper.aurelglyph_accordion(
+      id: "restricted-settings",
+      items: [
+        { id: "locked", title: "Locked", content: "Visible locked settings", disabled: true, open: true },
+        { id: "network", title: "Network", content: "Network settings", open: true }
+      ]
+    )
+    assert_equal 1, disabled_open.scan("is-open").length
+    refute_match(/<details[^>]* open=/, disabled_open)
+
+    multiple = helper.aurelglyph_accordion(
+      multiple: true,
+      items: [
+        { title: "One", content: "First", open: true },
+        { title: "Two", content: "Second", open: true }
+      ]
+    )
+    assert_equal 2, multiple.scan(/<details[^>]* open=/).length
+    refute_includes multiple, " name="
+    assert_raises(ArgumentError) { helper.aurelglyph_accordion(items: [], heading_level: 7) }
+  end
+
+  def test_component_expansion_stepper_and_rating_contracts
+    helper = view_context
+    stepper = helper.aurelglyph_stepper(
+      label: "Setup progress",
+      current_label: "In progress",
+      completed_label: "Done",
+      disabled_label: "Locked",
+      items: [
+        { label: "Account", status: "completed", href: "/account" },
+        { label: "Profile", status: "current" },
+        { label: "Review", status: "upcoming", href: "/review", disabled: true },
+        { label: "Publish", status: "error" }
+      ]
+    )
+
+    assert_match(/\A<nav[^>]*class="ag-stepper"/, stepper)
+    assert_includes stepper, 'aria-label="Setup progress"'
+    assert_includes stepper, 'href="/account"'
+    assert_includes stepper, 'aria-current="step"'
+    assert_includes stepper, ">In progress<"
+    assert_includes stepper, ">Done<"
+    assert_includes stepper, ">Locked<"
+    refute_includes stepper, 'href="/review"'
+    assert_includes stepper, 'data-icon="warning"'
+    current_error = helper.aurelglyph_stepper(
+      current_id: "publish",
+      current_label: "In progress",
+      error_label: "Needs attention",
+      items: [
+        { id: "profile", label: "Profile", status: "current" },
+        { id: "publish", label: "Publish", status: "error" },
+        { id: "archive", label: "Archive", status: "current" }
+      ]
+    )
+    assert_equal 1, current_error.scan('aria-current="step"').length
+    assert_match(/class="ag-stepper__item is-error is-current"[^>]*data-status="error"[^>]*data-current="true"/, current_error)
+    assert_match(/>In progress<.*>Needs attention</, current_error)
+    assert_equal 2, current_error.scan('data-status="upcoming"').length
+    inferred_current = helper.aurelglyph_stepper(
+      items: [
+        { id: "one", label: "One", status: "current" },
+        { id: "two", label: "Two", status: "current" }
+      ]
+    )
+    assert_equal 1, inferred_current.scan('aria-current="step"').length
+    assert_equal 1, inferred_current.scan('data-status="current"').length
+    assert_equal 1, inferred_current.scan('data-status="upcoming"').length
+    assert_raises(ArgumentError) do
+      helper.aurelglyph_stepper(items: [{ label: "Unknown", status: "paused" }])
+    end
+
+    rating = helper.aurelglyph_rating(
+      name: "score",
+      label: "Rating",
+      value: 3,
+      max: 5,
+      value_label: ->(value, max) { "Score #{value} from #{max}" },
+      clear_label: "Remove rating"
+    )
+    required = helper.aurelglyph_rating(name: "required-score", label: "Required rating", value: 0, required: true)
+    read_only = helper.aurelglyph_rating(name: "saved-score", label: "Saved rating", value: 4, read_only: true)
+    invalid_only = helper.aurelglyph_rating(name: "invalid-score", label: "Invalid rating", invalid: true)
+
+    assert_match(/\A<fieldset[^>]*class="ag-rating"/, rating)
+    assert_match(/\A<fieldset[^>]*role="radiogroup"/, rating)
+    assert_equal 5, rating.scan('type="radio"').length
+    assert_equal 1, rating.scan('checked="checked"').length
+    assert_includes rating, 'aria-label="Score 3 from 5"'
+    assert_includes rating, 'data-icon="star"'
+    assert_includes rating, 'data-value="3"'
+    assert_includes rating, 'data-aurelglyph-rating-clear=""'
+    assert_includes rating, ">Remove rating<"
+    assert_match(/type="hidden" name="score" value="0" disabled="disabled" data-aurelglyph-rating-zero=""/, rating)
+    assert_equal 5, required.scan('required="required"').length
+    refute_includes required, 'checked="checked"'
+    refute_includes required, "data-aurelglyph-rating-clear"
+    assert_includes required, 'data-aurelglyph-rating-zero=""'
+    assert_includes read_only, 'aria-readonly="true"'
+    assert_includes read_only, 'type="hidden" name="saved-score" value="4"'
+    assert_equal 5, read_only.scan('disabled="disabled"').length
+    refute_includes read_only, "data-aurelglyph-rating-clear"
+    assert_includes invalid_only, 'class="ag-rating is-invalid"'
+    assert_includes invalid_only, 'data-invalid="true"'
+    assert_includes invalid_only, 'class="ag-icon ag-rating__invalid-marker"'
+    assert_match(/<legend[^>]*>.*data-icon="warning".*<\/legend>/, invalid_only)
+    read_only_empty = helper.aurelglyph_rating(name: "empty-score", label: "Empty rating", value: 0, read_only: true)
+    assert_includes read_only_empty, 'type="hidden" name="empty-score" value="0"'
+    rounded = helper.aurelglyph_rating(name: "rounded-score", label: "Rounded rating", value: 1.5)
+    clamped_max = helper.aurelglyph_rating(name: "small-score", label: "Small rating", max: 0)
+    fallback_max = helper.aurelglyph_rating(name: "fallback-score", label: "Fallback rating", max: Float::INFINITY)
+    assert_includes rounded, 'data-value="2"'
+    assert_equal 1, clamped_max.scan('type="radio"').length
+    assert_equal 5, fallback_max.scan('type="radio"').length
   end
 
   private

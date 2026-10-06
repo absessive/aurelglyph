@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+- Add Link, Chip, PasswordField, InputGroup, ValidationSummary, Accordion,
+  workflow Stepper, and integer Rating across CSS/Web, React, React Native,
+  SwiftUI, and Rails, with token-based light/dark appearances, localizable copy,
+  native form/accessibility semantics, controlled/uncontrolled state where
+  applicable, examples, and regression coverage. Unavailable links remove all
+  navigation; chip removal is a sibling action; password reveal preserves the
+  existing input; summaries focus/announce only on explicit submission requests.
+  Preserve React/Rails password selection through native browser paint and modern
+  callback-ref cleanup; suppress repeated summary request keys for the mounted
+  lifetime. Reset uncontrolled Web Chip/Rating defaults silently while retaining
+  controlled values and respecting cancelled native form resets.
+  Use mode-aware semantic accent paint for Web/Rails disclosure icons instead of
+  pale fixed accent shades on light backgrounds.
+  Announce new-tab Link targets even when supplied without the external flag.
+  Retain minimum-size standalone Web/Rails link targets without forcing inline
+  prose links out of text flow.
+  Keep read-only InputGroup values and unit addons readable on inset surfaces;
+  host actual documentation specimens on semantic elevated surfaces in atelier
+  and quiet appearances.
+  Rebuild UIKit's secure editing buffer through native text insertion while
+  retaining focus/caret/value, guarding stale restoration, and preserving undo
+  registration and the binding. Keep native smoke diagnostics opt-in and
+  secret-free; make only the new accessibility-size catalog scroll probe
+  target-directed while preserving its limits and final hittability assertions.
+- Add React Native ExpandableSection and the curated icon names needed by the
+  expansion. Broaden the scoped core-control manifest to 37 families, including
+  nine previously omitted five-adapter controls. Distinguish Unreleased workspace
+  additions from immutable released contracts in generated support documentation.
+  Document remaining older React Native parity and advanced-catalog gaps.
+  Package versions, release tags, and registry publication remain unchanged.
+- Generate read-only catalog specimens from the actual React public controls
+  with canonical token/component CSS; keep executable examples separate from
+  non-interactive documentation states. Pages generation now rebuilds tokens
+  and uses the existing TypeScript/JSX runner for reproducible component markup.
+
 ## 0.8.0
 
 - Establish the 0.8 production release foundation with checked-in Web, Rails,

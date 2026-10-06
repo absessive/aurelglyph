@@ -3,7 +3,8 @@
  */
 
 import ReactTestRenderer from 'react-test-renderer';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, TextInput} from 'react-native';
+import {Rating} from '@aurelglyph/react-native';
 import App, {smokeLabels} from '../App';
 
 test('mounts a modal-local host and leaves underlying controls operable', async () => {
@@ -83,6 +84,61 @@ test('mounts a modal-local host and leaves underlying controls operable', async 
     if (renderer) {
       await ReactTestRenderer.act(async () => renderer?.unmount());
     }
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  }
+}, 15_000);
+
+test('exercises the eight native essentials independently of overlay state', async () => {
+  // Match the preceding native renderer case: isolate deferred native effects
+  // behind a fresh fake-timer scope rather than switching act schedulers.
+  jest.useFakeTimers();
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  try {
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(<App />);
+    });
+    if (!renderer) throw new Error('Smoke host did not mount');
+    const root = renderer.root;
+    const control = (label: string) => {
+      const found = root.findAllByProps({accessibilityLabel: label})
+        .find(node => typeof node.props.onPress === 'function');
+      if (!found) throw new Error(`Missing native control: ${label}`);
+      return found;
+    };
+    expect(root.findByProps({testID: 'component-expansion'})).toBeTruthy();
+    const password = () => root.findAllByType(TextInput)
+      .find(node => node.props.accessibilityLabel === 'Access password');
+    expect(password()?.props.secureTextEntry).toBe(true);
+    expect(password()?.props.autoComplete).toBe('current-password');
+    await ReactTestRenderer.act(async () => control('Show Access password').props.onPress());
+    expect(password()?.props.secureTextEntry).toBe(false);
+    expect(password()?.props.value).toBe('sample-passphrase');
+    await ReactTestRenderer.act(async () => control('Remove Local').props.onPress());
+    expect(root.findAllByProps({accessibilityLabel: 'Remove Local'})).toHaveLength(0);
+    await ReactTestRenderer.act(async () => control('Clear rating').props.onPress());
+    expect(root.findByType(Rating).props.value).toBe(0);
+    await ReactTestRenderer.act(async () => control('Limits').props.onPress());
+    expect(root.findAll(node => node.props.children === 'Standard limits').length).toBeGreaterThan(0);
+    expect(root.findAll(node => node.props.children === 'Local workspace')).toHaveLength(0);
+    const configure = root.findAll(node =>
+      node.props.accessibilityLabel === 'Configure, step 1 of 4, Completed'
+      && typeof node.props.onPress === 'function'
+    )[0];
+    if (!configure) throw new Error('Missing step navigation');
+    await ReactTestRenderer.act(async () => configure.props.onPress());
+    expect(root.findAllByProps({accessibilityLabel: 'Configure, step 1 of 4, Current'}).length).toBeGreaterThan(0);
+    const amount = root.findAllByType(TextInput)
+      .find(node => node.props.accessibilityLabel === 'Amount');
+    if (!amount) throw new Error('Missing owned amount input');
+    await ReactTestRenderer.act(async () => amount.props.onChangeText('24.00'));
+    expect(root.findAllByType(TextInput).find(node => node.props.accessibilityLabel === 'Amount')?.props.value).toBe('24.00');
+    const review = root.findAll(node => node.props.children === 'Review fields' && typeof node.props.onPress === 'function')[0];
+    if (!review) throw new Error('Missing review submission');
+    await ReactTestRenderer.act(async () => review.props.onPress());
+    expect(root.findAllByProps({accessibilityLabel: 'Review amount'}).length).toBeGreaterThan(0);
+  } finally {
+    if (renderer) await ReactTestRenderer.act(async () => renderer?.unmount());
     jest.clearAllTimers();
     jest.useRealTimers();
   }

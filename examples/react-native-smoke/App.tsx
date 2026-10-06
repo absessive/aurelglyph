@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {
   Modal,
   ScrollView,
@@ -6,20 +6,29 @@ import {
   StyleSheet,
   Text,
   View,
+  type TextInputInstance,
 } from 'react-native';
 import {
   AurelglyphOverlayHost,
   AurelglyphProvider,
+  Accordion,
   Button,
+  Chip,
   Combobox,
   CommandPalette,
   Icon,
   IconButton,
+  InputGroup,
+  Link,
   MoreInformation,
+  PasswordField,
+  Rating,
   Menu,
   SegmentedControl,
   Select,
+  Stepper,
   Tooltip,
+  ValidationSummary,
   useAurelglyphTheme,
 } from '@aurelglyph/react-native';
 import {
@@ -263,8 +272,53 @@ function SmokeWorkbench() {
           open={menuOpen}
         />
       </View>
+      <ExpansionWorkbench />
       {modalOpen ? <NativeModalSmoke insets={insets} onClose={() => setModalOpen(false)} /> : null}
     </ScrollView>
+  );
+}
+
+function ExpansionWorkbench() {
+  const theme = useAurelglyphTheme();
+  const amountInput = useRef<TextInputInstance>(null);
+  const passwordInput = useRef<TextInputInstance>(null);
+  const [amount, setAmount] = useState('12.50');
+  const [chipVisible, setChipVisible] = useState(true);
+  const [selected, setSelected] = useState(true);
+  const [rating, setRating] = useState(3);
+  const [step, setStep] = useState('review');
+  const [submission, setSubmission] = useState(0);
+  return (
+    <View style={styles.controlStack} testID="component-expansion">
+      <Text accessibilityRole="header" style={[styles.panelLabel, {color: theme.colors.text}]}>COMPONENT ESSENTIALS</Text>
+      <Link external href="https://aurelglyph.absessive.com/">Documentation</Link>
+      <Link disabled href="https://aurelglyph.absessive.com/">Unavailable destination</Link>
+      {chipVisible ? <Chip label="Local" onRemove={() => setChipVisible(false)} onSelectedChange={setSelected} selected={selected} />
+        : <Button onPress={() => setChipVisible(true)} variant="ghost">Restore local filter</Button>}
+      <PasswordField defaultValue="sample-passphrase" inputRef={passwordInput} label="Access password" />
+      <InputGroup addonDescription="US dollars" inputRef={amountInput} keyboardType="decimal-pad" label="Amount" onChangeText={setAmount} prefix="$" suffix="USD" value={amount} />
+      <Button onPress={() => setSubmission(current => current + 1)} variant="secondary">Review fields</Button>
+      <ValidationSummary
+        announcementKey={submission || undefined}
+        errors={submission ? [
+          {id: 'access', message: 'Review access password', onPress: () => passwordInput.current?.focus()},
+          {id: 'amount', message: 'Review amount', onPress: () => amountInput.current?.focus()},
+        ] : []}
+        focusKey={submission || undefined}
+      />
+      <Accordion defaultValue={['details']} items={[
+        {id: 'details', title: 'Details', content: <Text style={[styles.body, {color: theme.colors.text}]}>Local workspace</Text>},
+        {id: 'limits', title: 'Limits', content: <Text style={[styles.body, {color: theme.colors.text}]}>Standard limits</Text>},
+        {disabled: true, id: 'archive', title: 'Archive', content: <Text style={[styles.body, {color: theme.colors.text}]}>Requires approval</Text>},
+      ]} />
+      <Stepper currentId={step} items={[
+        {id: 'configure', label: 'Configure'},
+        {id: 'review', label: 'Review'},
+        {id: 'approve', label: 'Approve'},
+        {disabled: true, id: 'publish', label: 'Publish'},
+      ]} onStepChange={setStep} />
+      <Rating label="Interface quality" onValueChange={setRating} value={rating} />
+    </View>
   );
 }
 

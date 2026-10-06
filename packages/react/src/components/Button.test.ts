@@ -464,6 +464,10 @@ describe("interaction foundation styles", () => {
     expect(css).toContain('.ag-checkbox__input[data-indeterminate="true"] + .ag-checkbox__box');
     expect(css).toContain("cursor: not-allowed;");
     expect(css).toContain("text-decoration: none;");
+    expect(css).toMatch(/\.ag-link\s*\{[^}]*min-block-size: var\(--ag-space-6\);[^}]*min-inline-size: var\(--ag-space-6\);/u);
+    expect(css).not.toMatch(/\.ag-link\s*\{[^}]*display:/u);
+    expect(css).toMatch(/\.ag-input-group__addon,\s*\.ag-password-field__toggle\s*\{[^}]*color: var\(--ag-color-semantic-foreground\);/u);
+    expect(css).toMatch(/\.ag-input-group \.ag-input-group__input:read-only\s*\{\s*color: var\(--ag-color-semantic-foreground\);\s*\}/u);
     expect(css).toMatch(/\.ag-segmented__item\.is-active,[\s\S]*?border-color: var\(--ag-color-semantic-focus\);/u);
     expect(css).toMatch(/\.ag-tab-bar__item\.is-active,[\s\S]*?border-bottom-color: var\(--ag-color-semantic-focus\);/u);
     expect(css).toContain("border-inline-start: 3px solid transparent;");

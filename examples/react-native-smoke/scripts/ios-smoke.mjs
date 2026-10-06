@@ -153,7 +153,7 @@ try {
   if (!summary) {
     throw new Error('xcodebuild did not produce a readable UI test summary.');
   }
-  if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 6) {
+  if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 9) {
     throw new Error(`Unexpected UI test summary: ${JSON.stringify(summary)}`);
   }
   log(`[rn-smoke] ${summary.passedTests}/${summary.totalTestCount} native UI tests passed with zero failures.`);

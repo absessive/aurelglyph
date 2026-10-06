@@ -10,6 +10,9 @@ const derivedData = join(temporaryRoot, 'DerivedData');
 const expectedTests = [
   'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testAccessibilityCoverage',
   'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testAppearanceMatrix',
+  'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testCatalogChipDisclosureAndRatingContracts',
+  'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testCatalogLocalizedCopyAndAccessibleTextReachability',
+  'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testCatalogPasswordPreservesFocusValueAndMasksAgain',
   'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testDialogAndMoreInformationPresentation',
   'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testDisabledRowsAndPresentationRecovery',
   'AurelglyphSwiftUISmokeUITests/AurelglyphSwiftUISmokeUITests/testLaunchesRootPackageShowcase',

@@ -2090,9 +2090,401 @@
     return groups;
   }
 
+  const chipSelector = "[data-aurelglyph-chip]";
+  const chipSelectSelector = "[data-aurelglyph-chip-select]";
+  const chipRemoveSelector = "[data-aurelglyph-chip-remove]";
+  const chipValueSelector = "[data-aurelglyph-chip-value]";
+  const chipStateSelector = "[data-aurelglyph-chip-state]";
+  const chipStates = new WeakSet();
+
+  function chipRemovalFocusTarget(chip) {
+    const focusableSelector = [
+      "button:not([disabled])",
+      "a[href]",
+      "input:not([disabled]):not([type='hidden'])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])"
+    ].join(",");
+    const interactiveWithin = (element) => {
+      if (!element) return null;
+      const candidates = [
+        ...(element.matches(focusableSelector) ? [element] : []),
+        ...element.querySelectorAll(focusableSelector)
+      ];
+      return candidates.find((candidate) => candidate.getAttribute("aria-disabled") !== "true") || null;
+    };
+    let sibling = chip.nextElementSibling;
+    while (sibling) {
+      const target = interactiveWithin(sibling);
+      if (target) return target;
+      sibling = sibling.nextElementSibling;
+    }
+    sibling = chip.previousElementSibling;
+    while (sibling) {
+      const target = interactiveWithin(sibling);
+      if (target) return target;
+      sibling = sibling.previousElementSibling;
+    }
+    return null;
+  }
+
+  function focusAfterChipRemoval(chip) {
+    const sibling = chipRemovalFocusTarget(chip);
+    const parent = chip.parentElement;
+    chip.remove();
+    if (sibling && sibling.isConnected) {
+      sibling.focus();
+      return;
+    }
+    if (!parent || !parent.isConnected) return;
+    const hadTabIndex = parent.hasAttribute("tabindex");
+    if (!hadTabIndex) parent.setAttribute("tabindex", "-1");
+    parent.focus();
+    if (!hadTabIndex) {
+      parent.addEventListener("blur", () => parent.removeAttribute("tabindex"), { once: true });
+    }
+  }
+
+  function synchronizeChip(chip, selected) {
+    const select = chip.querySelector(chipSelectSelector);
+    const value = chip.querySelector(chipValueSelector);
+    const state = chip.querySelector(chipStateSelector);
+    const isSelected = Boolean(selected);
+    chip.classList.toggle("is-selected", isSelected);
+    chip.setAttribute("data-selected", String(isSelected));
+    if (select) select.setAttribute("aria-pressed", String(isSelected));
+    if (value) value.disabled = !isSelected || chip.getAttribute("data-disabled") === "true";
+    if (state) {
+      state.textContent = chip.getAttribute(isSelected ? "data-selected-label" : "data-unselected-label") || "";
+    }
+  }
+
+  function attachChip(chip) {
+    if (chipStates.has(chip)) return;
+    chipStates.add(chip);
+    chip.addEventListener("click", (event) => {
+      if (
+        !(event.target instanceof global.Element) ||
+        chip.getAttribute("data-disabled") === "true" ||
+        chip.getAttribute("data-readonly") === "true"
+      ) return;
+      const remove = event.target.closest(chipRemoveSelector);
+      if (remove && chip.contains(remove)) {
+        const EventConstructor = chip.ownerDocument.defaultView.CustomEvent;
+        const removeEvent = new EventConstructor("aurelglyph:chip:remove", {
+          bubbles: true,
+          cancelable: true
+        });
+        if (chip.dispatchEvent(removeEvent)) focusAfterChipRemoval(chip);
+        return;
+      }
+      const select = event.target.closest(chipSelectSelector);
+      if (select && chip.contains(select)) {
+        synchronizeChip(chip, select.getAttribute("aria-pressed") !== "true");
+        const EventConstructor = chip.ownerDocument.defaultView.CustomEvent;
+        chip.dispatchEvent(new EventConstructor("aurelglyph:chip:change", {
+          bubbles: true,
+          detail: { selected: select.getAttribute("aria-pressed") === "true" }
+        }));
+      }
+    });
+  }
+
+  function resetChip(chip) {
+    synchronizeChip(chip, chip.getAttribute("data-default-selected") === "true");
+  }
+
+  function initializeChips(root) {
+    const chips = elementsWithin(root || document, chipSelector);
+    chips.forEach((chip) => {
+      attachChip(chip);
+      const selected = chip.getAttribute("data-selected") === "true";
+      synchronizeChip(chip, selected);
+    });
+    return chips;
+  }
+
+  const passwordFieldSelector = "[data-aurelglyph-password-field]";
+  const passwordInputSelector = "[data-aurelglyph-password-input]";
+  const passwordToggleSelector = "[data-aurelglyph-password-toggle]";
+  const passwordShowIconSelector = "[data-aurelglyph-password-show-icon]";
+  const passwordHideIconSelector = "[data-aurelglyph-password-hide-icon]";
+  const passwordFieldStates = new WeakSet();
+  const passwordRestoreStates = new WeakMap();
+
+  function cancelPasswordRestore(input) {
+    const state = passwordRestoreStates.get(input);
+    if (!state) return;
+    state.cancelled = true;
+    if (state.frame !== null && typeof global.cancelAnimationFrame === "function") {
+      global.cancelAnimationFrame(state.frame);
+    }
+    passwordRestoreStates.delete(input);
+  }
+
+  function restorePasswordSelection(field, input, selection) {
+    if (!selection || selection.start === null || selection.end === null) return;
+    const state = { cancelled: false, frame: null };
+    passwordRestoreStates.set(input, state);
+    const restore = (deferred) => {
+      if (
+        state.cancelled ||
+        !input.isConnected ||
+        input.disabled ||
+        input.value !== selection.value ||
+        field.querySelector(passwordInputSelector) !== input
+      ) return;
+      if (selection.focused) {
+        if (deferred && input.ownerDocument.activeElement !== input) return;
+        input.focus({ preventScroll: true });
+      }
+      try {
+        input.setSelectionRange(selection.start, selection.end, selection.direction || "none");
+      } catch {
+        // Some native input implementations do not expose a restorable selection.
+      }
+    };
+    restore(false);
+    global.queueMicrotask(() => restore(true));
+    if (typeof global.requestAnimationFrame === "function") {
+      state.frame = global.requestAnimationFrame(() => {
+        restore(true);
+        if (passwordRestoreStates.get(input) === state) passwordRestoreStates.delete(input);
+      });
+    }
+  }
+
+  function synchronizePasswordField(field, revealed, restoreFocus) {
+    const input = field.querySelector(passwordInputSelector);
+    const toggle = field.querySelector(passwordToggleSelector);
+    if (!input || !toggle) return;
+    cancelPasswordRestore(input);
+    let selection = null;
+    try {
+      selection = {
+        direction: input.selectionDirection,
+        end: input.selectionEnd,
+        focused: input.ownerDocument.activeElement === input,
+        start: input.selectionStart,
+        value: input.value
+      };
+    } catch {
+      selection = null;
+    }
+    input.type = revealed ? "text" : "password";
+    toggle.setAttribute("aria-pressed", String(revealed));
+    toggle.setAttribute(
+      "aria-label",
+      field.getAttribute(revealed ? "data-hide-label" : "data-show-label") || ""
+    );
+    const showIcon = toggle.querySelector(passwordShowIconSelector);
+    const hideIcon = toggle.querySelector(passwordHideIconSelector);
+    if (showIcon) showIcon.hidden = revealed;
+    if (hideIcon) hideIcon.hidden = !revealed;
+    if (restoreFocus) restorePasswordSelection(field, input, selection);
+  }
+
+  function attachPasswordField(field) {
+    if (passwordFieldStates.has(field)) return;
+    passwordFieldStates.add(field);
+    field.addEventListener("pointerdown", (event) => {
+      if (!(event.target instanceof global.Element) || event.button !== 0) return;
+      const toggle = event.target.closest(passwordToggleSelector);
+      if (toggle && field.contains(toggle) && !toggle.disabled) event.preventDefault();
+    });
+    field.addEventListener("click", (event) => {
+      if (!(event.target instanceof global.Element)) return;
+      const toggle = event.target.closest(passwordToggleSelector);
+      if (!toggle || !field.contains(toggle) || toggle.disabled) return;
+      synchronizePasswordField(field, toggle.getAttribute("aria-pressed") !== "true", true);
+    });
+  }
+
+  function initializePasswordFields(root) {
+    const fields = elementsWithin(root || document, passwordFieldSelector);
+    fields.forEach((field) => {
+      attachPasswordField(field);
+      const toggle = field.querySelector(passwordToggleSelector);
+      synchronizePasswordField(field, toggle && toggle.getAttribute("aria-pressed") === "true", false);
+    });
+    return fields;
+  }
+
+  const validationSummarySelector = "[data-aurelglyph-validation-summary]";
+  const validationAnnouncementSelector = "[data-aurelglyph-validation-announcement]";
+  const validationDocumentStates = new WeakMap();
+  const validationSummaryStates = new WeakMap();
+
+  function validationDocumentState(document) {
+    let state = validationDocumentStates.get(document);
+    if (!state) {
+      state = { announcements: new Set(), focus: new Set() };
+      validationDocumentStates.set(document, state);
+    }
+    return state;
+  }
+
+  function validationRequestKey(summary, key) {
+    return summary.id ? `${summary.id}\u0000${key}` : null;
+  }
+
+  function attachValidationSummary(summary) {
+    let state = validationSummaryStates.get(summary);
+    if (state) return state;
+    state = { announcements: new Set(), focus: new Set() };
+    validationSummaryStates.set(summary, state);
+    summary.addEventListener("click", (event) => {
+      if (!(event.target instanceof global.Element)) return;
+      const link = event.target.closest("[data-aurelglyph-validation-target]");
+      if (!link || !summary.contains(link)) return;
+      const target = summary.ownerDocument.getElementById(link.getAttribute("data-aurelglyph-validation-target") || "");
+      if (!target || typeof target.focus !== "function") return;
+      event.preventDefault();
+      target.focus();
+    });
+    return state;
+  }
+
+  function initializeValidationSummaries(root) {
+    const summaries = elementsWithin(root || document, validationSummarySelector);
+    summaries.forEach((summary) => {
+      const localState = attachValidationSummary(summary);
+      const documentState = validationDocumentState(summary.ownerDocument);
+      const focusKey = summary.getAttribute("data-focus-key");
+      const scopedFocusKey = focusKey && validationRequestKey(summary, focusKey);
+      const handledFocus = scopedFocusKey ? documentState.focus : localState.focus;
+      const effectiveFocusKey = scopedFocusKey || focusKey;
+      if (effectiveFocusKey && !handledFocus.has(effectiveFocusKey)) {
+        handledFocus.add(effectiveFocusKey);
+        summary.focus();
+      }
+      const announcementKey = summary.getAttribute("data-announcement-key");
+      const announcement = summary.querySelector(validationAnnouncementSelector);
+      const scopedAnnouncementKey = announcementKey && validationRequestKey(summary, announcementKey);
+      const handledAnnouncements = scopedAnnouncementKey ? documentState.announcements : localState.announcements;
+      const effectiveAnnouncementKey = scopedAnnouncementKey || announcementKey;
+      if (effectiveAnnouncementKey && announcement && !handledAnnouncements.has(effectiveAnnouncementKey)) {
+        handledAnnouncements.add(effectiveAnnouncementKey);
+        announcement.textContent = announcement.getAttribute("data-aurelglyph-validation-announcement") || "";
+      }
+    });
+    return summaries;
+  }
+
+  const accordionSelector = "[data-aurelglyph-accordion]";
+  const accordionStates = new WeakSet();
+
+  function attachAccordion(accordion) {
+    if (accordionStates.has(accordion)) return;
+    accordionStates.add(accordion);
+    accordion.addEventListener("toggle", (event) => {
+      if (accordion.getAttribute("data-multiple") === "true") return;
+      const disclosure = event.target;
+      if (!(disclosure instanceof global.HTMLDetailsElement) || !disclosure.open || !accordion.contains(disclosure)) return;
+      Array.from(accordion.querySelectorAll(":scope > details[open]")).forEach((candidate) => {
+        if (candidate !== disclosure) candidate.open = false;
+      });
+    }, true);
+  }
+
+  function initializeAccordions(root) {
+    const accordions = elementsWithin(root || document, accordionSelector);
+    accordions.forEach(attachAccordion);
+    return accordions;
+  }
+
+  const ratingSelector = "[data-aurelglyph-rating]";
+  const ratingInputSelector = "[data-aurelglyph-rating-input]";
+  const ratingClearSelector = "[data-aurelglyph-rating-clear]";
+  const ratingValueSelector = "[data-aurelglyph-rating-value]";
+  const ratingZeroSelector = "[data-aurelglyph-rating-zero]";
+  const ratingStates = new WeakSet();
+
+  function synchronizeRating(rating) {
+    const selected = rating.querySelector(`${ratingInputSelector}:checked`);
+    const value = selected ? selected.value : "0";
+    rating.setAttribute("data-value", value);
+    Array.from(rating.querySelectorAll(ratingInputSelector)).forEach((input) => {
+      const option = input.closest(".ag-rating__option");
+      if (option) option.toggleAttribute("data-filled", Number(input.value) <= Number(value));
+    });
+    const output = rating.querySelector(ratingValueSelector);
+    if (output) {
+      output.textContent = selected
+        ? selected.getAttribute("data-value-label") || ""
+        : rating.getAttribute("data-empty-label") || "";
+    }
+    const zero = rating.querySelector(ratingZeroSelector);
+    if (zero) zero.disabled = Boolean(selected);
+    const clear = rating.querySelector(ratingClearSelector);
+    if (clear) clear.disabled = rating.disabled || !selected;
+  }
+
+  function attachRating(rating) {
+    if (ratingStates.has(rating)) return;
+    ratingStates.add(rating);
+    rating.addEventListener("change", (event) => {
+      if (!(event.target instanceof global.Element) || !event.target.matches(ratingInputSelector)) return;
+      synchronizeRating(rating);
+    });
+    rating.addEventListener("keydown", (event) => {
+      if (
+        !(event.target instanceof global.HTMLInputElement) ||
+        !event.target.matches(ratingInputSelector) ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      ) return;
+      const inputs = Array.from(rating.querySelectorAll(ratingInputSelector)).filter((input) => !input.disabled);
+      if (!inputs.length) return;
+      const currentIndex = inputs.indexOf(event.target);
+      if (currentIndex < 0) return;
+      let nextIndex = null;
+      if (event.key === "Home") nextIndex = 0;
+      if (event.key === "End") nextIndex = inputs.length - 1;
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
+        const explicitDirection = rating.closest("[dir]")?.getAttribute("dir")?.toLowerCase();
+        const direction = explicitDirection || global.getComputedStyle(rating).direction;
+        const rtl = direction === "rtl";
+        const advances = event.key === "ArrowDown" || event.key === (rtl ? "ArrowLeft" : "ArrowRight");
+        nextIndex = (currentIndex + (advances ? 1 : -1) + inputs.length) % inputs.length;
+      }
+      if (nextIndex === null) return;
+      event.preventDefault();
+      const next = inputs[nextIndex];
+      next.checked = true;
+      next.focus();
+      synchronizeRating(rating);
+      next.dispatchEvent(new global.Event("input", { bubbles: true }));
+      next.dispatchEvent(new global.Event("change", { bubbles: true }));
+    });
+    rating.addEventListener("click", (event) => {
+      if (!(event.target instanceof global.Element)) return;
+      const clear = event.target.closest(ratingClearSelector);
+      if (!clear || !rating.contains(clear)) return;
+      const selected = rating.querySelector(`${ratingInputSelector}:checked`);
+      if (!selected) return;
+      selected.checked = false;
+      synchronizeRating(rating);
+      selected.dispatchEvent(new global.Event("input", { bubbles: true }));
+      selected.dispatchEvent(new global.Event("change", { bubbles: true }));
+    });
+  }
+
+  function initializeRatings(root) {
+    const ratings = elementsWithin(root || document, ratingSelector);
+    ratings.forEach((rating) => {
+      attachRating(rating);
+      synchronizeRating(rating);
+    });
+    return ratings;
+  }
+
   const interactionDocuments = new WeakSet();
 
   function synchronizeResetForm(form) {
+    elementsWithin(form, chipSelector).forEach(resetChip);
     elementsWithin(form, checkboxInputSelector).forEach((input) => {
       attachCheckbox(input);
       resetCheckbox(input);
@@ -2108,6 +2500,8 @@
       attachSelectionGroup(group);
       resetSelectionGroup(group);
     });
+    elementsWithin(form, passwordFieldSelector).forEach((field) => synchronizePasswordField(field, false, false));
+    elementsWithin(form, ratingSelector).forEach(synchronizeRating);
   }
 
   function installInteractionDocumentController(ownerDocument) {
@@ -2139,16 +2533,21 @@
     installInteractionDocumentController(ownerDocument);
     const sheets = initialize(scope);
     return {
+      accordions: initializeAccordions(scope),
       checkboxes: initializeCheckboxes(scope),
+      chips: initializeChips(scope),
       comboboxes: initializeComboboxes(scope),
       commandPalettes: initializeCommandPalettes(scope),
       menus: initializeMenus(scope),
       numberFields: initializeNumberFields(scope),
       popovers: initializePopovers(scope),
+      passwordFields: initializePasswordFields(scope),
+      ratings: initializeRatings(scope),
       selections: initializeSelectionGroups(scope),
       sheets,
       sliders: initializeSliders(scope),
-      tooltips: initializeTooltips(scope)
+      tooltips: initializeTooltips(scope),
+      validationSummaries: initializeValidationSummaries(scope)
     };
   }
 

@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { renderCatalogSpecimens } from "./catalog-preview.js";
 
 type PackageJson = {
   description?: string;
@@ -743,6 +744,10 @@ function pageShell(title: string, body: string, active = "index"): string {
       font-family: var(--font-ui);
       font-size: 1rem;
       font-weight: 600;
+    }
+
+    #catalog-essentials .catalog-card {
+      background: var(--ag-color-semantic-background-elevated);
     }
 
     .catalog-card ul {
@@ -1693,7 +1698,7 @@ function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): stri
     "Aurelglyph Components",
     `    <article class="panel markdown">
       <h1>Components</h1>
-      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Version ${escapeHtml(manifest.release)} declares ${manifest.components.length} interaction-foundation families without replacing each platform's native behavior.</p>
+      <p>Version ${escapeHtml(manifest.release)} declares the released baseline. This workspace documents ${manifest.components.length} core control families across CSS/Web, React, React Native, SwiftUI, and Rails; additions marked Unreleased are not part of that immutable release.</p>
       <h2>Platform targets</h2>
       <div class="catalog">
         <section class="catalog-card">
@@ -1704,8 +1709,8 @@ function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): stri
         </section>
       </div>
       <h2>${escapeHtml(manifest.scope)}</h2>
-      <p>Every stable cell is checked for shipped implementation evidence during <code>npm test</code>. Adapter and browser suites exercise applicable behavior and accessibility separately. The schema-validated, machine-readable source of truth is <a href="component-manifest.json">component-manifest.json</a>.</p>
-      <div class="support-matrix-wrap" tabindex="0" role="region" aria-label="Cross-platform interaction foundation support">
+      <p>Released cells are checked for shipped implementation evidence; Unreleased cells are checked against current workspace exports during <code>npm test</code>. Adapter and browser suites exercise applicable behavior and accessibility separately. This is a scoped core-control matrix, not an exhaustive catalog. The schema-validated, machine-readable source of truth is <a href="component-manifest.json">component-manifest.json</a>.</p>
+      <div class="support-matrix-wrap" tabindex="0" role="region" aria-label="Cross-platform core control support">
         <table class="support-matrix">
           <thead>
             <tr>
@@ -1720,7 +1725,7 @@ function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): stri
               <td><strong>${escapeHtml(component.name)}</strong><span class="support-matrix__category">${escapeHtml(component.category)}</span></td>
               ${manifest.platforms
                 .map(
-                  (platform) => `<td aria-label="${escapeHtml(component.name)} is stable on ${escapeHtml(platform.label)}">Stable</td>`
+                  (platform) => `<td aria-label="${escapeHtml(component.name)} is ${component.introduced === "unreleased" ? "unreleased" : "stable"} on ${escapeHtml(platform.label)}">${component.introduced === "unreleased" ? "Unreleased" : "Stable"}</td>`
                 )
                 .join("\n              ")}
             </tr>`
@@ -1729,6 +1734,7 @@ function renderComponents(glyphs: IconGlyphs, manifest: ComponentManifest): stri
           </tbody>
         </table>
       </div>
+      ${renderCatalogSpecimens()}
       <h2>Preview</h2>
       <div class="preview-stack">
         <section class="preview-card">
@@ -1849,6 +1855,8 @@ export async function buildGithubPages(root = repoRoot): Promise<PagesBuildResul
   const docsSchemaRoot = join(docsRoot, "schemas");
   const fontSourceRoot = join(root, "packages", "css", "src", "fonts", "ofl");
   const fontDocsRoot = join(docsRoot, "assets", "fonts", "ofl");
+  const tokenCss = await readFile(join(root, "packages/tokens/dist/generated/aurelglyph.css"), "utf8");
+  const componentCss = (await readFile(join(root, "packages/react/src/styles.css"), "utf8")).replace(/^@import[^\n]+\n/u, "");
 
   if (componentManifest.release !== version) {
     throw new Error(`component-manifest.json release ${componentManifest.release} does not match workspace ${version}.`);
@@ -1860,7 +1868,8 @@ export async function buildGithubPages(root = repoRoot): Promise<PagesBuildResul
   await cp(fontSourceRoot, fontDocsRoot, { recursive: true });
   await writeFile(join(docsRoot, "index.html"), renderIndex(version, description));
   await writeFile(join(docsRoot, "usage.html"), renderUsage(version));
-  await writeFile(join(docsRoot, "components.html"), renderComponents(iconGlyphs, componentManifest));
+  await writeFile(join(docsRoot, "assets/catalog.css"), `${tokenCss}\n${componentCss}`);
+  await writeFile(join(docsRoot, "components.html"), renderComponents(iconGlyphs, componentManifest).replace("</head>", '<link rel="stylesheet" href="assets/catalog.css">\n</head>'));
   await writeFile(join(docsRoot, "component-manifest.json"), componentManifestSource);
   await writeFile(join(docsSchemaRoot, "component-manifest.schema.json"), componentSchemaSource);
   await writeFile(join(docsRoot, "changelog.html"), renderChangelog(changelog));
@@ -1871,6 +1880,7 @@ export async function buildGithubPages(root = repoRoot): Promise<PagesBuildResul
       "docs/index.html",
       "docs/usage.html",
       "docs/components.html",
+      "docs/assets/catalog.css",
       "docs/component-manifest.json",
       "docs/schemas/component-manifest.schema.json",
       "docs/changelog.html",

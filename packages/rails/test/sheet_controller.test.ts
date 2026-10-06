@@ -1881,4 +1881,205 @@ describe("Aurelglyph Rails interaction controllers", () => {
     expect(document.querySelector("#cache-menu")?.getAttribute("data-open")).toBe("false");
     expect(document.activeElement).toBe(after);
   });
+
+  it("progressively selects, resets, and removes chips while respecting read-only state", async () => {
+    document.body.innerHTML = `
+      <form>
+        <span data-aurelglyph-chip="" data-default-selected="false" data-selected="false" data-selected-label="Chosen" data-unselected-label="Not chosen" id="stable-chip">
+          <button aria-pressed="false" data-aurelglyph-chip-select="" type="button">Stable</button>
+          <span data-aurelglyph-chip-state="">Not chosen</span>
+          <button data-aurelglyph-chip-remove="" type="button">Remove</button>
+          <input data-aurelglyph-chip-value="" disabled name="channels[]" type="hidden" value="stable" />
+        </span>
+        <span data-aurelglyph-chip="" data-default-selected="true" data-readonly="true" data-selected="true" data-selected-label="Chosen" data-unselected-label="Not chosen" id="readonly-chip">
+          <button aria-disabled="true" aria-pressed="true" data-aurelglyph-chip-select="" type="button">Locked</button>
+          <span data-aurelglyph-chip-state="">Chosen</span>
+          <input data-aurelglyph-chip-value="" name="channels[]" type="hidden" value="locked" />
+        </span>
+        <button id="after-chip" type="button">Continue</button>
+      </form>
+    `;
+    const form = document.querySelector<HTMLFormElement>("form");
+    const chip = document.querySelector<HTMLElement>("#stable-chip");
+    const select = chip?.querySelector<HTMLButtonElement>("[data-aurelglyph-chip-select]");
+    const remove = chip?.querySelector<HTMLButtonElement>("[data-aurelglyph-chip-remove]");
+    const value = chip?.querySelector<HTMLInputElement>("[data-aurelglyph-chip-value]");
+    const state = chip?.querySelector<HTMLElement>("[data-aurelglyph-chip-state]");
+    const readOnly = document.querySelector<HTMLElement>("#readonly-chip");
+    const readOnlySelect = readOnly?.querySelector<HTMLButtonElement>("[data-aurelglyph-chip-select]");
+    const afterChip = document.querySelector<HTMLButtonElement>("#after-chip");
+    if (!form || !chip || !select || !remove || !value || !state || !readOnly || !readOnlySelect || !afterChip) throw new Error("Invalid chip fixture");
+
+    aurelglyph().init?.(document);
+    select.click();
+    expect(select.getAttribute("aria-pressed")).toBe("true");
+    expect(chip.classList.contains("is-selected")).toBe(true);
+    expect(value.disabled).toBe(false);
+    expect(state.textContent).toBe("Chosen");
+    readOnlySelect.click();
+    expect(readOnlySelect.getAttribute("aria-pressed")).toBe("true");
+
+    form.reset();
+    await flushMutations();
+    expect(select.getAttribute("aria-pressed")).toBe("false");
+    expect(value.disabled).toBe(true);
+
+    const preventRemoval = (event: Event): void => event.preventDefault();
+    chip.addEventListener("aurelglyph:chip:remove", preventRemoval, { once: true });
+    remove.click();
+    expect(chip.isConnected).toBe(true);
+    remove.click();
+    expect(chip.isConnected).toBe(false);
+    expect(document.activeElement).toBe(afterChip);
+  });
+
+  it("reveals passwords without losing the field selection and conceals them on form reset", async () => {
+    document.body.innerHTML = `
+      <form>
+        <div data-aurelglyph-password-field="" data-hide-label="Hide password" data-show-label="Show password">
+          <input data-aurelglyph-password-input="" type="password" value="secret" />
+          <button aria-label="Show password" aria-pressed="false" data-aurelglyph-password-toggle="" type="button">
+            <span data-aurelglyph-password-show-icon="">Show</span>
+            <span data-aurelglyph-password-hide-icon="" hidden>Hide</span>
+          </button>
+        </div>
+      </form>
+    `;
+    const form = document.querySelector<HTMLFormElement>("form");
+    const input = document.querySelector<HTMLInputElement>("[data-aurelglyph-password-input]");
+    const toggle = document.querySelector<HTMLButtonElement>("[data-aurelglyph-password-toggle]");
+    const showIcon = document.querySelector<HTMLElement>("[data-aurelglyph-password-show-icon]");
+    const hideIcon = document.querySelector<HTMLElement>("[data-aurelglyph-password-hide-icon]");
+    if (!form || !input || !toggle || !showIcon || !hideIcon) throw new Error("Invalid password fixture");
+
+    aurelglyph().init?.(document);
+    input.focus();
+    input.setSelectionRange(1, 4);
+    toggle.click();
+    expect(input.type).toBe("text");
+    expect(input.value).toBe("secret");
+    expect(document.activeElement).toBe(input);
+    expect([input.selectionStart, input.selectionEnd]).toEqual([1, 4]);
+    expect(toggle.getAttribute("aria-label")).toBe("Hide password");
+    expect(toggle.getAttribute("aria-pressed")).toBe("true");
+    expect(showIcon.hidden).toBe(true);
+    expect(hideIcon.hidden).toBe(false);
+
+    // Browser password-type normalization can reset the range after the click
+    // handler. The deferred restore must repair that settled native state.
+    input.setSelectionRange(0, 0);
+    await Promise.resolve();
+    expect([input.selectionStart, input.selectionEnd]).toEqual([1, 4]);
+
+    // Keyboard activation belongs on the reveal control. Preserve the stored
+    // range without moving focus back to the input.
+    input.setSelectionRange(2, 5, "backward");
+    toggle.focus();
+    toggle.click();
+    input.setSelectionRange(0, 0);
+    await Promise.resolve();
+    expect(document.activeElement).toBe(toggle);
+    expect([input.selectionStart, input.selectionEnd, input.selectionDirection]).toEqual([2, 5, "backward"]);
+
+    form.reset();
+    await flushMutations();
+    expect(input.type).toBe("password");
+    expect(toggle.getAttribute("aria-label")).toBe("Show password");
+  });
+
+  it("scopes one-time validation requests by summary and routes issue links to their fields", () => {
+    document.body.innerHTML = `
+      <section data-aurelglyph-validation-summary="" data-announcement-key="request-1" data-focus-key="request-1" id="profile-errors" tabindex="-1">
+        <a data-aurelglyph-validation-target="email" href="#email">Enter an email</a>
+        <span aria-live="polite" data-aurelglyph-validation-announcement="Two fields need attention" data-aurelglyph-validation-announcement-target=""></span>
+      </section>
+      <section data-aurelglyph-validation-summary="" data-announcement-key="request-1" data-focus-key="request-1" id="billing-errors" tabindex="-1">
+        <span aria-live="polite" data-aurelglyph-validation-announcement="One billing field needs attention" data-aurelglyph-validation-announcement-target=""></span>
+      </section>
+      <input id="email" />
+      <button id="outside">Outside</button>
+    `;
+    const summaries = document.querySelectorAll<HTMLElement>("[data-aurelglyph-validation-summary]");
+    const announcements = document.querySelectorAll<HTMLElement>("[data-aurelglyph-validation-announcement]");
+    const link = document.querySelector<HTMLAnchorElement>("[data-aurelglyph-validation-target]");
+    const email = document.querySelector<HTMLInputElement>("#email");
+    const outside = document.querySelector<HTMLButtonElement>("#outside");
+    if (summaries.length !== 2 || announcements.length !== 2 || !link || !email || !outside) throw new Error("Invalid validation fixture");
+
+    aurelglyph().init?.(document);
+    expect(document.activeElement).toBe(summaries[1]);
+    expect(announcements[0].textContent).toBe("Two fields need attention");
+    expect(announcements[1].textContent).toBe("One billing field needs attention");
+    outside.focus();
+    announcements[0].textContent = "Already announced";
+    announcements[1].textContent = "Billing already announced";
+    aurelglyph().init?.(document);
+    expect(document.activeElement).toBe(outside);
+    expect(announcements[0].textContent).toBe("Already announced");
+    expect(announcements[1].textContent).toBe("Billing already announced");
+    link.click();
+    expect(document.activeElement).toBe(email);
+  });
+
+  it("enforces single accordion disclosure and synchronizes rating selection, clear, and reset", async () => {
+    document.body.innerHTML = `
+      <div data-aurelglyph-accordion="" data-multiple="false" id="single-accordion">
+        <details open><summary>One</summary><p>First</p></details>
+        <details><summary>Two</summary><p>Second</p></details>
+      </div>
+      <form>
+        <fieldset data-aurelglyph-rating="" data-empty-label="0 of 3" data-value="2">
+          <div class="ag-rating__options">
+            <label class="ag-rating__option" data-filled="true"><input data-aurelglyph-rating-input="" data-value-label="1 of 3" name="rating" type="radio" value="1" /></label>
+            <label class="ag-rating__option" data-filled="true"><input checked data-aurelglyph-rating-input="" data-value-label="2 of 3" name="rating" type="radio" value="2" /></label>
+            <label class="ag-rating__option"><input data-aurelglyph-rating-input="" data-value-label="3 of 3" name="rating" type="radio" value="3" /></label>
+            <button data-aurelglyph-rating-clear="" type="button">Clear</button>
+          </div>
+          <input data-aurelglyph-rating-zero="" disabled name="rating" type="hidden" value="0" />
+          <span data-aurelglyph-rating-value="">2 of 3</span>
+        </fieldset>
+      </form>
+    `;
+    const accordion = document.querySelector<HTMLElement>("#single-accordion");
+    const details = accordion?.querySelectorAll<HTMLDetailsElement>("details");
+    const form = document.querySelector<HTMLFormElement>("form");
+    const rating = document.querySelector<HTMLFieldSetElement>("[data-aurelglyph-rating]");
+    const inputs = rating?.querySelectorAll<HTMLInputElement>("[data-aurelglyph-rating-input]");
+    const clear = rating?.querySelector<HTMLButtonElement>("[data-aurelglyph-rating-clear]");
+    const zero = rating?.querySelector<HTMLInputElement>("[data-aurelglyph-rating-zero]");
+    const output = rating?.querySelector<HTMLElement>("[data-aurelglyph-rating-value]");
+    if (!accordion || !details || details.length !== 2 || !form || !rating || !inputs || inputs.length !== 3 || !clear || !zero || !output) throw new Error("Invalid accordion/rating fixture");
+
+    aurelglyph().init?.(document);
+    details[1].open = true;
+    details[1].dispatchEvent(new Event("toggle"));
+    expect(details[0].open).toBe(false);
+
+    rating.setAttribute("dir", "rtl");
+    inputs[1].focus();
+    inputs[1].dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowLeft" }));
+    expect(inputs[2].checked).toBe(true);
+    inputs[2].dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Home" }));
+    expect(inputs[0].checked).toBe(true);
+    inputs[0].dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "End" }));
+    expect(inputs[2].checked).toBe(true);
+
+    inputs[2].click();
+    expect(rating.getAttribute("data-value")).toBe("3");
+    expect(rating.querySelectorAll(".ag-rating__option[data-filled]")).toHaveLength(3);
+    expect(output.textContent).toBe("3 of 3");
+    expect(zero.disabled).toBe(true);
+    expect(new FormData(form).get("rating")).toBe("3");
+    clear.click();
+    expect(rating.getAttribute("data-value")).toBe("0");
+    expect(rating.querySelectorAll(".ag-rating__option[data-filled]")).toHaveLength(0);
+    expect(output.textContent).toBe("0 of 3");
+    expect(zero.disabled).toBe(false);
+    expect(new FormData(form).get("rating")).toBe("0");
+
+    form.reset();
+    await flushMutations();
+    expect(rating.getAttribute("data-value")).toBe("2");
+    expect(output.textContent).toBe("2 of 3");
+  });
 });

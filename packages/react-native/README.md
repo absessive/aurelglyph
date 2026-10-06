@@ -81,15 +81,16 @@ palette. Components never hardcode their own palette.
 
 The adapter shares the public Aurelglyph vocabulary used by React and Rails:
 
-- Actions: `Button`, `Icon`, `IconButton`, `ButtonGroup`
+- Actions: `Button`, `Icon`, `IconButton`, `ButtonGroup`, `Link`, `Chip`
 - Fields: `TextField`, `SearchField`, `TextArea`, `Switch`, `Checkbox`,
   `RadioGroup`, `Slider`, `NumberField`, `Select`, `Combobox`, `Autocomplete`,
-  `FileUpload`
+  `FileUpload`, `PasswordField`, `InputGroup`, `Rating`
 - Overlays: `Dialog`, `Drawer`, `Popover`, `MoreInformation`, `Tooltip`, `Menu`, `Dropdown`,
   `CommandPalette`
-- Navigation: `Tabs`, `SegmentedControl`, `TabBar`, `Pagination`
-- Feedback: `Spinner`, `Progress`
+- Navigation: `Tabs`, `SegmentedControl`, `TabBar`, `Pagination`, `Stepper`
+- Feedback: `Spinner`, `Progress`, `ValidationSummary`
 - Layout: `Surface`, `Box`, `Stack`, `Container`, responsive `Grid`, `Divider`
+- Disclosure: `ExpandableSection`, `Accordion`
 
 Value-selection controls use `value` plus `onValueChange`, with `defaultValue`
 for local state. Text and search fields follow React Native's native
@@ -146,6 +147,90 @@ metadata. Invalid helper text uses the danger token and a polite live-region
 announcement even when the field does not provide a separate error string.
 Modal transitions automatically disable themselves when the operating system's
 Reduce Motion setting is enabled.
+
+## Component essentials
+
+`Link` opens `href` through React Native Linking, or calls `onPress` for
+application-owned native navigation. Set `external` for the curated external
+indicator and localized hint; `onOpenError` receives URI-opening failures.
+Disabled/loading links and links without any destination render an unavailable,
+non-focusable placeholder, with no URI or activation/context/accessibility
+handler, native link role, underline, or external-arrow affordance. Navigation is
+never simulated with an action button.
+
+`Chip` uses `selected`/`onSelectedChange` or `defaultSelected`; `selectable`
+can explicitly disable selection; selection is enabled by default. Its optional `onRemove` action is a separately
+labeled sibling control, never a nested button. Disabled/loading/read-only
+chips cannot select or remove. Static status copy still belongs in a Badge
+where that adapter provides one.
+
+`PasswordField` owns one native TextInput and preserves its value, focused
+selection, and password-manager metadata while revealing/masking. It follows
+native `value`/`onChangeText` or `defaultValue`, supports controlled
+`visible`/`onVisibleChange` or `defaultVisible`, and accepts `inputRef`.
+`purpose="current"` is the default; `purpose="new"` selects new-password
+autofill/content type. Native `autoComplete`, `textContentType`, password rules,
+and input props remain consumer-overridable. Read-only prevents value edits but
+allows inspection; disabled/loading also block reveal. `showLabel`/`hideLabel`
+override generated accessibility copy. `inputRef` preserves React 19 callback-ref
+cleanup as well as object refs and ordinary null-on-unmount callbacks.
+
+`InputGroup` owns exactly one labeled native TextInput with the same field
+state/error contract. `prefix`/`suffix` accept text or independently accessible
+action nodes. Addons wrap at constrained widths instead of replacing or nesting
+the input. Text addons are decorative; put essential unit/currency
+context into `addonDescription` (appended to the input hint) or the field label. The application
+owns addon action state. `inputRef` supports application-requested field focus.
+Both owned fields use the focus token for their focused border and preserve
+consumer `onFocus`/`onBlur` callbacks.
+
+`ValidationSummary` accepts only supplied `errors` with stable `id`, `message`,
+and optional field-focus `onPress`. It renders nothing when empty and never
+validates the form itself. Change `announcementKey` or `focusKey` after a failed
+submission to request one announcement or accessibility focus per key during the
+mounted lifetime; cycling back to a handled key does not repeat it. Ordinary
+error updates do neither. The announcement contains the title and localized
+count only, avoiding repeated inline-error announcements and field values.
+
+`ExpandableSection` is the independent controlled/uncontrolled
+`open`/`onOpenChange`/`defaultOpen` disclosure. It exposes native expanded state,
+a disabled/busy button state, and an Android labeled-panel relationship;
+collapsed content is removed from interaction and accessibility. `headingLevel`
+expresses header intent, but React Native core does not guarantee native heading
+levels or separate heading traversal inside an accessible button on every
+platform. `Accordion` composes that same primitive,
+using `value`/`onValueChange` or `defaultValue` as a readonly array of item IDs.
+`type="single"` opens at most one item; `type="multiple"` permits several.
+Items supply `id`, `title`, `content`, and optional `disabled`/`eyebrow`; open
+IDs normalize in item order under both policies.
+
+`Stepper` presents ordered `items` with current/completed/upcoming/error status.
+`currentId`/`defaultCurrentId` select the current step; optional `onStepChange`
+makes enabled steps native buttons. The current ID is authoritative; explicit
+error state retains current emphasis, status, and selected metadata alongside
+its warning. Other explicit item status overrides inferred progress. Without the callback it remains non-navigable status, not a workflow
+or routing engine. `orientation` selects horizontal wrapping or vertical layout.
+
+`Rating` accepts whole-number `value`/`onValueChange` or `defaultValue` from
+zero to `max` (default five; finite maxima normalize to 1–20). Non-integer values normalize to the closest whole
+choice; non-finite values normalize to zero. It offers native adjustable
+increment/decrement, 44-point touch choices, an explicit value label, and a
+separate clear action. Required ratings can start at zero with invalid state,
+but cannot be cleared or decremented to zero. Required/read-only ratings omit
+clear; `clearable={false}` also hides it. Read-only/disabled/loading cannot
+change the value and use muted stars while retaining selected fill geometry.
+Invalid ratings show a semantic danger boundary and a decorative warning marker,
+even without an error message. Existing semantic tokens carry invalid and helper
+states through light/dark and quiet/atelier.
+
+The real native smoke host contains all eight essentials and controlled
+examples. Renderer tests exercise unavailable links, sibling chip removal,
+password-manager/focus/value contracts, input ownership, once-only summary
+requests, disclosure/accordion state, ordered steps, rating accessibility, and
+localized copy. The icon adapter adds canonical `star`, `eye`, `eye-off`,
+`external-link`, `warning`, `expand`, and `contract` geometry without a new
+dependency. This expansion does not imply parity for older shell/data/feedback
+families absent from this native adapter.
 
 ## Localized control copy
 
@@ -252,7 +337,9 @@ horizontal and vertical orientation plus an explicit `wrap` override, and
 `Divider` is a semantic separator unless `decorative` is explicitly enabled.
 
 `Icon` provides stable dependency-free names for core controls: `search`,
-`check`, `close`, `plus`, `minus`, `info`, and directional chevrons. Pass a
+`check`, `close`, `plus`, `minus`, `info`, directional chevrons, and the component
+essentials glyphs listed above. `filled` adds canonical polygon fill to `star`
+without changing its outline; other icons remain line icons. Pass a
 `label` only when the icon itself conveys meaning; otherwise it stays
 decorative.
 

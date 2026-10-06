@@ -487,6 +487,10 @@
       font-weight: 600;
     }
 
+    #catalog-essentials .catalog-card {
+      background: var(--ag-color-semantic-background-elevated);
+    }
+
     .catalog-card ul {
       display: grid;
       gap: 8px;
@@ -1129,6 +1133,7 @@
       }
     }
   </style>
+<link rel="stylesheet" href="assets/catalog.css">
 </head>
 <body>
   <main class="page">
@@ -1147,7 +1152,7 @@
     </header>
     <article class="panel markdown">
       <h1>Components</h1>
-      <p>This page shows the Aurelglyph component contract across CSS/Web, React, React Native, SwiftUI, and Rails. Version 0.8.0 declares 19 interaction-foundation families without replacing each platform's native behavior.</p>
+      <p>Version 0.8.0 declares the released baseline. This workspace documents 37 core control families across CSS/Web, React, React Native, SwiftUI, and Rails; additions marked Unreleased are not part of that immutable release.</p>
       <h2>Platform targets</h2>
       <div class="catalog">
         <section class="catalog-card">
@@ -1161,9 +1166,9 @@
           </ul>
         </section>
       </div>
-      <h2>Interaction foundations</h2>
-      <p>Every stable cell is checked for shipped implementation evidence during <code>npm test</code>. Adapter and browser suites exercise applicable behavior and accessibility separately. The schema-validated, machine-readable source of truth is <a href="component-manifest.json">component-manifest.json</a>.</p>
-      <div class="support-matrix-wrap" tabindex="0" role="region" aria-label="Cross-platform interaction foundation support">
+      <h2>Cross-platform core controls</h2>
+      <p>Released cells are checked for shipped implementation evidence; Unreleased cells are checked against current workspace exports during <code>npm test</code>. Adapter and browser suites exercise applicable behavior and accessibility separately. This is a scoped core-control matrix, not an exhaustive catalog. The schema-validated, machine-readable source of truth is <a href="component-manifest.json">component-manifest.json</a>.</p>
+      <div class="support-matrix-wrap" tabindex="0" role="region" aria-label="Cross-platform core control support">
         <table class="support-matrix">
           <thead>
             <tr>
@@ -1328,9 +1333,154 @@
               <td aria-label="Responsive grid is stable on SwiftUI">Stable</td>
               <td aria-label="Responsive grid is stable on Rails">Stable</td>
             </tr>
+            <tr>
+              <td><strong>SearchField</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="SearchField is stable on CSS/Web">Stable</td>
+              <td aria-label="SearchField is stable on React">Stable</td>
+              <td aria-label="SearchField is stable on React Native">Stable</td>
+              <td aria-label="SearchField is stable on SwiftUI">Stable</td>
+              <td aria-label="SearchField is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Switch</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Switch is stable on CSS/Web">Stable</td>
+              <td aria-label="Switch is stable on React">Stable</td>
+              <td aria-label="Switch is stable on React Native">Stable</td>
+              <td aria-label="Switch is stable on SwiftUI">Stable</td>
+              <td aria-label="Switch is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Select</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Select is stable on CSS/Web">Stable</td>
+              <td aria-label="Select is stable on React">Stable</td>
+              <td aria-label="Select is stable on React Native">Stable</td>
+              <td aria-label="Select is stable on SwiftUI">Stable</td>
+              <td aria-label="Select is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Tabs</strong><span class="support-matrix__category">Navigation</span></td>
+              <td aria-label="Tabs is stable on CSS/Web">Stable</td>
+              <td aria-label="Tabs is stable on React">Stable</td>
+              <td aria-label="Tabs is stable on React Native">Stable</td>
+              <td aria-label="Tabs is stable on SwiftUI">Stable</td>
+              <td aria-label="Tabs is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>SegmentedControl</strong><span class="support-matrix__category">Navigation</span></td>
+              <td aria-label="SegmentedControl is stable on CSS/Web">Stable</td>
+              <td aria-label="SegmentedControl is stable on React">Stable</td>
+              <td aria-label="SegmentedControl is stable on React Native">Stable</td>
+              <td aria-label="SegmentedControl is stable on SwiftUI">Stable</td>
+              <td aria-label="SegmentedControl is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>TabBar</strong><span class="support-matrix__category">Navigation</span></td>
+              <td aria-label="TabBar is stable on CSS/Web">Stable</td>
+              <td aria-label="TabBar is stable on React">Stable</td>
+              <td aria-label="TabBar is stable on React Native">Stable</td>
+              <td aria-label="TabBar is stable on SwiftUI">Stable</td>
+              <td aria-label="TabBar is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Pagination</strong><span class="support-matrix__category">Navigation</span></td>
+              <td aria-label="Pagination is stable on CSS/Web">Stable</td>
+              <td aria-label="Pagination is stable on React">Stable</td>
+              <td aria-label="Pagination is stable on React Native">Stable</td>
+              <td aria-label="Pagination is stable on SwiftUI">Stable</td>
+              <td aria-label="Pagination is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Progress</strong><span class="support-matrix__category">Feedback</span></td>
+              <td aria-label="Progress is stable on CSS/Web">Stable</td>
+              <td aria-label="Progress is stable on React">Stable</td>
+              <td aria-label="Progress is stable on React Native">Stable</td>
+              <td aria-label="Progress is stable on SwiftUI">Stable</td>
+              <td aria-label="Progress is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>CommandPalette</strong><span class="support-matrix__category">Overlays</span></td>
+              <td aria-label="CommandPalette is stable on CSS/Web">Stable</td>
+              <td aria-label="CommandPalette is stable on React">Stable</td>
+              <td aria-label="CommandPalette is stable on React Native">Stable</td>
+              <td aria-label="CommandPalette is stable on SwiftUI">Stable</td>
+              <td aria-label="CommandPalette is stable on Rails">Stable</td>
+            </tr>
+            <tr>
+              <td><strong>Link</strong><span class="support-matrix__category">Navigation</span></td>
+              <td aria-label="Link is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="Link is unreleased on React">Unreleased</td>
+              <td aria-label="Link is unreleased on React Native">Unreleased</td>
+              <td aria-label="Link is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="Link is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>PasswordField</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="PasswordField is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="PasswordField is unreleased on React">Unreleased</td>
+              <td aria-label="PasswordField is unreleased on React Native">Unreleased</td>
+              <td aria-label="PasswordField is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="PasswordField is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>InputGroup</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="InputGroup is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="InputGroup is unreleased on React">Unreleased</td>
+              <td aria-label="InputGroup is unreleased on React Native">Unreleased</td>
+              <td aria-label="InputGroup is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="InputGroup is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>ValidationSummary</strong><span class="support-matrix__category">Feedback</span></td>
+              <td aria-label="ValidationSummary is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="ValidationSummary is unreleased on React">Unreleased</td>
+              <td aria-label="ValidationSummary is unreleased on React Native">Unreleased</td>
+              <td aria-label="ValidationSummary is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="ValidationSummary is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>Accordion</strong><span class="support-matrix__category">Disclosure</span></td>
+              <td aria-label="Accordion is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="Accordion is unreleased on React">Unreleased</td>
+              <td aria-label="Accordion is unreleased on React Native">Unreleased</td>
+              <td aria-label="Accordion is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="Accordion is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>Chip</strong><span class="support-matrix__category">Actions</span></td>
+              <td aria-label="Chip is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="Chip is unreleased on React">Unreleased</td>
+              <td aria-label="Chip is unreleased on React Native">Unreleased</td>
+              <td aria-label="Chip is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="Chip is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>Stepper</strong><span class="support-matrix__category">Navigation</span></td>
+              <td aria-label="Stepper is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="Stepper is unreleased on React">Unreleased</td>
+              <td aria-label="Stepper is unreleased on React Native">Unreleased</td>
+              <td aria-label="Stepper is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="Stepper is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>Rating</strong><span class="support-matrix__category">Forms</span></td>
+              <td aria-label="Rating is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="Rating is unreleased on React">Unreleased</td>
+              <td aria-label="Rating is unreleased on React Native">Unreleased</td>
+              <td aria-label="Rating is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="Rating is unreleased on Rails">Unreleased</td>
+            </tr>
+            <tr>
+              <td><strong>ExpandableSection</strong><span class="support-matrix__category">Disclosure</span></td>
+              <td aria-label="ExpandableSection is unreleased on CSS/Web">Unreleased</td>
+              <td aria-label="ExpandableSection is unreleased on React">Unreleased</td>
+              <td aria-label="ExpandableSection is unreleased on React Native">Unreleased</td>
+              <td aria-label="ExpandableSection is unreleased on SwiftUI">Unreleased</td>
+              <td aria-label="ExpandableSection is unreleased on Rails">Unreleased</td>
+            </tr>
           </tbody>
         </table>
       </div>
+      <section id="catalog-essentials" aria-labelledby="catalog-essentials-title"><h2 id="catalog-essentials-title">Catalog essentials · Unreleased</h2><p>Read-only specimens. Use the React example for interactive behavior.</p><div class="catalog"><section class="catalog-card"><h3>Link</h3><div class="ag-stack" data-align="stretch" data-direction="column" data-gap="sm" data-justify="start" style="--ag-stack-gap:var(--ag-space-2)"><a class="ag-link" href="usage.html">View guide</a><span aria-describedby="ag-link-_R_k7_" aria-disabled="true" class="ag-link is-unavailable">Unavailable<span class="ag-sr-only" id="ag-link-_R_k7_"> Unavailable</span></span></div></section><section class="catalog-card"><h3>Chip</h3><span class="ag-chip is-selected is-disabled"><button aria-pressed="true" class="ag-chip__select" disabled="" type="button"><span aria-hidden="true" class="ag-icon" data-icon="check"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></span><span class="ag-chip__label">Workbench</span></button><button aria-label="Remove Workbench" class="ag-chip__remove" disabled="" type="button"><span aria-hidden="true" class="ag-icon" data-icon="close"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></span></button></span></section><section class="catalog-card"><h3>Password field</h3><div class="ag-field ag-input-group ag-password-field" data-invalid="true"><label class="ag-field__label ag-input-group__label" for="specimen-password">Password</label><div class="ag-input-group__control"><input autoComplete="new-password" autoCapitalize="none" spellCheck="false" type="password" aria-describedby="specimen-password-error" aria-invalid="true" class="ag-input ag-input-group__input" disabled="" id="specimen-password" value="example-only"/><span class="ag-input-group__addon ag-input-group__addon--trailing"><button aria-label="Show password" aria-pressed="false" class="ag-password-field__toggle ag-input-group__action" disabled="" type="button"><span aria-hidden="true" class="ag-icon" data-icon="eye"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6Zm9 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path></svg></span></button></span></div><p aria-live="polite" class="ag-field__error ag-input-group__error" id="specimen-password-error">Use at least 12 characters.</p></div></section><section class="catalog-card"><h3>Input group</h3><div class="ag-field ag-input-group"><label class="ag-field__label ag-input-group__label" for="specimen-amount">Amount</label><div class="ag-input-group__control"><span aria-hidden="true" class="ag-input-group__addon ag-input-group__addon--leading">$</span><input readOnly="" aria-describedby="specimen-amount-addons" class="ag-input ag-input-group__input" id="specimen-amount" value="125.00"/><span aria-hidden="true" class="ag-input-group__addon ag-input-group__addon--trailing">USD</span></div><span class="ag-sr-only" id="specimen-amount-addons">US dollars</span></div></section><section class="catalog-card"><h3>Validation summary</h3><section aria-labelledby="ag-validation-_R_4n_-title" class="ag-validation-summary" id="ag-validation-_R_4n_" tabindex="-1"><h4 class="ag-validation-summary__title" id="ag-validation-_R_4n_-title">Check these fields</h4><ul class="ag-validation-summary__list"><li class="ag-validation-summary__item">Check the password.</li><li class="ag-validation-summary__item"><a class="ag-link ag-validation-summary__link" href="#specimen-amount">Check the amount.</a></li></ul><span aria-live="polite" aria-atomic="true" class="ag-sr-only"></span></section></section><section class="catalog-card"><h3>Accordion</h3><div class="ag-accordion" data-type="single" id="ag-accordion-_R_4r_"><section class="ag-disclosure ag-accordion__item" data-open="true" id="ag-accordion-_R_4r_-item-0"><h4 class="ag-disclosure__heading-level"><button aria-controls="ag-accordion-_R_4r_-item-0-panel" aria-expanded="true" class="ag-disclosure__trigger" disabled="" id="ag-accordion-_R_4r_-item-0-trigger" type="button"><span class="ag-disclosure__heading"><span class="ag-disclosure__title">Workspace</span></span><span aria-hidden="true" class="ag-icon ag-disclosure__icon" data-icon="contract"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M10 4v6H4m6 0L4 4m10 0v6h6m-6 0 6-6M10 20v-6H4m6 0-6 6m10 0v-6h6m-6 0 6 6"></path></svg></span></button></h4><div aria-hidden="false" aria-labelledby="ag-accordion-_R_4r_-item-0-trigger" class="ag-disclosure__panel" id="ag-accordion-_R_4r_-item-0-panel" role="region"><div class="ag-disclosure__panel-inner">Changes stay local.</div></div></section><section class="ag-disclosure ag-accordion__item" id="ag-accordion-_R_4r_-item-1"><h4 class="ag-disclosure__heading-level"><button aria-controls="ag-accordion-_R_4r_-item-1-panel" aria-expanded="false" class="ag-disclosure__trigger" disabled="" id="ag-accordion-_R_4r_-item-1-trigger" type="button"><span class="ag-disclosure__heading"><span class="ag-disclosure__title">Access</span></span><span aria-hidden="true" class="ag-icon ag-disclosure__icon" data-icon="expand"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M4 9V4h5M4 4l6 6m10-1V4h-5m5 0-6 6M4 15v5h5m-5 0 6-6m10 1v5h-5m5 0-6-6"></path></svg></span></button></h4><div aria-hidden="true" aria-labelledby="ag-accordion-_R_4r_-item-1-trigger" class="ag-disclosure__panel" hidden="" id="ag-accordion-_R_4r_-item-1-panel" inert="" role="region"><div class="ag-disclosure__panel-inner">Review permissions.</div></div></section></div></section><section class="catalog-card"><h3>Stepper</h3><ol aria-label="Publishing workflow" class="ag-stepper ag-stepper__list"><li class="ag-stepper__item is-completed"><span class="ag-stepper__action"><span aria-hidden="true" class="ag-stepper__marker"><span aria-hidden="true" class="ag-icon" data-icon="check"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></span></span><span class="ag-stepper__content"><span class="ag-stepper__label">Details</span><span class="ag-stepper__status">Completed</span></span></span></li><li aria-current="step" class="ag-stepper__item is-current"><span class="ag-stepper__action"><span aria-hidden="true" class="ag-stepper__marker">2</span><span class="ag-stepper__content"><span class="ag-stepper__label">Review</span><span class="ag-stepper__status">Current</span></span></span></li><li class="ag-stepper__item is-upcoming"><span class="ag-stepper__action"><span aria-hidden="true" class="ag-stepper__marker">3</span><span class="ag-stepper__content"><span class="ag-stepper__label">Approve</span><span class="ag-stepper__status">Upcoming</span></span></span></li><li class="ag-stepper__item is-error"><span class="ag-stepper__action"><span aria-hidden="true" class="ag-stepper__marker"><span aria-hidden="true" class="ag-icon" data-icon="warning"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 4 21 20H3L12 4Zm0 5v5m0 3h.01"></path></svg></span></span><span class="ag-stepper__content"><span class="ag-stepper__label">Publish</span><span class="ag-stepper__status">Error</span></span></span></li></ol></section><section class="catalog-card"><h3>Rating</h3><fieldset class="ag-rating" disabled="" id="ag-rating-_R_53_" role="radiogroup"><legend class="ag-field__label">Experience</legend><div class="ag-rating__options"><label class="ag-rating__option" data-filled="true"><input aria-label="1 of 5" class="ag-rating__input" tabindex="-1" type="radio" name="ag-rating-_R_53_" value="1"/><span aria-hidden="true" class="ag-icon ag-rating__star" data-icon="star"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4Z"></path></svg></span></label><label class="ag-rating__option" data-filled="true"><input aria-label="2 of 5" class="ag-rating__input" tabindex="-1" type="radio" name="ag-rating-_R_53_" value="2"/><span aria-hidden="true" class="ag-icon ag-rating__star" data-icon="star"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4Z"></path></svg></span></label><label class="ag-rating__option" data-filled="true"><input aria-label="3 of 5" class="ag-rating__input" tabindex="0" type="radio" name="ag-rating-_R_53_" checked="" value="3"/><span aria-hidden="true" class="ag-icon ag-rating__star" data-icon="star"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4Z"></path></svg></span></label><label class="ag-rating__option"><input aria-label="4 of 5" class="ag-rating__input" tabindex="-1" type="radio" name="ag-rating-_R_53_" value="4"/><span aria-hidden="true" class="ag-icon ag-rating__star" data-icon="star"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4Z"></path></svg></span></label><label class="ag-rating__option"><input aria-label="5 of 5" class="ag-rating__input" tabindex="-1" type="radio" name="ag-rating-_R_53_" value="5"/><span aria-hidden="true" class="ag-icon ag-rating__star" data-icon="star"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 4Z"></path></svg></span></label><button class="ag-rating__clear" disabled="" type="button">Clear rating</button></div><span class="ag-rating__value">3 of 5</span></fieldset></section></div></section>
       <h2>Preview</h2>
       <div class="preview-stack">
         <section class="preview-card">

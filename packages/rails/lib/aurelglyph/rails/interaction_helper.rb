@@ -19,6 +19,7 @@ module Aurelglyph
       CONTAINER_SIZES = %w[sm md lg xl full].freeze
       GRID_BREAKPOINTS = %w[base sm md lg xl].freeze
       SPACE_STEPS = %w[0 1 2 3 4 5 6 8 10 12 16].freeze
+      STEPPER_STATUSES = %w[current completed upcoming error].freeze
 
       def aurelglyph_dialog(title, open: false, actions: nil, variant: "default", dismissible: true,
                             close_label: "Close", **attributes, &block)
@@ -416,7 +417,7 @@ module Aurelglyph
         html_attributes = attributes.dup
         classes = class_names_for("ag-radio-group", extract_html_attribute!(html_attributes, :class))
         group_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-radio-group")
-        html_attributes = without_html_attributes(html_attributes, :disabled)
+        html_attributes = without_html_attributes(html_attributes, :disabled, :role)
         description_id = help_text && "#{group_id}-help"
         error_id = error && "#{group_id}-error"
         invalid_state = invalid || !error.nil?
@@ -806,6 +807,665 @@ module Aurelglyph
         render_layout_element("grid", as: as, attributes: html_attributes, &block)
       end
 
+      def aurelglyph_link(label, href: nil, external: false, unavailable: false,
+                          external_label: "Opens in a new tab", unavailable_label: "Unavailable", **attributes)
+        unavailable = unavailable || href.nil? || href.to_s.empty?
+        html_attributes = attributes.dup
+        classes = class_names_for(
+          "ag-link",
+          external && "ag-link--external",
+          unavailable && "is-unavailable",
+          extract_html_attribute!(html_attributes, :class)
+        )
+        content = safe_join([
+          content_tag(:span, label, class: "ag-link__label"),
+          external && !unavailable ? aurelglyph_icon("external-link", decorative: true, class: "ag-link__icon") : nil,
+          external && !unavailable ? content_tag(:span, external_label, class: "ag-sr-only ag-link__external") : nil,
+          unavailable ? content_tag(:span, unavailable_label, class: "ag-sr-only ag-link__unavailable") : nil
+        ].compact)
+
+        if unavailable
+          html_attributes = sanitize_unavailable_link_attributes(html_attributes)
+          html_attributes = component_aria_attributes(html_attributes, disabled: "true")
+          html_attributes = component_data_attributes(html_attributes, disabled: "true", unavailable: "true")
+          content_tag(:span, content, html_attributes.merge(class: classes))
+        else
+          html_attributes = without_html_attributes(html_attributes, :href)
+          target = extract_html_attribute!(html_attributes, :target)
+          rel = extract_html_attribute!(html_attributes, :rel)
+          if external
+            target ||= "_blank"
+            rel = [rel, "noopener", "noreferrer"].compact.flat_map { |entry| entry.to_s.split(/\s+/) }.uniq.join(" ")
+          end
+          content_tag(:a, content, html_attributes.merge(class: classes, href: href, rel: rel, target: target).compact)
+        end
+      end
+
+      def aurelglyph_chip(label:, selected: false, selectable: true, removable: false,
+                          disabled: false, read_only: false, loading: false, busy: false,
+                          name: nil, value: nil, selected_label: "Selected",
+                          unselected_label: "Not selected", remove_label: "Remove item", **attributes)
+        raise ArgumentError, "chip must be selectable or removable" unless selectable || removable
+
+        unavailable = disabled || loading
+        html_attributes = attributes.dup
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-chip")
+        classes = class_names_for(
+          "ag-chip",
+          selected && "is-selected",
+          unavailable && "is-disabled",
+          extract_html_attribute!(html_attributes, :class)
+        )
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_data_attributes(
+          html_attributes,
+          aurelglyph_chip: "",
+          busy: busy ? "true" : nil,
+          default_selected: selected ? "true" : "false",
+          disabled: unavailable ? "true" : nil,
+          loading: loading ? "true" : nil,
+          readonly: read_only ? "true" : nil,
+          selected: selected ? "true" : "false",
+          selected_label: selected_label,
+          unselected_label: unselected_label
+        )
+        label_html = content_tag(:span, label, class: "ag-chip__label")
+        state_html = content_tag(
+          :span,
+          selected ? selected_label : unselected_label,
+          class: "ag-chip__state",
+          "aria-hidden": "true",
+          "data-aurelglyph-chip-state": ""
+        )
+        primary = if selectable
+          content_tag(
+            :button,
+            safe_join([label_html, state_html]),
+            class: "ag-chip__select",
+            type: "button",
+            disabled: unavailable ? true : nil,
+            "aria-disabled": read_only ? "true" : nil,
+            "aria-pressed": selected ? "true" : "false",
+            "data-aurelglyph-chip-select": ""
+          )
+        else
+          content_tag(:span, safe_join([label_html, state_html]), class: "ag-chip__content")
+        end
+        remove = if removable
+          content_tag(
+            :button,
+            aurelglyph_icon("close", decorative: true),
+            class: "ag-chip__remove",
+            type: "button",
+            disabled: unavailable ? true : nil,
+            "aria-disabled": read_only ? "true" : nil,
+            "aria-label": remove_label,
+            "data-aurelglyph-chip-remove": ""
+          )
+        end
+        hidden_value = if name
+          tag.input(
+            type: "hidden",
+            name: name,
+            value: value.nil? ? label : value,
+            disabled: (!selected || unavailable) ? true : nil,
+            "data-aurelglyph-chip-value": ""
+          )
+        end
+
+        content_tag(
+          :span,
+          safe_join([primary, remove, hidden_value].compact),
+          component_aria_attributes(html_attributes, busy: (busy || loading) ? "true" : nil).merge(id: root_id, class: classes)
+        )
+      end
+
+      def aurelglyph_password_field(name:, label:, value: nil, autocomplete: "current-password",
+                                    placeholder: nil, help_text: nil, error: nil, disabled: false,
+                                    read_only: false, loading: false, busy: false, required: false,
+                                    invalid: false, show_label: "Show password",
+                                    hide_label: "Hide password", input_attributes: {}, **attributes)
+        html_attributes = attributes.dup
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-password-field")
+        classes = class_names_for(
+          "ag-field",
+          "ag-input-group",
+          "ag-password-field",
+          (disabled || loading) && "is-disabled",
+          read_only && "is-readonly",
+          (invalid || !error.nil?) && "is-invalid",
+          extract_html_attribute!(html_attributes, :class)
+        )
+        input_html_attributes = input_attributes.dup
+        input_id = extract_html_attribute!(input_html_attributes, :id) || "#{root_id}-input"
+        input_classes = class_names_for("ag-input", "ag-input-group__input", "ag-password-field__input", extract_html_attribute!(input_html_attributes, :class))
+        input_html_attributes = without_html_attributes(
+          input_html_attributes,
+          :autocomplete,
+          :disabled,
+          :name,
+          :readonly,
+          :required,
+          :type,
+          :value
+        )
+        help_id = help_text && "#{root_id}-help"
+        error_id = error && "#{root_id}-error"
+        invalid_state = invalid || !error.nil?
+        unavailable = disabled || loading
+        input_html_attributes = component_aria_attributes(
+          input_html_attributes,
+          describedby: merge_idrefs(extract_aria_attribute!(input_html_attributes, :describedby), help_id, error_id),
+          invalid: invalid_state ? "true" : nil,
+          busy: (busy || loading) ? "true" : nil
+        )
+        input = tag.input(
+          **input_html_attributes.merge(
+            id: input_id,
+            class: input_classes,
+            name: name,
+            type: "password",
+            value: value,
+            autocomplete: autocomplete,
+            placeholder: placeholder,
+            disabled: unavailable ? true : nil,
+            readonly: read_only ? true : nil,
+            required: required ? true : nil,
+            autocapitalize: "none",
+            spellcheck: "false",
+            "data-aurelglyph-password-input": ""
+          ).compact
+        )
+        reveal = content_tag(
+          :button,
+          safe_join([
+            content_tag(:span, aurelglyph_icon("eye", decorative: true), "data-aurelglyph-password-show-icon": ""),
+            content_tag(:span, aurelglyph_icon("eye-off", decorative: true), hidden: true, "data-aurelglyph-password-hide-icon": "")
+          ]),
+          class: "ag-password-field__toggle ag-input-group__action",
+          type: "button",
+          disabled: unavailable ? true : nil,
+          "aria-controls": input_id,
+          "aria-label": show_label,
+          "aria-pressed": "false",
+          "data-aurelglyph-password-toggle": ""
+        )
+        help = help_text && content_tag(:span, help_text, class: "ag-field__help ag-input-group__help ag-password-field__help", id: help_id)
+        error_html = error && content_tag(
+          :span,
+          error,
+          class: "ag-field__error ag-input-group__error ag-password-field__error",
+          id: error_id,
+          "aria-live": "polite"
+        )
+        html_attributes = component_data_attributes(
+          html_attributes,
+          aurelglyph_password_field: "",
+          busy: busy ? "true" : nil,
+          disabled: unavailable ? "true" : nil,
+          hide_label: hide_label,
+          invalid: invalid_state ? "true" : nil,
+          loading: loading ? "true" : nil,
+          readonly: read_only ? "true" : nil,
+          show_label: show_label
+        )
+
+        content_tag(
+          :div,
+          safe_join([
+            content_tag(:label, label, class: "ag-field__label ag-input-group__label ag-password-field__label", for: input_id),
+            content_tag(:div, safe_join([input, reveal]), class: "ag-input-group__control ag-password-field__control"),
+            help,
+            error_html
+          ].compact),
+          html_attributes.merge(id: root_id, class: classes)
+        )
+      end
+
+      def aurelglyph_input_group(name:, label:, value: nil, type: "text", prefix: nil,
+                                 prefix_description: nil, suffix: nil, suffix_description: nil,
+                                 leading_action: nil, trailing_action: nil, placeholder: nil,
+                                 help_text: nil, error: nil, disabled: false, read_only: false,
+                                 loading: false, busy: false, required: false, invalid: false,
+                                 input_attributes: {}, **attributes)
+        raise ArgumentError, "prefix_description is required when prefix is present" if prefix && prefix_description.to_s.empty?
+        raise ArgumentError, "suffix_description is required when suffix is present" if suffix && suffix_description.to_s.empty?
+
+        html_attributes = attributes.dup
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-input-group")
+        invalid_state = invalid || !error.nil?
+        unavailable = disabled || loading
+        classes = class_names_for(
+          "ag-field",
+          "ag-input-group",
+          unavailable && "is-disabled",
+          read_only && "is-readonly",
+          invalid_state && "is-invalid",
+          extract_html_attribute!(html_attributes, :class)
+        )
+        input_html_attributes = input_attributes.dup
+        input_id = extract_html_attribute!(input_html_attributes, :id) || "#{root_id}-input"
+        input_classes = class_names_for("ag-input", "ag-input-group__input", extract_html_attribute!(input_html_attributes, :class))
+        input_html_attributes = without_html_attributes(
+          input_html_attributes,
+          :disabled,
+          :name,
+          :placeholder,
+          :readonly,
+          :required,
+          :type,
+          :value
+        )
+        prefix_description_id = prefix && "#{root_id}-prefix-description"
+        suffix_description_id = suffix && "#{root_id}-suffix-description"
+        help_id = help_text && "#{root_id}-help"
+        error_id = error && "#{root_id}-error"
+        input_html_attributes = component_aria_attributes(
+          input_html_attributes,
+          describedby: merge_idrefs(
+            extract_aria_attribute!(input_html_attributes, :describedby),
+            prefix_description_id,
+            suffix_description_id,
+            help_id,
+            error_id
+          ),
+          invalid: invalid_state ? "true" : nil,
+          busy: (busy || loading) ? "true" : nil
+        )
+        input = tag.input(
+          **input_html_attributes.merge(
+            id: input_id,
+            class: input_classes,
+            name: name,
+            type: type,
+            value: value,
+            placeholder: placeholder,
+            disabled: unavailable ? true : nil,
+            readonly: read_only ? true : nil,
+            required: required ? true : nil
+          ).compact
+        )
+        prefix_html = prefix && content_tag(
+          :span,
+          content_tag(:span, prefix, class: "ag-input-group__addon-value"),
+          class: "ag-input-group__addon ag-input-group__addon--leading",
+          "aria-hidden": "true"
+        )
+        suffix_html = suffix && content_tag(
+          :span,
+          content_tag(:span, suffix, class: "ag-input-group__addon-value"),
+          class: "ag-input-group__addon ag-input-group__addon--trailing",
+          "aria-hidden": "true"
+        )
+        prefix_description_html = prefix && content_tag(:span, prefix_description, class: "ag-sr-only ag-input-group__description", id: prefix_description_id)
+        suffix_description_html = suffix && content_tag(:span, suffix_description, class: "ag-sr-only ag-input-group__description", id: suffix_description_id)
+        leading_action_html = leading_action && content_tag(:span, leading_action, class: "ag-input-group__action ag-input-group__action--leading")
+        trailing_action_html = trailing_action && content_tag(:span, trailing_action, class: "ag-input-group__action ag-input-group__action--trailing")
+        help = help_text && content_tag(:span, help_text, class: "ag-field__help ag-input-group__help", id: help_id)
+        error_html = error && content_tag(
+          :span,
+          error,
+          class: "ag-field__error ag-input-group__error",
+          id: error_id,
+          "aria-live": "polite"
+        )
+        html_attributes = component_data_attributes(
+          html_attributes,
+          busy: busy ? "true" : nil,
+          disabled: unavailable ? "true" : nil,
+          invalid: invalid_state ? "true" : nil,
+          loading: loading ? "true" : nil,
+          readonly: read_only ? "true" : nil
+        )
+
+        content_tag(
+          :div,
+          safe_join([
+            content_tag(:label, label, class: "ag-field__label ag-input-group__label", for: input_id),
+            content_tag(
+              :div,
+              safe_join([leading_action_html, prefix_html, input, suffix_html, trailing_action_html].compact),
+              class: "ag-input-group__control"
+            ),
+            prefix_description_html,
+            suffix_description_html,
+            help,
+            error_html
+          ].compact),
+          html_attributes.merge(id: root_id, class: classes)
+        )
+      end
+
+      def aurelglyph_validation_summary(issues:, title: "Review the following errors",
+                                        focus_key: nil, announcement_key: nil,
+                                        announcement_label: ->(heading, count) { "#{heading}. #{count} fields need attention" },
+                                        **attributes)
+        return nil if issues.empty?
+
+        html_attributes = attributes.dup
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-validation-summary")
+        classes = class_names_for("ag-validation-summary", extract_html_attribute!(html_attributes, :class))
+        title_id = "#{root_id}-title"
+        issue_items = issues.map do |issue|
+          field_id = issue.fetch(:field_id).to_s
+          raise ArgumentError, "field_id must not be empty" if field_id.empty?
+
+          link = content_tag(
+            :a,
+            issue.fetch(:message),
+            class: "ag-validation-summary__link",
+            href: "##{field_id}",
+            "data-aurelglyph-validation-target": field_id
+          )
+          content_tag(:li, link, class: "ag-validation-summary__item")
+        end
+        announcement = if announcement_key
+          raise ArgumentError, "announcement_label must respond to call" unless announcement_label.respond_to?(:call)
+
+          content_tag(
+            :span,
+            nil,
+            class: "ag-validation-summary__announcement",
+            "aria-atomic": "true",
+            "aria-live": "polite",
+            "data-aurelglyph-validation-announcement": announcement_label.call(title, issues.length)
+          )
+        end
+        html_attributes = without_html_attributes(html_attributes, :role, :tabindex)
+        html_attributes = component_aria_attributes(html_attributes, labelledby: title_id)
+        html_attributes = component_data_attributes(
+          html_attributes,
+          aurelglyph_validation_summary: "",
+          announcement_key: announcement_key,
+          focus_key: focus_key
+        )
+
+        content_tag(
+          :section,
+          safe_join([
+            content_tag(:h2, title, class: "ag-validation-summary__title", id: title_id),
+            content_tag(:ul, safe_join(issue_items), class: "ag-validation-summary__list"),
+            announcement
+          ].compact),
+          html_attributes.merge(id: root_id, class: classes, tabindex: focus_key ? -1 : nil).compact
+        )
+      end
+
+      def aurelglyph_accordion(items:, multiple: false, heading_level: 3, **attributes)
+        heading_level = whole_number!(heading_level, :heading_level)
+        raise ArgumentError, "heading_level must be between 1 and 6" unless (1..6).cover?(heading_level)
+
+        html_attributes = attributes.dup
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-accordion")
+        classes = class_names_for("ag-accordion", extract_html_attribute!(html_attributes, :class))
+        single_open_rendered = false
+        items_html = items.each_with_index.map do |item, index|
+          item_key = item[:id]&.to_s
+          item_id = "#{root_id}-item-#{index}"
+          summary_id = "#{item_id}-summary"
+          panel_id = "#{item_id}-panel"
+          disabled = !!item[:disabled]
+          requested_open = !!item[:open]
+          open = requested_open && (multiple || !single_open_rendered)
+          single_open_rendered ||= open
+          item_classes = class_names_for(
+            "ag-accordion__item",
+            "ag-disclosure",
+            disabled && "is-disabled",
+            open && "is-open",
+            item.dig(:attributes, :class)
+          )
+          heading = content_tag(
+            :span,
+            safe_join([
+              content_tag(:span, item.fetch(:title), class: "ag-disclosure__title"),
+              aurelglyph_icon("chevron-down", decorative: true, class: "ag-disclosure__icon")
+            ]),
+            class: "ag-disclosure__heading-level",
+            role: "heading",
+            "aria-level": heading_level
+          )
+          panel = content_tag(
+            :div,
+            content_tag(:div, accordion_item_content(item), class: "ag-disclosure__panel-inner"),
+            class: "ag-accordion__panel ag-disclosure__panel",
+            id: panel_id,
+            role: "region",
+            hidden: disabled && !open ? true : nil,
+            "aria-labelledby": summary_id
+          )
+
+          if disabled
+            content_tag(
+              :section,
+              safe_join([content_tag(:div, heading, class: "ag-disclosure__trigger", id: summary_id), open ? panel : nil].compact),
+              id: item_id,
+              class: item_classes,
+              "aria-disabled": "true",
+              "data-item-key": item_key,
+              "data-disabled": "true"
+            )
+          else
+            content_tag(
+              :details,
+              safe_join([
+                content_tag(:summary, heading, class: "ag-disclosure__trigger", id: summary_id, "aria-controls": panel_id),
+                panel
+              ]),
+              id: item_id,
+              class: item_classes,
+              "data-item-key": item_key,
+              open: open ? true : nil,
+              name: multiple ? nil : root_id
+            )
+          end
+        end
+        html_attributes = component_data_attributes(
+          html_attributes,
+          aurelglyph_accordion: "",
+          multiple: multiple ? "true" : "false"
+        )
+
+        content_tag(:div, safe_join(items_html), html_attributes.merge(id: root_id, class: classes))
+      end
+
+      def aurelglyph_stepper(items:, label: "Progress", current_id: nil, current_label: "Current",
+                             completed_label: "Completed", upcoming_label: "Upcoming",
+                             error_label: "Error", disabled_label: "Unavailable", **attributes)
+        html_attributes = attributes.dup
+        classes = class_names_for("ag-stepper", extract_html_attribute!(html_attributes, :class))
+        html_attributes = without_html_attributes(html_attributes, :role)
+        html_attributes = component_aria_attributes(html_attributes, label: label)
+        state_labels = {
+          "current" => current_label,
+          "completed" => completed_label,
+          "upcoming" => upcoming_label,
+          "error" => error_label
+        }
+        normalized_items = items.map do |item|
+          [item, validate_enum!(item.fetch(:status, "upcoming"), STEPPER_STATUSES, :status)]
+        end
+        current_index = if current_id.nil?
+          normalized_items.index { |_item, status| status == "current" }
+        else
+          normalized_items.index { |item, _status| item.key?(:id) && item[:id].to_s == current_id.to_s }
+        end
+        items_html = normalized_items.each_with_index.map do |(item, declared_status), index|
+          current = index == current_index
+          status = declared_status == "current" && !current ? "upcoming" : declared_status
+          disabled = !!item[:disabled]
+          marker = case status
+                   when "completed" then aurelglyph_icon("check", decorative: true)
+                   when "error" then aurelglyph_icon("warning", decorative: true)
+                   else content_tag(:span, index + 1, "aria-hidden": "true")
+                   end
+          marker_html = content_tag(:span, marker, class: "ag-stepper__marker")
+          status_copy = safe_join([
+            current && status != "current" ? content_tag(:span, current_label, class: "ag-stepper__status ag-stepper__status--current") : nil,
+            content_tag(:span, state_labels.fetch(status), class: "ag-stepper__status"),
+            disabled ? content_tag(:span, disabled_label, class: "ag-stepper__disabled") : nil
+          ].compact)
+          content = safe_join([
+            marker_html,
+            content_tag(
+              :span,
+              safe_join([
+                content_tag(:span, item.fetch(:label), class: "ag-stepper__label"),
+                status_copy,
+                item[:description] && content_tag(:span, item[:description], class: "ag-stepper__description")
+              ].compact),
+              class: "ag-stepper__content"
+            )
+          ])
+          common = {
+            class: "ag-stepper__action",
+            "aria-current": current ? "step" : nil,
+            "aria-disabled": disabled ? "true" : nil
+          }.compact
+          action = if item[:href] && !disabled
+            content_tag(:a, content, common.merge(href: item[:href]))
+          else
+            content_tag(:span, content, common)
+          end
+          content_tag(
+            :li,
+            action,
+            class: class_names_for(
+              "ag-stepper__item",
+              "is-#{status}",
+              current && status != "current" && "is-current",
+              disabled && "is-disabled",
+              item.dig(:attributes, :class)
+            ),
+            "data-status": status,
+            "data-current": current ? "true" : nil,
+            "data-disabled": disabled ? "true" : nil
+          )
+        end
+
+        content_tag(
+          :nav,
+          content_tag(:ol, safe_join(items_html), class: "ag-stepper__list"),
+          html_attributes.merge(class: classes)
+        )
+      end
+
+      def aurelglyph_rating(name:, label:, value: nil, max: 5, help_text: nil, error: nil,
+                            disabled: false, read_only: false, loading: false, busy: false,
+                            required: false, invalid: false, clearable: true,
+                            clear_label: "Clear rating",
+                            value_label: ->(rating, total) { "#{rating} of #{total}" }, **attributes)
+        maximum = normalize_rating_max(max)
+        raise ArgumentError, "value_label must respond to call" unless value_label.respond_to?(:call)
+
+        selected = normalize_rating_value(value, maximum)
+        html_attributes = attributes.dup
+        root_id = extract_html_attribute!(html_attributes, :id) || unique_dom_id("ag-rating")
+        classes = class_names_for(
+          "ag-rating",
+          (disabled || loading) && "is-disabled",
+          read_only && "is-readonly",
+          (invalid || !error.nil?) && "is-invalid",
+          extract_html_attribute!(html_attributes, :class)
+        )
+        help_id = help_text && "#{root_id}-help"
+        error_id = error && "#{root_id}-error"
+        invalid_state = invalid || !error.nil?
+        unavailable = disabled || loading
+        radio_name = read_only ? nil : (name || root_id)
+        options = (1..maximum).map do |rating|
+          option_id = "#{root_id}-#{rating}"
+          input = tag.input(
+            id: option_id,
+            class: "ag-rating__input",
+            type: "radio",
+            name: radio_name,
+            value: rating,
+            checked: selected == rating ? true : nil,
+            disabled: (unavailable || read_only) ? true : nil,
+            required: (required && !read_only) ? true : nil,
+            "aria-label": value_label.call(rating, maximum),
+            "aria-invalid": invalid_state ? "true" : nil,
+            "data-aurelglyph-rating-input": "",
+            "data-value-label": value_label.call(rating, maximum)
+          )
+          content_tag(
+            :label,
+            safe_join([input, aurelglyph_icon("star", decorative: true, class: "ag-rating__star")]),
+            class: "ag-rating__option",
+            "data-filled": rating <= selected ? "true" : nil,
+            for: option_id
+          )
+        end
+        hidden_value = if read_only && !unavailable && name
+          tag.input(type: "hidden", name: name, value: selected)
+        end
+        clear = if clearable && !required && !read_only
+          content_tag(
+            :button,
+            clear_label,
+            class: "ag-rating__clear",
+            type: "button",
+            disabled: (unavailable || selected.zero?) ? true : nil,
+            "data-aurelglyph-rating-clear": ""
+          )
+        end
+        value_html = content_tag(:span, value_label.call(selected, maximum), class: "ag-rating__value", "data-aurelglyph-rating-value": "")
+        zero_value = if name && !unavailable && !read_only
+          tag.input(
+            type: "hidden",
+            name: name,
+            value: 0,
+            disabled: selected.positive? ? true : nil,
+            "data-aurelglyph-rating-zero": ""
+          )
+        end
+        help = help_text && content_tag(:span, help_text, class: "ag-field__help ag-rating__help", id: help_id)
+        error_html = error && content_tag(:span, error, class: "ag-field__error ag-rating__error", id: error_id, "aria-live": "polite")
+        html_attributes = without_html_attributes(html_attributes, :disabled)
+        supplied_described_by = extract_aria_attribute!(html_attributes, :describedby)
+        html_attributes = component_aria_attributes(
+          html_attributes,
+          describedby: merge_idrefs(supplied_described_by, help_id, error_id),
+          invalid: invalid_state ? "true" : nil,
+          busy: (busy || loading) ? "true" : nil,
+          required: required ? "true" : nil,
+          readonly: read_only ? "true" : nil
+        )
+        html_attributes = component_data_attributes(
+          html_attributes,
+          aurelglyph_rating: "",
+          busy: busy ? "true" : nil,
+          disabled: unavailable ? "true" : nil,
+          empty_label: value_label.call(0, maximum),
+          invalid: invalid_state ? "true" : nil,
+          loading: loading ? "true" : nil,
+          readonly: read_only ? "true" : nil,
+          value: selected
+        )
+
+        content_tag(
+          :fieldset,
+          safe_join([
+            content_tag(
+              :legend,
+              safe_join([
+                content_tag(:span, label, class: "ag-rating__label-text"),
+                invalid_state ? aurelglyph_icon("warning", decorative: true, class: "ag-rating__invalid-marker") : nil
+              ].compact),
+              class: "ag-field__label ag-rating__label"
+            ),
+            content_tag(:div, safe_join([*options, clear].compact), class: "ag-rating__options"),
+            hidden_value,
+            zero_value,
+            value_html,
+            help,
+            error_html
+          ].compact),
+          html_attributes.merge(id: root_id, class: classes, role: "radiogroup", disabled: unavailable ? true : nil).compact
+        )
+      end
+
       private
 
       def render_aurelglyph_overlay(kind, title, open:, actions:, dismissible:, close_label:, attributes:,
@@ -1106,6 +1766,57 @@ module Aurelglyph
           "data-aurelglyph-number-field": input_type == "number" ? "" : nil,
           "data-aurelglyph-slider": input_type == "range" ? "" : nil
         )
+      end
+
+      def accordion_item_content(item)
+        content = item.fetch(:content)
+        content.respond_to?(:call) ? capture_content(&content) : content
+      end
+
+      def normalize_rating_value(value, maximum)
+        number = Float(value || 0)
+        number = 0 unless number.finite?
+        [[number.round, 0].max, maximum].min
+      rescue ArgumentError, TypeError
+        0
+      end
+
+      def normalize_rating_max(value)
+        number = Float(value)
+        number = 5 unless number.finite?
+        [[number.floor, 1].max, 20].min
+      rescue ArgumentError, TypeError
+        5
+      end
+
+      def sanitize_unavailable_link_attributes(attributes)
+        html_attributes = without_html_attributes(
+          attributes,
+          :download,
+          :href,
+          :ping,
+          :referrerpolicy,
+          :rel,
+          :role,
+          :tabindex,
+          :target
+        )
+        html_attributes.delete_if { |name, _value| name.to_s.match?(/\Aon/i) }
+        data = extract_html_attribute!(html_attributes, :data)
+        if data.is_a?(Hash)
+          safe_data = data.reject do |name, _value|
+            name.to_s.tr("_", "-").match?(/(?:\A|-)(?:action|controller|method)\z/)
+          end
+          html_attributes[:data] = safe_data unless safe_data.empty?
+        end
+        html_attributes
+      end
+
+      def whole_number!(value, name)
+        valid = value.is_a?(Integer) || value.to_s.match?(/\A[+-]?\d+\z/)
+        raise ArgumentError, "#{name} must be a whole number" unless valid
+
+        Integer(value)
       end
 
       def menu_item_checked_state(role, value)

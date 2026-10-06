@@ -229,6 +229,100 @@ final class SmokeUITests: XCTestCase {
     )
   }
 
+  func testEssentialChipAccordionAndStepperContracts() {
+    let remove = app.buttons["Remove Local"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(remove), "The sibling chip removal control was unreachable")
+    XCTAssertGreaterThanOrEqual(remove.frame.width, 44)
+    XCTAssertGreaterThanOrEqual(remove.frame.height, 44)
+    remove.tap()
+    let restore = app.buttons["Restore local filter"].firstMatch
+    XCTAssertTrue(restore.waitForExistence(timeout: 3), "Chip removal did not update the consumer state")
+    XCTAssertFalse(remove.exists, "The removed chip action remained in the native accessibility tree")
+    restore.tap()
+    XCTAssertTrue(remove.waitForExistence(timeout: 3), "Restoring the chip did not restore its independent removal action")
+
+    let limits = app.buttons["Limits"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(limits), "The accordion header was unreachable")
+    let details = app.buttons["Details"].firstMatch
+    XCTAssertTrue((details.value as? String ?? "").contains("expanded"), "The initially open disclosure did not expose native expanded state")
+    XCTAssertFalse((limits.value as? String ?? "").contains("expanded"), "The initially collapsed disclosure exposed expanded state")
+    limits.tap()
+    XCTAssertTrue(app.staticTexts["Standard limits"].waitForExistence(timeout: 3))
+    XCTAssertTrue((limits.value as? String ?? "").contains("expanded"), "Opening the disclosure did not update native expanded state")
+    XCTAssertFalse((details.value as? String ?? "").contains("expanded"), "Single accordion policy retained the previous expanded state")
+    XCTAssertFalse(app.staticTexts["Local workspace"].exists, "Single accordion policy left the previous panel accessible")
+    let archive = app.buttons["Archive"].firstMatch
+    XCTAssertTrue(archive.exists)
+    XCTAssertFalse(archive.isEnabled, "The disabled accordion item became actionable")
+
+    let configure = app.buttons["Configure, step 1 of 4, Completed"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(configure), "Ordered step navigation was unreachable")
+    configure.tap()
+    XCTAssertTrue(app.buttons["Configure, step 1 of 4, Current"].firstMatch.waitForExistence(timeout: 3))
+    XCTAssertFalse(app.buttons["Publish, step 4 of 4, Upcoming"].firstMatch.isEnabled)
+  }
+
+  func testEssentialPasswordPreservesFocusValueAndMasksAgain() {
+    let masked = app.secureTextFields["Access password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(masked), "The secure password input was unreachable")
+    masked.tap()
+    XCTAssertTrue(waitUntilAutofocusedSearchReady(masked, timeout: 15), "The deliberately focused password field did not expose a ready keyboard")
+    app.typeText("!")
+
+    let reveal = app.buttons["Show Access password"].firstMatch
+    XCTAssertTrue(waitUntilHittable(reveal, timeout: 5))
+    reveal.tap()
+    let visible = app.textFields["Access password"].firstMatch
+    XCTAssertTrue(visible.waitForExistence(timeout: 3))
+    XCTAssertEqual(visible.value as? String, "sample-passphrase!", "Reveal changed the native password value or caret")
+    XCTAssertTrue(app.keyboards.firstMatch.exists, "Reveal lost the focused software keyboard")
+    // Deliberately type through the app, not through a field that XCTest might
+    // retarget. The existing focus and end selection must survive the toggle.
+    app.typeText("?")
+    XCTAssertTrue(waitUntilValue(visible, equals: "sample-passphrase!?", timeout: 3))
+    app.buttons["Hide Access password"].firstMatch.tap()
+    XCTAssertTrue(masked.waitForExistence(timeout: 3), "Hide did not restore secure native entry")
+    app.typeText("#")
+    app.buttons["Show Access password"].firstMatch.tap()
+    XCTAssertTrue(waitUntilValue(visible, equals: "sample-passphrase!?#", timeout: 3), "Masking changed focus, value, or the native insertion point")
+  }
+
+  func testEssentialRatingInputAndSummaryContracts() {
+    let unavailable = app.descendants(matching: .any)["Unavailable destination"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(unavailable), "The unavailable link placeholder was not reachable for inspection")
+    XCTAssertFalse(unavailable.isEnabled, "An unavailable link exposed enabled navigation")
+
+    let amount = app.textFields["Amount"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(amount), "The owned input-group field was unreachable")
+    XCTAssertEqual(app.textFields.matching(identifier: "Amount").count, 1, "The input group duplicated field ownership")
+    XCTAssertEqual(amount.value as? String, "12.50")
+
+    // The visible label is a StaticText with the same label. Inspect the native
+    // adjustable Other element, not that non-adjustable text label.
+    let rating = app.otherElements["Interface quality"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(rating), "The native adjustable rating was unreachable")
+    XCTAssertEqual(app.otherElements.matching(identifier: "Interface quality").count, 1, "Rating did not expose one owned native adjustable group")
+    XCTAssertEqual(rating.value as? String, "3 of 5")
+    let clear = app.buttons["Clear rating"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(clear))
+    clear.tap()
+    XCTAssertTrue(waitUntilValue(rating, equals: "0 of 5", timeout: 3))
+    XCTAssertGreaterThanOrEqual(rating.frame.height, 44)
+    rating.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 22, dy: 22)).tap()
+    XCTAssertTrue(waitUntilValue(rating, equals: "1 of 5", timeout: 3), "The first whole-number touch choice did not update the native rating value")
+
+    let review = app.buttons["Review fields"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(review, direction: .down))
+    review.tap()
+    XCTAssertTrue(app.staticTexts["Check these fields"].waitForExistence(timeout: 3), "The supplied-error summary did not render after submission")
+    XCTAssertTrue(app.buttons["Review access password"].firstMatch.exists)
+    let reviewAmount = app.buttons["Review amount"].firstMatch
+    XCTAssertTrue(waitUntilHittable(reviewAmount, timeout: 5))
+    reviewAmount.tap()
+    XCTAssertTrue(waitUntilHittable(amount, timeout: 5), "The summary's field action did not return to the owned input")
+    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "The requested field-focus action did not focus native input")
+  }
+
   override func tearDownWithError() throws {
     app.terminate()
     app = nil
@@ -258,6 +352,15 @@ final class SmokeUITests: XCTestCase {
     let predicate = NSPredicate { candidate, _ in
       guard let candidate = candidate as? XCUIElement else { return false }
       return !candidate.exists
+    }
+    let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+    return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+  }
+
+  private func waitUntilValue(_ element: XCUIElement, equals value: String, timeout: TimeInterval) -> Bool {
+    let predicate = NSPredicate { candidate, _ in
+      guard let candidate = candidate as? XCUIElement else { return false }
+      return candidate.exists && candidate.value as? String == value
     }
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
     return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed

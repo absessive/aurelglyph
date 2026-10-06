@@ -182,23 +182,23 @@ describe("component manifest", () => {
 
     expect(manifest.schemaVersion).toBe(1);
     expect(manifest.release).toBe(workspace.version);
-    expect(manifest.scope).toBe("Interaction foundations");
+    expect(manifest.scope).toBe("Cross-platform core controls");
     expect(platformIds).toEqual(declaredPlatformIds);
     expect(new Set(platformIds).size).toBe(platformIds.length);
     expect(new Set(manifest.platforms.map(({ label }) => label)).size).toBe(manifest.platforms.length);
     expect(new Set(componentIds).size).toBe(componentIds.length);
-    expect(manifest.components).toHaveLength(19);
+    expect(manifest.components).toHaveLength(37);
 
     for (const component of manifest.components) {
       expect(component.id).toMatch(/^[a-z][a-z0-9-]*$/u);
       expect(component.name.length).toBeGreaterThan(0);
       expect(component.category.length).toBeGreaterThan(0);
-      expect(component.introduced).toMatch(/^\d+\.\d+\.\d+$/u);
+      expect(component.introduced).toMatch(/^(?:\d+\.\d+\.\d+|unreleased)$/u);
       expect(Object.keys(component.evidence).sort()).toEqual([...platformIds].sort());
     }
   });
 
-  it("keeps every cross-platform support claim backed by a shipped implementation", async () => {
+  it("keeps every cross-platform support claim backed by an exported implementation", async () => {
     const manifest = await loadManifest();
     const reactNativeIndex = await read("packages/react-native/src/index.ts");
     const sourceByPlatform: Record<string, string> = {
@@ -206,10 +206,7 @@ describe("component manifest", () => {
       react: await read("packages/react/src/index.ts"),
       reactNative: await readDirectorySources("packages/react-native/src", [".ts", ".tsx"]),
       swiftUI: await readDirectorySources("packages/swift/Sources/AurelglyphUI", [".swift"]),
-      rails: [
-        await read("packages/rails/lib/aurelglyph/rails/helper.rb"),
-        await read("packages/rails/lib/aurelglyph/rails/interaction_helper.rb")
-      ].join("\n")
+      rails: await readDirectorySources("packages/rails/lib/aurelglyph/rails", [".rb"])
     };
 
     for (const component of manifest.components) {

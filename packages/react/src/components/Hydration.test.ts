@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Combobox } from "./Combobox";
 import { Select } from "./Select";
 import { Tabs } from "./Tabs";
+import { Accordion, Chip, InputGroup, Link, PasswordField, Rating, Stepper, ValidationSummary } from "../index";
 
 type ActEnvironment = typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean };
 
@@ -17,6 +18,14 @@ function Fixture(): ReactElement {
   return createElement(
     "main",
     { dir: "rtl" },
+    createElement(Link, { external: true, href: "https://example.com" }, "Guide"),
+    createElement(Chip, { defaultSelected: true, label: "Local" }),
+    createElement(InputGroup, { addonDescription: "US dollars", label: "Amount", leading: "$", trailing: "USD" }),
+    createElement(PasswordField, { label: "Password" }),
+    createElement(ValidationSummary, { errors: [{ id: "one", message: "Check value" }] }),
+    createElement(Accordion, { defaultValue: ["one"], items: [{ id: "one", title: "Workspace", content: "Local" }] }),
+    createElement(Stepper, { currentId: "review", items: [{ id: "review", label: "Review" }] }),
+    createElement(Rating, { defaultValue: 3, label: "Experience", name: "experience" }),
     createElement(Select, {
       label: "Theme",
       name: "theme",

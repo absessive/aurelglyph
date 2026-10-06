@@ -70,6 +70,14 @@ describe("React package contract", () => {
 
   it("exports the interaction, form, feedback, and layout surface", () => {
     const expectedExports = [
+      "Accordion",
+      "Chip",
+      "InputGroup",
+      "Link",
+      "PasswordField",
+      "Rating",
+      "Stepper",
+      "ValidationSummary",
       "Autocomplete",
       "Box",
       "ButtonGroup",

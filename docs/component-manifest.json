@@ -2,13 +2,28 @@
   "$schema": "./schemas/component-manifest.schema.json",
   "schemaVersion": 1,
   "release": "0.8.0",
-  "scope": "Interaction foundations",
+  "scope": "Cross-platform core controls",
   "platforms": [
-    { "id": "css", "label": "CSS/Web" },
-    { "id": "react", "label": "React" },
-    { "id": "reactNative", "label": "React Native" },
-    { "id": "swiftUI", "label": "SwiftUI" },
-    { "id": "rails", "label": "Rails" }
+    {
+      "id": "css",
+      "label": "CSS/Web"
+    },
+    {
+      "id": "react",
+      "label": "React"
+    },
+    {
+      "id": "reactNative",
+      "label": "React Native"
+    },
+    {
+      "id": "swiftUI",
+      "label": "SwiftUI"
+    },
+    {
+      "id": "rails",
+      "label": "Rails"
+    }
   ],
   "components": [
     {
@@ -256,6 +271,240 @@
         "reactNative": "export function Grid(",
         "swiftUI": "struct AurelglyphGrid",
         "rails": "def aurelglyph_grid"
+      }
+    },
+    {
+      "id": "search-field",
+      "name": "SearchField",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-search",
+        "react": "export { SearchField }",
+        "reactNative": "export function SearchField(",
+        "swiftUI": "struct AurelglyphSearchField",
+        "rails": "def aurelglyph_search_field"
+      }
+    },
+    {
+      "id": "switch",
+      "name": "Switch",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-switch",
+        "react": "export { Switch }",
+        "reactNative": "export function Switch(",
+        "swiftUI": "struct AurelglyphSwitch",
+        "rails": "def aurelglyph_switch"
+      }
+    },
+    {
+      "id": "select",
+      "name": "Select",
+      "category": "Forms",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-select",
+        "react": "export { Select }",
+        "reactNative": "export function Select(",
+        "swiftUI": "struct AurelglyphSelect",
+        "rails": "def aurelglyph_select"
+      }
+    },
+    {
+      "id": "tabs",
+      "name": "Tabs",
+      "category": "Navigation",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-tabs",
+        "react": "export { Tabs }",
+        "reactNative": "export function Tabs(",
+        "swiftUI": "struct AurelglyphTabs",
+        "rails": "def aurelglyph_tabs"
+      }
+    },
+    {
+      "id": "segmented-control",
+      "name": "SegmentedControl",
+      "category": "Navigation",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-segmented",
+        "react": "export { SegmentedControl }",
+        "reactNative": "export function SegmentedControl(",
+        "swiftUI": "struct AurelglyphSegmentedControl",
+        "rails": "def aurelglyph_segmented_control"
+      }
+    },
+    {
+      "id": "tab-bar",
+      "name": "TabBar",
+      "category": "Navigation",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-tab-bar",
+        "react": "export { TabBar }",
+        "reactNative": "export function TabBar(",
+        "swiftUI": "struct AurelglyphTabBar",
+        "rails": "def aurelglyph_tab_bar"
+      }
+    },
+    {
+      "id": "pagination",
+      "name": "Pagination",
+      "category": "Navigation",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-pagination",
+        "react": "export { Pagination }",
+        "reactNative": "export function Pagination(",
+        "swiftUI": "struct AurelglyphPagination",
+        "rails": "def aurelglyph_pagination"
+      }
+    },
+    {
+      "id": "progress",
+      "name": "Progress",
+      "category": "Feedback",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-progress",
+        "react": "export { Progress }",
+        "reactNative": "export function Progress(",
+        "swiftUI": "struct AurelglyphProgress",
+        "rails": "def aurelglyph_progress"
+      }
+    },
+    {
+      "id": "command-palette",
+      "name": "CommandPalette",
+      "category": "Overlays",
+      "introduced": "0.5.0",
+      "evidence": {
+        "css": ".ag-command-palette",
+        "react": "export { CommandPalette }",
+        "reactNative": "export function CommandPalette(",
+        "swiftUI": "struct AurelglyphCommandPalette",
+        "rails": "def aurelglyph_command_palette"
+      }
+    },
+    {
+      "id": "link",
+      "name": "Link",
+      "category": "Navigation",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-link",
+        "react": "export { Link }",
+        "reactNative": "export function Link(",
+        "swiftUI": "struct AurelglyphLink",
+        "rails": "def aurelglyph_link"
+      }
+    },
+    {
+      "id": "password-field",
+      "name": "PasswordField",
+      "category": "Forms",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-password-field",
+        "react": "export { PasswordField }",
+        "reactNative": "export function PasswordField(",
+        "swiftUI": "struct AurelglyphPasswordField",
+        "rails": "def aurelglyph_password_field"
+      }
+    },
+    {
+      "id": "input-group",
+      "name": "InputGroup",
+      "category": "Forms",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-input-group",
+        "react": "export { InputGroup }",
+        "reactNative": "export function InputGroup(",
+        "swiftUI": "struct AurelglyphInputGroup",
+        "rails": "def aurelglyph_input_group"
+      }
+    },
+    {
+      "id": "validation-summary",
+      "name": "ValidationSummary",
+      "category": "Feedback",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-validation-summary",
+        "react": "export { ValidationSummary }",
+        "reactNative": "export function ValidationSummary(",
+        "swiftUI": "struct AurelglyphValidationSummary",
+        "rails": "def aurelglyph_validation_summary"
+      }
+    },
+    {
+      "id": "accordion",
+      "name": "Accordion",
+      "category": "Disclosure",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-accordion",
+        "react": "export { Accordion }",
+        "reactNative": "export function Accordion(",
+        "swiftUI": "struct AurelglyphAccordion",
+        "rails": "def aurelglyph_accordion"
+      }
+    },
+    {
+      "id": "chip",
+      "name": "Chip",
+      "category": "Actions",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-chip",
+        "react": "export { Chip }",
+        "reactNative": "export function Chip(",
+        "swiftUI": "struct AurelglyphChip",
+        "rails": "def aurelglyph_chip"
+      }
+    },
+    {
+      "id": "stepper",
+      "name": "Stepper",
+      "category": "Navigation",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-stepper",
+        "react": "export { Stepper }",
+        "reactNative": "export function Stepper(",
+        "swiftUI": "struct AurelglyphStepper",
+        "rails": "def aurelglyph_stepper"
+      }
+    },
+    {
+      "id": "rating",
+      "name": "Rating",
+      "category": "Forms",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-rating",
+        "react": "export { Rating }",
+        "reactNative": "export function Rating(",
+        "swiftUI": "struct AurelglyphRating",
+        "rails": "def aurelglyph_rating"
+      }
+    },
+    {
+      "id": "expandable-section",
+      "name": "ExpandableSection",
+      "category": "Disclosure",
+      "introduced": "unreleased",
+      "evidence": {
+        "css": ".ag-disclosure",
+        "react": "export { ExpandableSection }",
+        "reactNative": "export function ExpandableSection(",
+        "swiftUI": "struct AurelglyphExpandableSection",
+        "rails": "def aurelglyph_expandable_section"
       }
     }
   ]

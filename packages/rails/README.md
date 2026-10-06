@@ -65,10 +65,11 @@ markup inserted by a Turbo Stream or another client-side framework, call
 `window.Aurelglyph.init(rootElement)` after insertion. Initialization is
 idempotent. A trigger-only inserted subtree is also synchronized when its sheet
 lives elsewhere in the document. Re-initializing a Turbo-morphed root rebinds
-replacement combobox, command, slider, and number-field controls and
+replacement combobox, command, slider, number-field, and catalog controls and
 resynchronizes their rendered state. Native form resets also resynchronize
 checkbox and switch state, slider output, number-step boundaries, combobox
-selection, command filtering, and segmented selection.
+selection, command filtering, segmented selection, chips, password visibility,
+and ratings.
 
 The public controller namespaces are:
 
@@ -303,6 +304,9 @@ The interaction helper set includes:
 - `aurelglyph_icon_button` and `aurelglyph_button_group`
 - `aurelglyph_checkbox`, `aurelglyph_radio_group`, `aurelglyph_slider`,
   `aurelglyph_number_field`, `aurelglyph_select`, and `aurelglyph_switch`
+- `aurelglyph_link`, `aurelglyph_chip`, `aurelglyph_password_field`,
+  `aurelglyph_input_group`, `aurelglyph_validation_summary`,
+  `aurelglyph_accordion`, `aurelglyph_stepper`, and `aurelglyph_rating`
 - `aurelglyph_spinner`, `aurelglyph_divider`, progress, alerts, toasts, badges,
   skeletons, metrics, tables, and pagination
 
@@ -347,6 +351,96 @@ only `true` or `false`, keeping `aria-checked` valid for each role.
 Computed structural, state, and accessibility attributes are reserved. Caller
 attributes are escaped and preserved where supported, but cannot spoof helper
 IDs, roles, controller hooks, or computed ARIA/data state.
+
+The catalog helpers retain useful native behavior before JavaScript loads.
+Links are real anchors only when a destination exists; unavailable links omit
+the destination, handlers, link role, and Tab stop. Accordions use native
+`<details>` disclosures with helper-owned IDs namespaced to each accordion,
+steppers use ordered lists and anchors only for enabled destinations, and
+ratings use native radio groups. Input groups own exactly one
+labeled input; string adornments are hidden from assistive technology and must
+provide an explicit description. Password fields remain secure native inputs
+when the reveal controller is unavailable. Reveal/conceal keeps the same input,
+value, selection, and prior focus intent through the browser's settled paint;
+keyboard activation leaves focus on the visibility control.
+
+```erb
+<%= aurelglyph_link("Architecture notes", href: notes_path) %>
+
+<%= aurelglyph_chip(
+  label: "Stable",
+  selected: true,
+  removable: true,
+  name: "channels[]",
+  value: "stable",
+  remove_label: "Remove Stable"
+) %>
+
+<%= aurelglyph_password_field(
+  name: "account[password]",
+  label: "Password",
+  autocomplete: "current-password",
+  show_label: "Show password",
+  hide_label: "Hide password"
+) %>
+
+<%= aurelglyph_input_group(
+  name: "budget",
+  label: "Budget",
+  prefix: "$",
+  prefix_description: "US dollars"
+) %>
+
+<%= aurelglyph_validation_summary(
+  title: "Check these fields",
+  issues: @errors.map { |error| { field_id: error.attribute, message: error.full_message } },
+  focus_key: @validation_attempt_id,
+  announcement_key: @validation_attempt_id,
+  announcement_label: ->(heading, count) { "#{heading}. #{count} fields need attention" }
+) %>
+
+<%= aurelglyph_accordion(
+  items: [
+    { id: "network", title: "Network", content: render("network"), open: true },
+    { id: "storage", title: "Storage", content: render("storage") }
+  ]
+) %>
+
+<%= aurelglyph_stepper(
+  label: "Setup progress",
+  current_id: "profile",
+  items: [
+    { id: "account", label: "Account", status: "completed", href: account_path },
+    { id: "profile", label: "Profile", status: "current" },
+    { id: "review", label: "Review", status: "upcoming", disabled: true }
+  ]
+) %>
+
+<%= aurelglyph_rating(
+  name: "review[rating]",
+  label: "Rating",
+  value: @review.rating,
+  value_label: ->(value, max) { "#{value} of #{max}" },
+  clear_label: "Clear rating"
+) %>
+```
+
+Chip selection/removal, password reveal, one-time validation-summary focus and
+announcement, single-open accordion fallback, and rating clear/reset and
+logical arrow, Home, and End navigation are progressively enhanced by
+`aurelglyph.js`. Default chip removal restores focus to a nearby enabled
+control or the chip container; chip removal dispatches a cancelable
+`aurelglyph:chip:remove` event, and selection dispatches
+`aurelglyph:chip:change`. Give each failed validation attempt a new stable
+`focus_key` and/or `announcement_key`, and give each summary a stable unique
+`id`; re-initializing the same request for that summary does not repeat it,
+while another summary may use the same request key independently. All
+package-owned copy is explicit so applications can localize it without parsing
+English fragments. `current_id` makes one Stepper item authoritative while
+retaining its independent error/disabled status; without it, only the first
+explicit `current` item remains current. Required ratings do not render a clear action. Editable
+named ratings submit `0` after clearing, and read-only named ratings preserve
+their current value, including `0`.
 
 Pagination only renders links when URLs are supplied; it no longer emits
 interactive-looking no-op buttons:

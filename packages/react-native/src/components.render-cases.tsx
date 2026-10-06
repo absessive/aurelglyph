@@ -10,6 +10,9 @@ const nativeMock = vi.hoisted(() => ({
   host: { height: 844, width: 390, x: 0, y: 0 },
   layouts: {} as Record<string, { height: number; width: number; x: number; y: number }>,
   tooltip: { height: 40, width: 160, x: 0, y: 0 },
+  announce: vi.fn(),
+  accessibilityFocus: vi.fn(),
+  openURL: vi.fn(() => Promise.resolve()),
   window: { fontScale: 1, height: 844, scale: 3, width: 390 }
 }));
 
@@ -37,9 +40,15 @@ vi.mock("react-native", async () => {
       "aria-required": props["aria-required"] as boolean | undefined,
       "aria-selected": state.selected as boolean | undefined,
       "data-live-region": props.accessibilityLiveRegion as string | undefined,
+      "data-native-id": props.nativeID as string | undefined,
+      "data-labelled-by": props.accessibilityLabelledBy as string | undefined,
+      "data-focusable": props.focusable === false ? "false" : props.focusable === true ? "true" : undefined,
+      "data-accessibility-hidden": props.accessibilityElementsHidden ? "true" : undefined,
+      "data-important-for-accessibility": props.importantForAccessibility as string | undefined,
       "data-accessibility-value": value ? JSON.stringify(value) : undefined,
       "data-accessible": props.accessible === false ? "false" : props.accessible === true ? "true" : undefined,
       "data-testid": props.testID as string | undefined,
+      tabIndex: props.tabIndex as number | undefined,
       role: (props.role ?? props.accessibilityRole) as string | undefined
     };
   };
@@ -76,6 +85,11 @@ vi.mock("react-native", async () => {
       ...accessibilityProps(props),
       "data-rn": "View",
       "data-style": JSON.stringify(flattenStyle(style)),
+      onBlur: props.onBlur as (() => void) | undefined,
+      onFocus: props.onFocus as (() => void) | undefined,
+      onMouseEnter: props.onHoverIn as (() => void) | undefined,
+      onMouseLeave: props.onHoverOut as (() => void) | undefined,
+      onContextMenu: props.onContextMenu as (() => void) | undefined,
       onKeyDown: (event: KeyboardEvent) => {
         if (event.key === "ArrowUp") (onAccessibilityAction as ((event: unknown) => void) | undefined)?.({ nativeEvent: { actionName: "increment" } });
         if (event.key === "ArrowDown") (onAccessibilityAction as ((event: unknown) => void) | undefined)?.({ nativeEvent: { actionName: "decrement" } });
@@ -107,16 +121,19 @@ vi.mock("react-native", async () => {
     children
   );
 
-  const Text = ({ children, style, ...props }: Record<string, unknown> & { children?: ReactNode }) => React.createElement(
+  const Text = React.forwardRef<HTMLSpanElement, Record<string, unknown> & { children?: ReactNode }>(({ children, style, ...props }, ref) => React.createElement(
     "span",
-    { ...accessibilityProps(props), "data-rn": "Text", "data-style": JSON.stringify(flattenStyle(style)) },
-    children
-  );
+    { ...accessibilityProps(props), "data-rn": "Text", "data-style": JSON.stringify(flattenStyle(style)), ref },
+    children as ReactNode
+  ));
+  Text.displayName = "MockText";
 
   const Pressable = ({
     children,
     disabled,
     onLongPress,
+    onBlur,
+    onFocus,
     onPress,
     onPressOut,
     style,
@@ -130,6 +147,8 @@ vi.mock("react-native", async () => {
       "data-style": JSON.stringify(flattenStyle(typeof style === "function" ? (style as (state: { pressed: boolean }) => unknown)({ pressed: false }) : style)),
       disabled: Boolean(disabled),
       onClick: disabled ? undefined : onPress as (() => void) | undefined,
+      onBlur: onBlur as (() => void) | undefined,
+      onFocus: onFocus as (() => void) | undefined,
       onContextMenu: disabled ? undefined : (event: Event) => {
         event.preventDefault();
         (onLongPress as ((event: unknown) => void) | undefined)?.({ nativeEvent: {} });
@@ -146,6 +165,7 @@ vi.mock("react-native", async () => {
     editable = true,
     onBlur,
     onChangeText,
+    onSelectionChange,
     placeholder,
     style,
     value,
@@ -153,22 +173,30 @@ vi.mock("react-native", async () => {
   }, ref) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
     React.useImperativeHandle(ref, () => ({
-      focus: () => {
-        inputRef.current?.focus();
+      focus: () => { inputRef.current?.focus(); },
+      isFocused: () => document.activeElement === inputRef.current,
+      setNativeProps: ({ selection }: { selection?: { start: number; end?: number } }) => {
+        if (selection) inputRef.current?.setSelectionRange(selection.start, selection.end ?? selection.start);
       }
     }), []);
     return React.createElement("input", {
       ...accessibilityProps(props),
       autoFocus: Boolean(autoFocus),
       "data-auto-focus": String(Boolean(autoFocus)),
+      "data-auto-complete": props.autoComplete as string | undefined,
+      "data-content-type": props.textContentType as string | undefined,
+      "data-secure": String(Boolean(props.secureTextEntry)),
       "data-rn": "TextInput",
       "data-style": JSON.stringify(flattenStyle(style)),
       defaultValue: defaultValue as string | undefined,
       disabled: editable === false,
       onBlur: onBlur as ((event: unknown) => void) | undefined,
+      onFocus: props.onFocus as ((event: unknown) => void) | undefined,
       onChange: (event: { currentTarget: { value: string } }) => (onChangeText as ((value: string) => void) | undefined)?.(event.currentTarget.value),
+      onSelect: (event: { currentTarget: HTMLInputElement }) => (onSelectionChange as ((event: unknown) => void) | undefined)?.({ nativeEvent: { selection: { start: event.currentTarget.selectionStart ?? 0, end: event.currentTarget.selectionEnd ?? 0 } } }),
       placeholder: placeholder as string | undefined,
       ref: inputRef,
+      type: props.secureTextEntry ? "password" : "text",
       value: value as string | undefined
     });
   });
@@ -239,11 +267,15 @@ vi.mock("react-native", async () => {
 
   return {
     AccessibilityInfo: {
+      announceForAccessibility: nativeMock.announce,
+      setAccessibilityFocus: nativeMock.accessibilityFocus,
       addEventListener: () => ({ remove: () => undefined }),
       isReduceMotionEnabled: () => new Promise<boolean>(() => undefined)
     },
     ActivityIndicator,
     I18nManager: { isRTL: false },
+    Linking: { openURL: nativeMock.openURL },
+    findNodeHandle: () => 17,
     KeyboardAvoidingView,
     Modal,
     Pressable,
@@ -262,6 +294,378 @@ vi.mock("react-native", async () => {
     useColorScheme: () => "dark",
     useWindowDimensions: () => ({ ...nativeMock.window })
   };
+});
+
+describe("React Native component expansion", () => {
+  it("opens enabled links and makes unavailable destinations inert across all activation paths", () => {
+    const onPress = vi.fn();
+    const onLongPress = vi.fn();
+    const onAccessibilityTap = vi.fn();
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
+    const onHoverIn = vi.fn();
+    const onHoverOut = vi.fn();
+    const onContextMenu = vi.fn();
+    const rendered = render(<Link external href="https://example.com">Documentation</Link>);
+    const enabled = rendered.container.querySelector('[role="link"]')!;
+    expect(enabled.getAttribute("aria-description")).toContain("Opens an external link");
+    expect(styleOf(enabled).minHeight).toBe(44);
+    click(enabled);
+    expect(nativeMock.openURL).toHaveBeenCalledWith("https://example.com");
+    act(() => (enabled as HTMLElement).focus());
+    expect(styleOf(enabled).borderColor).toBe(resolveAurelglyphTheme().colors.focus);
+    rendered.rerender(<Link disabled external href="https://example.com" onAccessibilityTap={onAccessibilityTap} onBlur={onBlur} onFocus={onFocus} onHoverIn={onHoverIn} onHoverOut={onHoverOut} onPress={onPress} {...{ onContextMenu, onLongPress, tabIndex: 0 }}>Documentation</Link>);
+    const placeholder = rendered.container.querySelector('[aria-label="Documentation"]')!;
+    expect(placeholder.getAttribute("data-rn")).toBe("View");
+    expect(placeholder.getAttribute("data-focusable")).toBe("false");
+    expect(placeholder.getAttribute("aria-disabled")).toBe("true");
+    expect(placeholder.hasAttribute("href")).toBe(false);
+    expect(placeholder.hasAttribute("role")).toBe(false);
+    expect(placeholder.hasAttribute("tabindex")).toBe(false);
+    expect(placeholder.querySelector('[data-rn="View"]')).toBeNull();
+    expect(styleOf(placeholder.querySelector('[data-rn="Text"]')).textDecorationLine).toBe("none");
+    expect(styleOf(placeholder).borderColor).toBe("transparent");
+    expect(placeholder.getAttribute("aria-description")).not.toContain("external");
+    expect(rendered.container.querySelector("button")).toBeNull();
+    click(placeholder);
+    act(() => {
+      placeholder.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
+      placeholder.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+      placeholder.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      placeholder.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+      placeholder.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+    });
+    expect(nativeMock.openURL).toHaveBeenCalledOnce();
+    expect(onPress).not.toHaveBeenCalled();
+    expect(onLongPress).not.toHaveBeenCalled();
+    expect(onAccessibilityTap).not.toHaveBeenCalled();
+    expect(onFocus).not.toHaveBeenCalled();
+    expect(onBlur).not.toHaveBeenCalled();
+    expect(onHoverIn).not.toHaveBeenCalled();
+    expect(onHoverOut).not.toHaveBeenCalled();
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  it("handles URI errors and supports a consumer native navigation callback", async () => {
+    const onOpenError = vi.fn();
+    nativeMock.openURL.mockRejectedValueOnce(new Error("Cannot open destination"));
+    const rendered = render(<Link href="custom://route" onOpenError={onOpenError}>Route</Link>);
+    await act(async () => click(rendered.container.querySelector('[role="link"]')!));
+    expect(onOpenError).toHaveBeenCalledWith(expect.any(Error));
+    const onPress = vi.fn();
+    rendered.rerender(<Link onPress={onPress}>Native route</Link>);
+    click(rendered.container.querySelector('[role="link"]')!);
+    expect(onPress).toHaveBeenCalledOnce();
+  });
+
+  it("keeps chip selection and removal as siblings and honors controlled/unavailable state", () => {
+    const onSelectedChange = vi.fn();
+    const onRemove = vi.fn();
+    const rendered = render(<Chip defaultSelected label="Local" onRemove={onRemove} onSelectedChange={onSelectedChange} />);
+    const selection = rendered.container.querySelector('[role="checkbox"]')!;
+    const remove = rendered.container.querySelector('button[aria-label="Remove Local"]')!;
+    expect(selection.contains(remove)).toBe(false);
+    expect(remove.contains(selection)).toBe(false);
+    expect(selection.getAttribute("aria-checked")).toBe("true");
+    click(selection);
+    expect(selection.getAttribute("aria-checked")).toBe("false");
+    expect(onSelectedChange).toHaveBeenLastCalledWith(false);
+    click(remove);
+    expect(onRemove).toHaveBeenCalledOnce();
+    rendered.rerender(<Chip label="Local" onRemove={onRemove} onSelectedChange={onSelectedChange} selected />);
+    click(rendered.container.querySelector('[role="checkbox"]')!);
+    expect(rendered.container.querySelector('[role="checkbox"]')?.getAttribute("aria-checked")).toBe("true");
+    rendered.rerender(<Chip label="Local" onRemove={onRemove} readOnly selected />);
+    expect(Array.from(rendered.container.querySelectorAll("button")).every((button) => button.disabled)).toBe(true);
+  });
+
+  it("reveals password without losing value, selection, focus, or native password-manager metadata", () => {
+    const onChangeText = vi.fn();
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
+    const rendered = render(<PasswordField defaultValue="calibration" label="Password" onBlur={onBlur} onChangeText={onChangeText} onFocus={onFocus} />);
+    const input = rendered.container.querySelector("input")!;
+    expect(input.type).toBe("password");
+    expect(input.getAttribute("data-auto-complete")).toBe("current-password");
+    expect(input.getAttribute("data-content-type")).toBe("password");
+    act(() => { input.focus(); input.setSelectionRange(1, 4); input.dispatchEvent(new Event("select", { bubbles: true })); });
+    expect(styleOf(input.parentElement).borderColor).toBe(resolveAurelglyphTheme().colors.focus);
+    expect(onFocus).toHaveBeenCalledOnce();
+    click(rendered.container.querySelector('button[aria-label="Show Password"]')!);
+    expect(input.type).toBe("text");
+    expect(input.value).toBe("calibration");
+    expect(document.activeElement).toBe(input);
+    expect(input.selectionStart).toBe(1);
+    expect(input.selectionEnd).toBe(4);
+    expect(onChangeText).not.toHaveBeenCalled();
+    click(rendered.container.querySelector('button[aria-label="Hide Password"]')!);
+    expect(input.type).toBe("password");
+    expect(input.value).toBe("calibration");
+    type(input, "revised");
+    expect(onChangeText).toHaveBeenLastCalledWith("revised");
+    expect(input.value).toBe("revised");
+    act(() => input.blur());
+    expect(styleOf(input.parentElement).borderColor).toBe(resolveAurelglyphTheme().colors.borderStrong);
+    expect(onBlur).toHaveBeenCalledOnce();
+  });
+
+  it("permits read-only password reveal while disabling edits, and blocks disabled/loading reveal", () => {
+    const rendered = render(<PasswordField label="New password" purpose="new" readOnly value="saved" />);
+    const input = rendered.container.querySelector("input")!;
+    expect(input.disabled).toBe(true);
+    expect(input.getAttribute("data-auto-complete")).toBe("new-password");
+    click(rendered.container.querySelector('button[aria-label="Show New password"]')!);
+    expect(input.type).toBe("text");
+    rendered.rerender(<PasswordField disabled label="New password" value="saved" />);
+    expect(rendered.container.querySelector("button")?.disabled).toBe(true);
+    rendered.rerender(<PasswordField label="New password" loading value="saved" />);
+    expect(rendered.container.querySelector("button")?.disabled).toBe(true);
+  });
+
+  it("preserves React 19 password callback-ref cleanup and ordinary null cleanup", () => {
+    const cleanup = vi.fn();
+    const inputRef = vi.fn((input: unknown) => input ? cleanup : undefined);
+    const rendered = render(<PasswordField inputRef={inputRef} label="Password" />);
+    expect(inputRef).toHaveBeenCalledOnce();
+    expect(inputRef.mock.calls[0][0]).toMatchObject({ focus: expect.any(Function) });
+    click(rendered.container.querySelector('button[aria-label="Show Password"]')!);
+    expect(inputRef).toHaveBeenCalledOnce();
+    expect(cleanup).not.toHaveBeenCalled();
+    rendered.rerender(<></>);
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(inputRef).toHaveBeenCalledOnce();
+
+    const ordinaryRef = vi.fn();
+    const ordinary = render(<PasswordField inputRef={ordinaryRef} label="Ordinary" />);
+    ordinary.rerender(<></>);
+    expect(ordinaryRef).toHaveBeenLastCalledWith(null);
+    const objectRef = { current: null };
+    const object = render(<PasswordField inputRef={objectRef} label="Object" />);
+    expect(objectRef.current).toMatchObject({ focus: expect.any(Function) });
+    object.rerender(<></>);
+    expect(objectRef.current).toBeNull();
+  });
+
+  it("owns one labeled input group and keeps addon actions independently accessible", () => {
+    const action = vi.fn();
+    const rendered = render(<InputGroup addonDescription="US dollars" error="Amount is required" label="Amount" prefix="$" required suffix={<IconButton icon={<Icon name="plus" />} label="Add amount" onPress={action} />} />);
+    expect(rendered.container.querySelectorAll("input")).toHaveLength(1);
+    const input = rendered.container.querySelector("input")!;
+    expect(input.getAttribute("aria-label")).toBe("Amount, required, invalid");
+    expect(input.getAttribute("aria-description")).toBe("US dollars. Amount is required");
+    const prefix = Array.from(rendered.container.querySelectorAll("span")).find((node) => node.textContent === "$")!;
+    expect(prefix.getAttribute("data-accessible")).toBe("false");
+    expect(prefix.getAttribute("data-accessibility-hidden")).toBe("true");
+    expect(prefix.getAttribute("data-important-for-accessibility")).toBe("no");
+    expect(input.getAttribute("data-labelled-by")).toContain("ag-input-group");
+    click(rendered.container.querySelector('button[aria-label="Add amount"]')!);
+    expect(action).toHaveBeenCalledOnce();
+    expect(styleOf(input.parentElement).flexWrap).toBe("wrap");
+    expect(styleOf(input).minHeight).toBe(44);
+    act(() => input.focus());
+    expect(styleOf(input.parentElement).borderColor).toBe(resolveAurelglyphTheme().colors.focus);
+    act(() => input.blur());
+    expect(styleOf(input.parentElement).borderColor).toBe(resolveAurelglyphTheme().colors.danger);
+    rendered.rerender(<InputGroup label="Amount" prefix="$" readOnly value="12" />);
+    expect(rendered.container.querySelector("input")?.disabled).toBe(true);
+  });
+
+  it("renders only supplied errors and requests summary focus/announcement once per explicit key", () => {
+    const focusField = vi.fn();
+    const errors = [{ id: "name", message: "Enter a name", onPress: focusField }, { id: "region", message: "Choose a region" }];
+    const rendered = render(<ValidationSummary errors={errors} />);
+    expect(nativeMock.announce).not.toHaveBeenCalled();
+    expect(nativeMock.accessibilityFocus).not.toHaveBeenCalled();
+    expect(rendered.container.querySelector('[data-live-region="polite"]')).toBeNull();
+    rendered.rerender(<ValidationSummary announcementKey={1} errors={errors} focusKey={1} />);
+    expect(nativeMock.announce).toHaveBeenCalledExactlyOnceWith("Check these fields. 2 errors.");
+    expect(nativeMock.accessibilityFocus).toHaveBeenCalledExactlyOnceWith(17);
+    expect(nativeMock.announce.mock.calls[0][0]).not.toContain("Enter a name");
+    rendered.rerender(<ValidationSummary announcementKey={1} errors={[...errors]} focusKey={1} />);
+    expect(nativeMock.announce).toHaveBeenCalledOnce();
+    expect(nativeMock.accessibilityFocus).toHaveBeenCalledOnce();
+    click(rendered.container.querySelector('button[aria-label="Enter a name"]')!);
+    expect(focusField).toHaveBeenCalledOnce();
+    rendered.rerender(<ValidationSummary announcementKey={2} errors={[]} focusKey={2} />);
+    expect(rendered.container.textContent).toBe("");
+    expect(nativeMock.announce).toHaveBeenCalledOnce();
+    rendered.rerender(<ValidationSummary announcementKey={2} errors={errors} focusKey={2} />);
+    expect(nativeMock.announce).toHaveBeenCalledTimes(2);
+    expect(nativeMock.accessibilityFocus).toHaveBeenCalledTimes(2);
+    rendered.rerender(<ValidationSummary announcementKey={1} errors={errors} focusKey={1} />);
+    rendered.rerender(<ValidationSummary announcementKey={2} errors={[...errors]} focusKey={2} />);
+    expect(nativeMock.announce).toHaveBeenCalledTimes(2);
+    expect(nativeMock.accessibilityFocus).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps standalone disclosure controlled and removes collapsed descendants", () => {
+    const onOpenChange = vi.fn();
+    const rendered = render(<ExpandableSection onOpenChange={onOpenChange} title="Details"><Button>Nested action</Button></ExpandableSection>);
+    const trigger = rendered.container.querySelector('button[aria-label="Details"]')!;
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(rendered.container.textContent).not.toContain("Nested action");
+    click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(rendered.container.querySelector('[data-labelled-by]')?.getAttribute("data-labelled-by")).toBe(trigger.getAttribute("data-native-id"));
+    rendered.rerender(<ExpandableSection onOpenChange={onOpenChange} open={false} title="Details"><Button>Nested action</Button></ExpandableSection>);
+    click(rendered.container.querySelector('button[aria-label="Details"]')!);
+    expect(rendered.container.textContent).not.toContain("Nested action");
+  });
+
+  it("coordinates single and multiple accordion state and ignores disabled item activation", () => {
+    const onValueChange = vi.fn();
+    const items = [{ content: <Text>First body</Text>, id: "first", title: "First" }, { content: <Text>Second body</Text>, id: "second", title: "Second" }, { content: <Text>Third body</Text>, disabled: true, id: "third", title: "Third" }];
+    const rendered = render(<Accordion defaultValue={["first"]} items={items} onValueChange={onValueChange} />);
+    click(rendered.container.querySelector('button[aria-label="Second"]')!);
+    expect(rendered.container.textContent).not.toContain("First body");
+    expect(rendered.container.textContent).toContain("Second body");
+    expect(onValueChange).toHaveBeenLastCalledWith(["second"]);
+    click(rendered.container.querySelector('button[aria-label="Third"]')!);
+    expect(onValueChange).toHaveBeenCalledOnce();
+    rendered.rerender(<Accordion items={items} onValueChange={onValueChange} type="multiple" value={["first", "second"]} />);
+    expect(rendered.container.textContent).toContain("First body");
+    expect(rendered.container.textContent).toContain("Second body");
+    click(rendered.container.querySelector('button[aria-label="First"]')!);
+    expect(onValueChange).toHaveBeenLastCalledWith(["second"]);
+    expect(rendered.container.textContent).toContain("First body");
+  });
+
+  it("renders ordered native step state without making static steps navigable", () => {
+    const items = [{ id: "configure", label: "Configure" }, { id: "review", label: "Review" }, { id: "publish", label: "Publish", status: "error" as const }];
+    const rendered = render(<Stepper currentId="review" items={items} />);
+    expect(rendered.container.querySelectorAll("button")).toHaveLength(0);
+    expect(rendered.container.querySelector('[aria-label="Configure, step 1 of 3, Completed"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[aria-label="Review, step 2 of 3, Current"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[aria-label="Publish, step 3 of 3, Needs attention"]')).not.toBeNull();
+    const onStepChange = vi.fn();
+    rendered.rerender(<Stepper currentId="review" items={[...items, { disabled: true, id: "locked", label: "Locked" }]} onStepChange={onStepChange} />);
+    click(rendered.container.querySelector('button[aria-label="Configure, step 1 of 4, Completed"]')!);
+    expect(onStepChange).toHaveBeenLastCalledWith("configure");
+    const locked = rendered.container.querySelector('button[aria-label="Locked, step 4 of 4, Upcoming"]') as HTMLButtonElement;
+    expect(locked.disabled).toBe(true);
+    expect(styleOf(locked).minHeight).toBe(44);
+  });
+
+  it("provides whole-number rating, native adjustment, a separate clear action, and unavailable state", () => {
+    const onValueChange = vi.fn();
+    const rendered = render(<Rating defaultValue={2.6} label="Quality" onValueChange={onValueChange} />);
+    const adjustable = rendered.container.querySelector('[role="adjustable"]')!;
+    expect(JSON.parse(adjustable.getAttribute("data-accessibility-value")!).now).toBe(3);
+    act(() => adjustable.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowUp" })));
+    expect(onValueChange).toHaveBeenLastCalledWith(4);
+    click(rendered.container.querySelector('button[aria-label="2 of 5"]')!);
+    expect(onValueChange).toHaveBeenLastCalledWith(2);
+    click(rendered.container.querySelector('button[aria-label="Clear rating"]')!);
+    expect(onValueChange).toHaveBeenLastCalledWith(0);
+    rendered.rerender(<Rating label="Quality" onValueChange={onValueChange} readOnly value={3} />);
+    expect(rendered.container.querySelectorAll('[role="radio"]')).toHaveLength(0);
+    expect(rendered.container.querySelector('button[aria-label="Clear rating"]')).toBeNull();
+    expect(rendered.container.querySelector('[role="adjustable"]')?.getAttribute("aria-label")).toBe("Quality, read only");
+  });
+
+  it("keeps zero visibly invalid when required and prevents required rating clear/decrement to zero", () => {
+    const onValueChange = vi.fn();
+    const rendered = render(<Rating label="Quality" onValueChange={onValueChange} required value={0} />);
+    expect(rendered.container.querySelector('[role="adjustable"]')?.getAttribute("aria-label")).toBe("Quality, required, invalid");
+    rendered.rerender(<Rating label="Quality" onValueChange={onValueChange} required value={1} />);
+    act(() => rendered.container.querySelector('[role="adjustable"]')!.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" })));
+    expect(rendered.container.querySelector('button[aria-label="Clear rating"]')).toBeNull();
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it("visibly marks invalid-only ratings and mutes unavailable stars without removing their filled geometry", () => {
+    const theme = resolveAurelglyphTheme();
+    const rendered = render(<Rating invalid label="Quality" value={3} />);
+    const adjustable = () => rendered.container.querySelector('[role="adjustable"]')!;
+    expect(styleOf(rendered.container.firstElementChild).borderColor).toBe(theme.colors.danger);
+    const warning = rendered.container.querySelector('[data-testid="aurelglyph-rating-invalid"]')!;
+    expect(warning.getAttribute("data-accessibility-hidden")).toBe("true");
+    expect(warning.getAttribute("data-important-for-accessibility")).toBe("no-hide-descendants");
+    expect(adjustable().getAttribute("aria-label")).toBe("Quality, invalid");
+    for (const state of [{ disabled: true }, { readOnly: true }, { loading: true }]) {
+      rendered.rerender(<Rating label="Quality" value={3} {...state} />);
+      const painted = Array.from(adjustable().querySelectorAll('[data-rn="View"]')).filter((node) => typeof styleOf(node).backgroundColor === "string");
+      expect(painted.length).toBeGreaterThan(0);
+      expect(painted.every((node) => styleOf(node).backgroundColor === theme.colors.muted)).toBe(true);
+      expect(painted.some((node) => styleOf(node).height === 0.7)).toBe(true);
+      expect(rendered.container.querySelector('[data-testid="aurelglyph-rating-invalid"]')).toBeNull();
+      expect(adjustable().getAttribute("data-accessibility-value")).toContain('"now":3');
+    }
+  });
+
+  it("localizes expansion-owned labels without leaking English fragments", () => {
+    const rendered = render(<AurelglyphControlCopyProvider value={{ clear: "Effacer", clearRating: "Effacer la note", externalLink: "Lien externe", removeChipLabel: (label) => `Retirer ${label}`, showPasswordLabel: (label) => `Afficher ${label}`, hidePasswordLabel: (label) => `Masquer ${label}`, ratingValueLabel: (value, max) => `${value} sur ${max}`, ratingOptionLabel: (value, max) => `${value} sur ${max}`, validationSummary: "Vérifier les champs", validationSummaryAnnouncement: (title, count) => `${title}: ${count} erreurs` }}>
+      <Link external href="https://example.com">Documentation</Link><Chip label="Local" onRemove={vi.fn()} /><PasswordField label="Mot de passe" /><Rating defaultValue={3} /><ValidationSummary announcementKey="submission" errors={[{ id: "name", message: "Saisir un nom" }]} />
+    </AurelglyphControlCopyProvider>);
+    expect(rendered.container.querySelector('[role="link"]')?.getAttribute("aria-description")).toBe("Lien externe");
+    expect(rendered.container.querySelector('button[aria-label="Retirer Local"]')).not.toBeNull();
+    expect(rendered.container.querySelector('button[aria-label="Afficher Mot de passe"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[role="adjustable"]')?.getAttribute("data-accessibility-value")).toContain("3 sur 5");
+    expect(nativeMock.announce).toHaveBeenCalledExactlyOnceWith("Vérifier les champs: 1 erreurs");
+  });
+
+  it("renders all expansion icons from finite curated vector geometry", () => {
+    const names = ["star", "eye", "eye-off", "external-link", "warning", "expand", "contract"] as const;
+    const { container } = render(<>{names.map((name) => <Icon key={name} label={name} name={name} />)}</>);
+    for (const name of names) {
+      const icon = container.querySelector(`[role="image"][aria-label="${name}"]`)!;
+      expect(icon.querySelectorAll('[data-rn="View"]').length).toBeGreaterThan(3);
+      for (const segment of icon.querySelectorAll('[data-rn="View"]')) {
+        const paint = styleOf(segment);
+        expect(Number.isFinite(paint.width)).toBe(true);
+        expect(Number.isFinite(paint.left)).toBe(true);
+        expect(Number.isFinite(paint.top)).toBe(true);
+      }
+    }
+  });
+
+  it("defaults chips to selectable and gives keyboard focus a visible tokenized boundary", () => {
+    const rendered = render(<Chip label="Local" />);
+    const selection = rendered.container.querySelector('[role="checkbox"]') as HTMLButtonElement;
+    expect(selection.getAttribute("aria-checked")).toBe("false");
+    click(selection);
+    expect(selection.getAttribute("aria-checked")).toBe("true");
+    act(() => selection.focus());
+    expect(styleOf(selection).borderColor).toBe(resolveAurelglyphTheme().colors.focus);
+    rendered.rerender(<Chip label="Local" selectable={false} />);
+    expect(rendered.container.querySelector('[role="checkbox"]')).toBeNull();
+  });
+
+  it("normalizes accordion IDs to item order and uses one authoritative current step", () => {
+    const items = [{ content: <Text>First panel</Text>, id: "first", title: "First" }, { content: <Text>Second panel</Text>, id: "second", title: "Second" }];
+    const rendered = render(<Accordion defaultValue={["second", "first"]} items={items} />);
+    expect(rendered.container.textContent).toContain("First panel");
+    expect(rendered.container.textContent).not.toContain("Second panel");
+    rendered.rerender(<Stepper currentId="review" items={[{ id: "first", label: "First", status: "current" }, { id: "review", label: "Review", status: "upcoming" }, { id: "last", label: "Last", status: "current" }]} />);
+    expect(rendered.container.querySelectorAll('[aria-selected="true"]')).toHaveLength(1);
+    expect(rendered.container.querySelector('[aria-label="Review, step 2 of 3, Current"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[aria-label="First, step 1 of 3, Upcoming"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[aria-label="Last, step 3 of 3, Upcoming"]')).not.toBeNull();
+    rendered.rerender(<Stepper currentId="review" items={[{ id: "first", label: "First", status: "current" }, { id: "review", label: "Review", status: "error" }, { id: "last", label: "Last" }]} />);
+    const currentError = rendered.container.querySelector('[aria-label="Review, step 2 of 3, Current, Needs attention"]')!;
+    expect(currentError.getAttribute("aria-selected")).toBe("true");
+    expect(currentError.textContent).toContain("Current, Needs attention");
+    expect(styleOf(Array.from(currentError.querySelectorAll('[data-rn="Text"]')).find((text) => text.textContent === "Review")!).fontWeight).toBe("600");
+    expect(rendered.container.querySelectorAll('[aria-selected="true"]')).toHaveLength(1);
+  });
+
+  it("normalizes rating maxima safely and fills selected stars independently of color", () => {
+    const rendered = render(<Rating max={0} value={99} />);
+    const ratingValue = () => JSON.parse(rendered.container.querySelector('[role="adjustable"]')!.getAttribute("data-accessibility-value")!);
+    expect(ratingValue()).toMatchObject({ max: 1, now: 1 });
+    rendered.rerender(<Rating max={-4} />);
+    expect(ratingValue().max).toBe(1);
+    rendered.rerender(<Rating max={Number.NaN} />);
+    expect(ratingValue().max).toBe(5);
+    rendered.rerender(<Rating max={100} value={50} />);
+    expect(ratingValue()).toMatchObject({ max: 20, now: 20 });
+    rendered.rerender(<Rating value={3} />);
+    const filled = rendered.container.querySelector('button[aria-label="1 of 5"]')!;
+    const outline = rendered.container.querySelector('button[aria-label="5 of 5"]')!;
+    expect(filled.querySelectorAll('[data-rn="View"]').length).toBeGreaterThan(outline.querySelectorAll('[data-rn="View"]').length);
+    expect(Array.from(filled.querySelectorAll('[data-rn="View"]')).some((node) => styleOf(node).height === 0.7)).toBe(true);
+  });
 });
 
 vi.mock("react-native-safe-area-context", async () => {
@@ -291,6 +695,7 @@ import { Dialog, Drawer, MoreInformation, Popover, Tooltip } from "./overlays.js
 import { FileUpload, NumberField, RadioGroup, SearchField, Slider, Switch as AurelglyphSwitch, TextField } from "./forms.js";
 import { Pagination, SegmentedControl, TabBar, Tabs } from "./navigation.js";
 import { Icon } from "./icons.js";
+import { Accordion, Chip, ExpandableSection, InputGroup, Link, PasswordField, Rating, Stepper, ValidationSummary } from "./components-expansion.js";
 import { AurelglyphOverlayHost } from "./overlay-host.js";
 import { AurelglyphProvider, resolveAurelglyphTheme } from "./theme.js";
 import { Modal, Text } from "react-native";
@@ -341,6 +746,9 @@ afterEach(() => {
   nativeMock.layouts = {};
   nativeMock.tooltip = { height: 40, width: 160, x: 0, y: 0 };
   nativeMock.window = { fontScale: 1, height: 844, scale: 3, width: 390 };
+  nativeMock.announce.mockClear();
+  nativeMock.accessibilityFocus.mockClear();
+  nativeMock.openURL.mockClear();
   vi.restoreAllMocks();
 });
 

@@ -98,9 +98,12 @@ later versions. These credentials must be configured before the 1.0.0 tag.
 
 Aurelglyph does not yet claim the advanced data, calendar/date-time, virtualized
 list, tree, chart, or media-permission catalog planned on the roadmap. The
-machine-readable component manifest currently describes the interaction-
-foundation subset; the broader catalog remains documented in platform package
-guides and will move into a support-status manifest before 1.0.
+machine-readable component manifest describes 37 cross-platform core-control
+families, not the entire catalog. It includes nine previously omitted families
+and marks the eight new essentials plus React Native disclosure parity as
+`unreleased`, distinct from the immutable 0.8.0 baseline. Broader shell,
+feedback, and data-display React Native parity remains documented follow-on
+work before an exhaustive support-status manifest and 1.0.
 
 These are declared product-scope limits, not permission to ship inconsistent
 behavior in the components already marked stable. Stable components must retain

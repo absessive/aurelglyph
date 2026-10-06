@@ -87,12 +87,56 @@ semantic-versioning, deprecation, and pre-1.0 limits explicit.
 
 ## Planned — Catalog expansion
 
-Finish the remaining core Bootstrap and Material UI catalog gaps:
+### Current component-gap audit (2026-10-06)
 
-- Link, Chip, Rating, Floating Action Button, Speed Dial, and Stepper.
-- Input Group, Password Field, and richer validation summaries.
-- Accordion as a first-class alias and contract over expandable sections.
-- Navbar, Sidebar, Menubar, and responsive navigation composition.
+The current Unreleased workspace expansion implements eight complementary
+contracts, designed together and verified by adapter-specific tests. These are
+not part of the immutable 0.8.0 tag and do not select a release version.
+
+| Slice | Missing family | Contract boundary |
+| --- | --- | --- |
+| A | Link | Navigation semantics, not a Button variant |
+| A | Password Field | Secure entry and localizable reveal without losing native field behavior |
+| A | Input Group | One labeled input with logical leading/trailing adornments or actions |
+| A | Validation Summary | Declarative issues with field focus/navigation; never owns form state |
+| A | Accordion | Coordinated single/multiple disclosure over ExpandableSection |
+| B | Chip | Selectable/removable items; static status remains Badge |
+| B | Stepper | Ordered workflow state, distinct from NumberField numeric stepping |
+| B | Rating | Integer choice with radio/adjustable semantics and a clear action |
+
+The audit uses the official [Material UI catalog](https://mui.com/material-ui/all-components/)
+and [Bootstrap catalog](https://getbootstrap.com/docs/5.3/components/accordion/)
+as coverage references, not visual templates. Accordion semantics follow the
+[WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/);
+validation-summary behavior is informed by the
+[GOV.UK error-summary contract](https://design-system.service.gov.uk/components/error-summary/).
+All package-owned copy must be localizable, and the implementation must cover
+CSS, React, React Native, SwiftUI, Rails, examples, and generated previews.
+
+The scoped core-control manifest now certifies 37 families. SearchField,
+Switch, Select, Tabs, SegmentedControl, TabBar, Pagination, Progress, and
+CommandPalette already had all five adapter implementations and are now included
+alongside the 19 interaction foundations, eight essentials, and standalone
+ExpandableSection. Unreleased rows distinguish workspace additions from released
+contracts. This matrix is still not an exhaustive catalog; a broader support
+catalog must distinguish native substitutions and remaining gaps.
+
+React Native also needs a named older-catalog parity project: AppShell, TopBar,
+Toolbar, NavigationStack/Page, Sheet, Card, ListSection/Row, Alert, EmptyState,
+Avatar, Badge, Breadcrumbs, Toast, Skeleton, Metric, and DataTable remain absent
+from its public surface. Accordion closes the standalone ExpandableSection gap
+in this change set. The other families remain explicit follow-on work rather
+than silent omissions.
+
+### Remaining composition and specialized patterns
+
+Assess the remaining catalog patterns for behavior beyond existing primitives:
+
+- Floating Action Button and Speed Dial need an explicit placement/action
+  contract beyond Button/IconButton plus Menu/Popover.
+- Navbar and Sidebar should first compose AppShell, TopBar, TabBar,
+  NavigationStack, and Toolbar; add first-class APIs only for missing behavior.
+- Menubar and responsive navigation composition.
 - Carousel, Scrollspy, Image List, and Timeline/Masonry primitives.
 - Transfer List where it is an appropriate desktop/tablet pattern, with a native
   selection-flow alternative documented for compact mobile surfaces.

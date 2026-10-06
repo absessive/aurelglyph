@@ -221,6 +221,94 @@ final class AurelglyphSwiftUISmokeUITests: XCTestCase {
     )
   }
 
+  func testCatalogChipDisclosureAndRatingContracts() {
+    launch(arguments: ["-aurelglyph-catalog"])
+
+    XCTAssertTrue(app.staticTexts["Unavailable destination"].exists)
+    XCTAssertFalse(app.links["Unavailable destination"].exists)
+    let chip = app.buttons["Local"]
+    XCTAssertTrue(chip.isSelected)
+    chip.tap()
+    waitForLabel("Local not selected", on: app.staticTexts["catalog.chip.value"])
+    tapWhenHittable(app.buttons["Remove Local"], message: "The sibling chip removal control was not reachable")
+    waitForLabel("Chip removed", on: app.staticTexts["catalog.chip.value"])
+    XCTAssertFalse(app.buttons["Local"].exists)
+
+    let storage = app.buttons["Storage"]
+    XCTAssertTrue(scrollUntilVisible(storage), "The accordion header was not reachable")
+    tapWhenHittable(storage, message: "Storage was not ready to expand")
+    XCTAssertTrue(app.staticTexts["catalog.storage.content"].exists)
+    XCTAssertFalse(app.staticTexts["catalog.network.content"].exists, "Single-open accordion left the previous panel exposed")
+    XCTAssertFalse(app.buttons["Locked section"].isEnabled)
+    tapWhenHittable(storage, message: "Storage was not ready to collapse")
+    XCTAssertFalse(app.staticTexts["catalog.storage.content"].exists)
+
+    let verify = app.buttons["Step 3 of 4, Verify, Needs attention"]
+    XCTAssertTrue(scrollUntilVisible(verify), "The enabled workflow step was not reachable")
+    tapWhenHittable(verify, message: "The verification step was not ready")
+    let currentError = app.buttons["Step 3 of 4, Verify, Current · Needs attention"]
+    XCTAssertTrue(currentError.waitForExistence(timeout: 5))
+    XCTAssertTrue(currentError.isSelected, "The error step lost its current status")
+    XCTAssertFalse(app.buttons["Step 2 of 4, Review, Upcoming"].isSelected)
+    XCTAssertFalse(app.buttons["Step 4 of 4, Publish, Unavailable"].exists, "The disabled workflow step exposed navigation")
+
+    let readiness = app.otherElements["Readiness"]
+    XCTAssertTrue(scrollUntilVisible(readiness), "The rating was not reachable")
+    XCTAssertEqual(readiness.value as? String, "3 of 5")
+    let starFour = readiness.coordinate(withNormalizedOffset: CGVector(dx: 0.7, dy: 0.5))
+    starFour.tap()
+    waitForLabel("Rating: 4", on: app.staticTexts["catalog.rating.value"])
+    let clear = app.buttons.matching(identifier: "Clear rating").firstMatch
+    tapWhenHittable(clear, message: "The rating clear control was not reachable")
+    waitForLabel("Rating: 0", on: app.staticTexts["catalog.rating.value"])
+    XCTAssertFalse(clear.isEnabled)
+    XCTAssertTrue(scrollUntilVisible(app.otherElements["Required readiness"]))
+    XCTAssertEqual(app.buttons.matching(identifier: "Clear rating").count, 1, "Required rating exposed a Clear action")
+    XCTAssertTrue(scrollUntilVisible(app.otherElements["Read-only readiness"]))
+    XCTAssertEqual(app.buttons.matching(identifier: "Clear rating").count, 1, "Read-only rating exposed a Clear action")
+  }
+
+  func testCatalogPasswordPreservesFocusValueAndMasksAgain() {
+    launch(arguments: ["-aurelglyph-catalog"])
+    let password = app.secureTextFields["Access key"]
+    XCTAssertTrue(scrollUntilVisible(password), "The native password field was not reachable")
+    tapWhenHittable(password, message: "The concealed password field was not ready")
+    app.typeText("ab")
+    tapWhenHittable(app.buttons["Show password"], message: "The password reveal control was not ready")
+    let revealed = app.textFields["Access key"]
+    XCTAssertTrue(revealed.waitForExistence(timeout: 5))
+    app.typeText("cd") // No refocus: revealing must keep the native first responder.
+    XCTAssertEqual(revealed.value as? String, "abcd")
+    tapWhenHittable(app.buttons["Hide password"], message: "The password conceal control was not ready")
+    XCTAssertTrue(password.waitForExistence(timeout: 5))
+    app.typeText("ef")
+    XCTAssertNotEqual(password.value as? String, "abcdef", "The concealed field exposed its secret value")
+    tapWhenHittable(app.buttons["Show password"], message: "The password reveal control did not recover")
+    XCTAssertEqual(revealed.value as? String, "abcdef")
+    tapWhenHittable(app.keyboards.buttons["Done"], message: "The native text-entry Done control was not reachable")
+
+    let validate = app.buttons["Validate"]
+    XCTAssertTrue(scrollUntilVisible(validate))
+    validate.tap()
+    let summary = app.staticTexts["Check the form"]
+    XCTAssertTrue(summary.waitForExistence(timeout: 5))
+    XCTAssertEqual(summary.value as? String, "2 errors")
+    tapWhenHittable(app.buttons["Review the budget"], message: "The validation field-focus action was not reachable")
+    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+    app.typeText("0")
+    XCTAssertEqual(app.textFields["Budget"].value as? String, "2400")
+  }
+
+  func testCatalogLocalizedCopyAndAccessibleTextReachability() {
+    launch(arguments: ["-aurelglyph-catalog", "-aurelglyph-localized-control-copy",
+      "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+    XCTAssertTrue(scrollCatalogUntilVisible(app.buttons["Afficher le mot de passe"]), "Localized password visibility was unreachable: \(app.debugDescription)")
+    XCTAssertTrue(scrollCatalogUntilVisible(app.buttons["Storage"]), "Accordion was unreachable at accessibility text size")
+    XCTAssertTrue(scrollCatalogUntilVisible(app.otherElements["Readiness"], maximumSwipes: 12), "Rating was unreachable at accessibility text size")
+    XCTAssertEqual(app.otherElements["Readiness"].value as? String, "3/5")
+    XCTAssertTrue(app.buttons.matching(identifier: "Effacer la note").firstMatch.exists)
+  }
+
   private func launch(arguments: [String] = []) {
     if app.state != .notRunning {
       app.terminate()
@@ -239,6 +327,21 @@ final class AurelglyphSwiftUISmokeUITests: XCTestCase {
         return true
       }
       app.swipeUp()
+    }
+    return element.exists && element.isHittable
+  }
+
+  // The AX-sized catalog can span six pages. Keep targets within the actual
+  // scroll viewport instead of overshooting them with one-way app gestures.
+  private func scrollCatalogUntilVisible(_ element: XCUIElement, maximumSwipes: Int = 8) -> Bool {
+    let scrollView = app.scrollViews.firstMatch
+    for _ in 0..<maximumSwipes {
+      if element.exists && element.isHittable { return true }
+      if element.exists, element.frame.midY < scrollView.frame.midY {
+        scrollView.swipeDown()
+      } else {
+        scrollView.swipeUp()
+      }
     }
     return element.exists && element.isHittable
   }

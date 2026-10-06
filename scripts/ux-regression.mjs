@@ -12,6 +12,7 @@ if (process.platform === "win32") {
 }
 
 const workspace = resolve(import.meta.dirname, "..");
+const componentManifest = JSON.parse(await readFile(join(workspace, "component-manifest.json"), "utf8"));
 const exampleDist = join(workspace, "examples/react-vite/dist");
 const outputRoot = resolveUxOutputRoot(process.env.AURELGLYPH_UX_OUTPUT, { workspace });
 const axeSource = await readFile(join(workspace, "node_modules/axe-core/axe.min.js"), "utf8");
@@ -1216,7 +1217,8 @@ async function runStaticRegression(client, staticUrl, report) {
       await ensureAppearance(client, "quiet", "Use quiet appearance", context);
       await ensureMode(client, mode, mode === "light" ? "Use light mode" : "Use dark mode", context);
       const count = await evaluate(client, "document.querySelector('.contract-count')?.textContent.trim()");
-      invariant(count === "19 component families · 5 platform targets · 95 checked claims", `${context}: contract count drifted`);
+      const expectedCount = `${componentManifest.components.length} component families · ${componentManifest.platforms.length} platform targets · ${componentManifest.components.length * componentManifest.platforms.length} checked claims`;
+      invariant(count === expectedCount, `${context}: contract count drifted`);
       report.audits.push({ context, dom: await auditDom(client, context) });
       await auditAxe(client, context);
       report.accessibility.push({ context, ...(await auditAccessibilityTree(client, context)) });

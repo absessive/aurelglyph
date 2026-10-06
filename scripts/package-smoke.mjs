@@ -155,10 +155,12 @@ try {
         [
           'import { createElement } from "react";',
           'import { renderToStaticMarkup } from "react-dom/server";',
-          'import { Button, Combobox, Dialog, MoreInformation } from "@aurelglyph/react";',
-          'for (const value of [Button, Combobox, Dialog, MoreInformation]) if (typeof value !== "function") throw new Error("React export failed");',
+          'import { Accordion, Button, Chip, Combobox, Dialog, InputGroup, Link, MoreInformation, PasswordField, Rating, Stepper, ValidationSummary } from "@aurelglyph/react";',
+          'for (const value of [Accordion, Button, Chip, Combobox, Dialog, InputGroup, Link, MoreInformation, PasswordField, Rating, Stepper, ValidationSummary]) if (typeof value !== "function") throw new Error("React export failed");',
           'const markup = renderToStaticMarkup(createElement(MoreInformation, { label: "Details" }, "Supporting copy"));',
-          'if (!markup.includes("Supporting copy")) throw new Error("React server render failed");'
+          'if (!markup.includes("Supporting copy")) throw new Error("React server render failed");',
+          'const essentials = renderToStaticMarkup(createElement("div", null, createElement(Link, { href: "#guide" }, "Guide"), createElement(Chip, { label: "Local" }), createElement(PasswordField, { label: "Password" }), createElement(InputGroup, { label: "Amount", leading: "$" }), createElement(ValidationSummary, { errors: [{ id: "amount", message: "Check amount" }] }), createElement(Accordion, { items: [{ id: "local", title: "Local", content: "Panel" }] }), createElement(Stepper, { items: [{ id: "review", label: "Review" }] }), createElement(Rating, { label: "Experience", defaultValue: 3 })));',
+          'if (!essentials.includes("type=\\"password\\"") || !essentials.includes("type=\\"radio\\"")) throw new Error("Catalog SSR failed");'
         ].join("\n")
       ],
       { cwd: consumer }
@@ -180,11 +182,20 @@ try {
     await writeFile(
       join(consumer, "index.tsx"),
       [
-        'import type { ButtonProps, MoreInformationProps } from "@aurelglyph/react-native";',
+        'import type { AccordionProps, ButtonProps, ChipProps, InputGroupProps, LinkProps, MoreInformationProps, PasswordFieldProps, RatingProps, StepperProps, ValidationSummaryProps } from "@aurelglyph/react-native";',
         'const button: ButtonProps = { children: "Run" };',
         'const information: MoreInformationProps = { children: "Details", label: "System information" };',
         "void button;",
         "void information;",
+        'const link: LinkProps = { children: "Guide", href: "https://example.com" };',
+        'const chip: ChipProps = { label: "Local", defaultSelected: true };',
+        'const password: PasswordFieldProps = { label: "Password", purpose: "new" };',
+        'const group: InputGroupProps = { label: "Amount", prefix: "$", suffix: "USD", addonDescription: "US dollars" };',
+        'const summary: ValidationSummaryProps = { errors: [{ id: "amount", message: "Check amount" }], focusKey: 1 };',
+        'const accordion: AccordionProps = { items: [], defaultValue: [], type: "multiple" };',
+        'const stepper: StepperProps = { items: [{ id: "review", label: "Review" }], currentId: "review" };',
+        'const rating: RatingProps = { label: "Experience", defaultValue: 3, max: 5 };',
+        "void [link, chip, password, group, summary, accordion, stepper, rating];",
         ""
       ].join("\n")
     );
@@ -194,13 +205,21 @@ try {
       [
         'import React from "react";',
         'import { AppRegistry, Text } from "react-native";',
-        'import { AurelglyphProvider, MoreInformation, Select } from "@aurelglyph/react-native";',
+        'import { Accordion, AurelglyphProvider, Chip, InputGroup, Link, MoreInformation, PasswordField, Rating, Select, Stepper, ValidationSummary } from "@aurelglyph/react-native";',
         `const marker = ${JSON.stringify(runtimeMarker)};`,
         "function App() {",
         "  return React.createElement(AurelglyphProvider, { mode: 'light' },",
         "    React.createElement(Text, null, marker),",
         "    React.createElement(Select, { label: 'Mode', options: [{ label: 'Quiet', value: 'quiet' }] }),",
-        "    React.createElement(MoreInformation, { label: 'Details' }, React.createElement(Text, null, 'Supporting copy'))",
+        "    React.createElement(MoreInformation, { label: 'Details' }, React.createElement(Text, null, 'Supporting copy')),",
+        "    React.createElement(Link, { href: 'https://example.com' }, 'Guide'),",
+        "    React.createElement(Chip, { label: 'Local', defaultSelected: true }),",
+        "    React.createElement(PasswordField, { label: 'Password' }),",
+        "    React.createElement(InputGroup, { label: 'Amount', prefix: '$', suffix: 'USD', addonDescription: 'US dollars' }),",
+        "    React.createElement(ValidationSummary, { errors: [{ id: 'amount', message: 'Check amount' }] }),",
+        "    React.createElement(Accordion, { items: [{ id: 'local', title: 'Local', content: React.createElement(Text, null, 'Panel') }] }),",
+        "    React.createElement(Stepper, { items: [{ id: 'review', label: 'Review' }] }),",
+        "    React.createElement(Rating, { label: 'Experience', defaultValue: 3 })",
         "  );",
         "}",
         "AppRegistry.registerComponent('AurelglyphConsumer', () => App);",

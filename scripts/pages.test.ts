@@ -24,6 +24,10 @@ async function createWorkspace(): Promise<string> {
 
   await mkdir(fontRoot, { recursive: true });
   await mkdir(schemaRoot, { recursive: true });
+  await mkdir(join(root, "packages/tokens/dist/generated"), { recursive: true });
+  await mkdir(join(root, "packages/react/src"), { recursive: true });
+  await writeFile(join(root, "packages/tokens/dist/generated/aurelglyph.css"), "/* token fixture */");
+  await writeFile(join(root, "packages/react/src/styles.css"), '@import "@aurelglyph/tokens/generated.css";\n/* component fixture */');
   await writeFile(
     join(root, "package.json"),
     JSON.stringify({ name: "aurelglyph", version: "1.2.3", description: "A token-first design system." }, null, 2)
@@ -88,10 +92,13 @@ describe("GitHub Pages generator", () => {
 
     const result = await buildGithubPages(root);
 
+    expect(await readFile(join(root, "docs/components.html"), "utf8")).toContain("#catalog-essentials .catalog-card");
+
     expect(result.files).toEqual([
       "docs/index.html",
       "docs/usage.html",
       "docs/components.html",
+      "docs/assets/catalog.css",
       "docs/component-manifest.json",
       "docs/schemas/component-manifest.schema.json",
       "docs/changelog.html",
@@ -169,10 +176,17 @@ describe("GitHub Pages generator", () => {
     expect(components).toContain("Dialog");
     expect(components).toContain("component-manifest.json");
     expect(components).toContain("checked for shipped implementation evidence");
+    expect(components).toContain("not an exhaustive catalog");
     expect(components).toContain("Adapter and browser suites exercise applicable behavior and accessibility separately");
     expect(components).toContain("schema-validated, machine-readable source of truth");
     expect(components).toContain("Stable");
     expect(components).toContain("Preview");
+    expect(components).toContain('id="catalog-essentials"');
+    expect(components).toContain('href="assets/catalog.css"');
+    expect(components).toContain('class="ag-rating');
+    expect(components).toContain('type="password"');
+    expect(components).toContain("Read-only specimens");
+    expect(await readFile(join(root, "docs/assets/catalog.css"), "utf8")).toBe("/* token fixture */\n/* component fixture */");
     expect(components).toContain("Primary action");
     expect(components).toContain("Project name");
     expect(components).toContain("Generated outputs");

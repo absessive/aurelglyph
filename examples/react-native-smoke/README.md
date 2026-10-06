@@ -14,6 +14,14 @@ More Information. Its application-owned `ScrollView` sets
 `keyboardShouldPersistTaps="always"`, matching React Native's requirement for
 keyboard-era descendant activation.
 
+The Component essentials section independently exercises Link, removable/selectable
+Chip, PasswordField, one-input InputGroup, explicit-request ValidationSummary,
+Accordion, ordered Stepper, and whole-number Rating. The second Jest case drives
+their consumer state without opening a modal. Native cases verify chip/disclosure/
+step contracts, actual password typing across reveal/mask without field retargeting,
+input ownership, rating values and touch choices, and summary-requested field focus.
+The iOS gate requires all nine cases and retains its first-attempt/no-recovery rule.
+
 ## Workspace checks
 
 From the Aurelglyph workspace root:
@@ -90,7 +98,10 @@ accessibility hierarchies. After confirmed tutorial dismissal, readiness polls
 only the product field and keyboard, requiring a tappable key as well as the
 interactive search without repeating remote system-UI queries. The gate rejects
 retry-recovered tests as flaky.
-Xcode and an installed iOS Simulator runtime are required.
+Xcode and an installed iOS Simulator runtime are required. Native keyboard
+checks also require an on-screen software keyboard with hittable keys; an
+off-screen keyboard is a prerequisite failure, not a successful focus proof.
+The runner does not change the Simulator application's keyboard preferences.
 
 The runner reports the original failed attempt even when Xcode's final summary
 shows a recovered pass. Failures retain the Xcode log and result bundle in a
