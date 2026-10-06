@@ -656,7 +656,11 @@ activation without retry recovery, waiting for software-keyboard readiness and
 re-targeting the already-focused native input before verifying controlled filter
 results after each accepted search keystroke. On fresh simulators the host
 dismisses only iOS's identified first-use keyboard tutorial before requiring
-the same interactive search and software-keyboard autofocus checks. Responsive grids
+the same interactive search and software-keyboard autofocus checks. Its remote
+Continue control is located across accessibility types/application scopes, with
+one separate 30-second system-dismissal budget; the 15-second search-readiness
+budget starts fresh afterward. Failed readiness retains both accessibility
+hierarchies for diagnosis. Responsive grids
 measure their actual container for split-view and nested-panel layouts, while
 compact controls preserve real 44-point touch bounds.
 The private host's full renderer integration smoke has a bounded 15-second

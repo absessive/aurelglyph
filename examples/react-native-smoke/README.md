@@ -82,7 +82,11 @@ resulting controlled filter state so a cold keyboard or bridge cannot hide or
 manufacture a focus failure. Fresh simulators may present iOS's first-use
 QuickPath keyboard tutorial; the host dismisses only that identified system
 tutorial, then requires the same interactive search and ready keyboard without
-manually focusing the field. The gate rejects retry-recovered tests as flaky.
+manually focusing the field. The remote Continue control can appear under
+different accessibility types or application scopes; its one 30-second
+dismissal budget is separate from the 15-second search-readiness budget, which
+starts fresh afterward. Readiness failures attach both host and system
+accessibility hierarchies. The gate rejects retry-recovered tests as flaky.
 Xcode and an installed iOS Simulator runtime are required.
 
 The runner reports the original failed attempt even when Xcode's final summary

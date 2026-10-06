@@ -267,10 +267,11 @@ final class SmokeUITests: XCTestCase {
     let keyboard = app.keyboards.firstMatch
     let tutorialLabel = "Speed up your typing by sliding your finger across the letters to compose a word."
     let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-    let deadline = Date().addingTimeInterval(timeout)
+    var deadline = Date().addingTimeInterval(timeout)
     let tutorialScopes = [app!, system]
     var readySince: Date?
     var tutorialScope: XCUIApplication?
+    var dismissedTutorial = false
 
     while deadline.timeIntervalSinceNow > 0 {
       let readiness = NSPredicate { _, _ in
@@ -292,21 +293,48 @@ final class SmokeUITests: XCTestCase {
       guard XCTWaiter.wait(
         for: [readinessExpectation],
         timeout: max(0, deadline.timeIntervalSinceNow)
-      ) == .completed else { return false }
+      ) == .completed else { return searchReadinessFailure("Autofocused search did not settle") }
       guard let scope = tutorialScope else { return true }
+      guard !dismissedTutorial else { return searchReadinessFailure("The keyboard tutorial reappeared after dismissal") }
 
       // A fresh simulator can hide the focused field behind iOS's QuickPath
       // tutorial. Dismiss only that identified system UI, never a host action.
-      let continueButton = scope.buttons["Continue"].firstMatch
-      guard waitUntilHittable(continueButton, timeout: max(0, deadline.timeIntervalSinceNow)) else { return false }
+      // Its remote Continue control is not consistently classified as a Button
+      // or attributed to the same application scope as the explanatory label.
+      let tutorialDeadline = Date().addingTimeInterval(30)
+      var continueControl: XCUIElement?
+      let tutorialReady = NSPredicate { _, _ in
+        continueControl = tutorialScopes
+          .map { $0.descendants(matching: .any)["Continue"].firstMatch }
+          .first { $0.exists && $0.isHittable }
+        return continueControl != nil
+      }
+      let tutorialExpectation = XCTNSPredicateExpectation(predicate: tutorialReady, object: scope)
+      guard XCTWaiter.wait(for: [tutorialExpectation], timeout: 30) == .completed,
+        let continueControl = continueControl
+      else { return searchReadinessFailure("The identified keyboard tutorial's Continue control was not interactive") }
       XCTContext.runActivity(named: "Dismiss iOS first-use keyboard tutorial") { _ in
-        continueButton.tap()
+        continueControl.tap()
       }
       guard waitUntilAbsent(
         scope.staticTexts[tutorialLabel].firstMatch,
-        timeout: max(0, deadline.timeIntervalSinceNow)
-      ) else { return false }
+        timeout: max(0, tutorialDeadline.timeIntervalSinceNow)
+      ) else { return searchReadinessFailure("The identified keyboard tutorial did not dismiss") }
+      dismissedTutorial = true
+      // System onboarding must not spend the product's readiness budget.
+      deadline = Date().addingTimeInterval(timeout)
       readySince = nil
+    }
+    return searchReadinessFailure("Autofocused search exhausted its readiness budget")
+  }
+
+  private func searchReadinessFailure(_ stage: String) -> Bool {
+    XCTContext.runActivity(named: stage) { _ in
+      let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+      let hierarchy = XCTAttachment(string: "\(stage)\nHost:\n\(app.debugDescription)\nSystem:\n\(system.debugDescription)")
+      hierarchy.name = "Native search readiness hierarchy"
+      hierarchy.lifetime = .keepAlways
+      add(hierarchy)
     }
     return false
   }

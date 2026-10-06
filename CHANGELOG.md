@@ -77,6 +77,10 @@
   remain diagnosable. Dismiss the identified iOS first-use keyboard tutorial on
   fresh simulators before asserting search readiness, without tapping the
   search field to manufacture autofocus or allowing retry-recovered passes.
+  Resolve the tutorial's remote Continue control across accessibility types
+  and application scopes, bound its dismissal separately from the unchanged
+  search-readiness budget, and retain readiness-stage accessibility hierarchies
+  so slow first-use system UI cannot silently obscure the product assertion.
   Update development source-map processing to patched `source-map-js` 1.2.2
   and make the tested Istanbul coverage loader an explicit development
   dependency with a scoped `js-yaml` 4.3.2 override to remove vulnerable
