@@ -86,7 +86,10 @@ manually focusing the field. The remote Continue control can appear under
 different accessibility types or application scopes; its one 30-second
 dismissal budget is separate from the 15-second search-readiness budget, which
 starts fresh afterward. Readiness failures attach both host and system
-accessibility hierarchies. The gate rejects retry-recovered tests as flaky.
+accessibility hierarchies. After confirmed tutorial dismissal, readiness polls
+only the product field and keyboard, requiring a tappable key as well as the
+interactive search without repeating remote system-UI queries. The gate rejects
+retry-recovered tests as flaky.
 Xcode and an installed iOS Simulator runtime are required.
 
 The runner reports the original failed attempt even when Xcode's final summary

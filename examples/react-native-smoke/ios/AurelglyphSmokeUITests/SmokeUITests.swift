@@ -265,6 +265,7 @@ final class SmokeUITests: XCTestCase {
 
   private func waitUntilAutofocusedSearchReady(_ search: XCUIElement, timeout: TimeInterval) -> Bool {
     let keyboard = app.keyboards.firstMatch
+    let firstKey = keyboard.keys.firstMatch
     let tutorialLabel = "Speed up your typing by sliding your finger across the letters to compose a word."
     let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
     var deadline = Date().addingTimeInterval(timeout)
@@ -275,12 +276,14 @@ final class SmokeUITests: XCTestCase {
 
     while deadline.timeIntervalSinceNow > 0 {
       let readiness = NSPredicate { _, _ in
-        tutorialScope = tutorialScopes.first { $0.staticTexts[tutorialLabel].firstMatch.exists }
+        // Once onboarding is gone, do not spend the product readiness budget
+        // taking remote snapshots of system UI that was already dismissed.
+        tutorialScope = dismissedTutorial ? nil : tutorialScopes.first { $0.staticTexts[tutorialLabel].firstMatch.exists }
         if tutorialScope != nil {
           readySince = nil
           return true
         }
-        guard search.exists && search.isHittable && keyboard.exists && keyboard.keys.firstMatch.exists else {
+        guard search.exists && search.isHittable && keyboard.exists && firstKey.exists && firstKey.isHittable else {
           readySince = nil
           return false
         }

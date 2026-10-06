@@ -660,7 +660,9 @@ the same interactive search and software-keyboard autofocus checks. Its remote
 Continue control is located across accessibility types/application scopes, with
 one separate 30-second system-dismissal budget; the 15-second search-readiness
 budget starts fresh afterward. Failed readiness retains both accessibility
-hierarchies for diagnosis. Responsive grids
+hierarchies for diagnosis. After confirmed tutorial dismissal, readiness polls
+only the product field and keyboard, requiring a tappable key as well as the
+interactive search without repeating remote system-UI queries. Responsive grids
 measure their actual container for split-view and nested-panel layouts, while
 compact controls preserve real 44-point touch bounds.
 The private host's full renderer integration smoke has a bounded 15-second
