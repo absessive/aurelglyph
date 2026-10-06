@@ -71,6 +71,10 @@
   private React Native host's full renderer
   integration smoke an explicit 15-second ceiling so loaded macOS runners do
   not inherit Jest's generic five-second unit-test budget.
+  Preserve the original native iOS failure details for retry-recovered tests,
+  flush concise diagnostics before failing, and retain the Xcode log and result
+  bundle locally and as seven-day CI/release artifacts so cold-host regressions
+  remain diagnosable.
 - Harden internationalized Web and Rails behavior with logical CSS geometry and
   direction-aware Tabs, SegmentedControl, and selection-group navigation.
   Normalize stale or disabled controlled Combobox values so display, form

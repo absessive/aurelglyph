@@ -113,3 +113,11 @@ jobs:
         working-directory: examples/react-native-smoke
         run: bundle install && bundle exec pod install --project-directory=ios
       - run: npm run test:ios -w @aurelglyph/example-react-native-smoke
+      - name: Retain failed native iOS diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: react-native-ios-diagnostics
+          path: examples/react-native-smoke/build/ios-smoke-*
+          retention-days: 7
+          if-no-files-found: ignore

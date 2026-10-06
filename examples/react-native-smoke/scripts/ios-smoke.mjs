@@ -1,12 +1,20 @@
 import {execFileSync, spawnSync} from 'node:child_process';
-import {existsSync, mkdtempSync, readFileSync, rmSync} from 'node:fs';
+import {cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, writeSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
+
+import {retryTelemetry} from './ios-results.mjs';
 
 const projectRoot = resolve(import.meta.dirname, '..');
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'aurelglyph-rn-smoke-'));
 const resultBundle = join(temporaryRoot, 'AurelglyphSmoke.xcresult');
 const derivedData = join(temporaryRoot, 'DerivedData');
+let buildOutput = '';
+let completed = false;
+
+function log(message) {
+  writeSync(process.stdout.fd, `${message}\n`);
+}
 
 function availableIphone() {
   const output = execFileSync('xcrun', ['simctl', 'list', 'devices', 'available', '--json'], {
@@ -22,51 +30,6 @@ function availableIphone() {
     phones.find(device => device.name === 'iPhone 16 Pro') ??
     phones[0]
   );
-}
-
-function testCaseAttempts(nodes, parentTest) {
-  return nodes.flatMap(node => {
-    const testName = node.nodeType === 'Test Case' ? node.name : parentTest;
-    const repetitions = (node.children ?? []).some(child => child.nodeType === 'Repetition');
-    const isAttempt = node.nodeType === 'Repetition' || (node.nodeType === 'Test Case' && !repetitions);
-    return [
-      ...(isAttempt
-        ? [{
-            attempt: node.nodeType === 'Repetition' ? node.name : 'Only run',
-            identifier: node.nodeIdentifier ?? testName ?? '<unknown>',
-            name: testName ?? node.name ?? '<unknown>',
-            result: node.result ?? 'Unknown',
-          }]
-        : []),
-      ...testCaseAttempts(node.children ?? [], testName),
-    ];
-  });
-}
-
-function retryTelemetry(testReport, buildOutput) {
-  const attempts = testCaseAttempts(testReport?.testNodes ?? []);
-  const byIdentifier = new Map();
-  for (const attempt of attempts) {
-    const key = attempt.name;
-    const entries = byIdentifier.get(key) ?? [];
-    entries.push(attempt.result);
-    byIdentifier.set(key, entries);
-  }
-  const recoveredTests = [...byIdentifier.entries()]
-    .filter(([, results]) => results.includes('Failed') && results.at(-1) === 'Passed')
-    .map(([identifier, results]) => ({identifier, results}));
-  const retryLog = buildOutput
-    .split('\n')
-    .filter(line => /retry|repetition/i.test(line))
-    .map(line => line.trim())
-    .filter(Boolean);
-  return {
-    attempts,
-    maxAttempts: 2,
-    policy: 'xcode-retry-tests-on-failure',
-    recoveredTests,
-    retryLog,
-  };
 }
 
 try {
@@ -93,7 +56,7 @@ try {
     throw new Error('No available iPhone simulator was found. Install an iOS simulator runtime with Xcode.');
   }
 
-  process.stdout.write(`[rn-smoke] Running native UI contract on ${device.name} (${device.udid}).\n`);
+  log(`[rn-smoke] Running native UI contract on ${device.name} (${device.udid}).`);
   const test = spawnSync(
     'xcodebuild',
     [
@@ -118,10 +81,10 @@ try {
       'test',
       'CODE_SIGNING_ALLOWED=NO',
     ],
-    {cwd: projectRoot, encoding: 'utf8'},
+    {cwd: projectRoot, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024},
   );
-  process.stdout.write(test.stdout);
-  process.stderr.write(test.stderr);
+  buildOutput = `${test.stdout ?? ''}\n${test.stderr ?? ''}`;
+  if (test.status !== 0) log(`[rn-smoke] Xcode output tail:\n${buildOutput.split('\n').slice(-80).join('\n')}`);
 
   let summary;
   let testReport;
@@ -141,10 +104,16 @@ try {
         ),
       );
       if (summary.testFailures?.length) {
-        process.stderr.write(
-          `[rn-smoke] Native UI failures:\n${JSON.stringify(summary.testFailures, null, 2)}\n`,
-        );
-        for (const failure of summary.testFailures) {
+        log(`[rn-smoke] Native UI failures:\n${JSON.stringify(summary.testFailures, null, 2)}`);
+      }
+      const telemetry = retryTelemetry(testReport, buildOutput);
+      log(`[rn-smoke] retry-telemetry ${JSON.stringify(telemetry)}`);
+      const failedIdentifiers = new Set([
+        ...(summary.testFailures ?? []).map(failure => failure.testIdentifierString),
+        ...telemetry.attempts.filter(attempt => attempt.result === 'Failed').map(attempt => attempt.identifier),
+      ]);
+      for (const identifier of failedIdentifiers) {
+        try {
           const details = execFileSync(
             'xcrun',
             [
@@ -155,23 +124,25 @@ try {
               '--path',
               resultBundle,
               '--test-id',
-              failure.testIdentifierString,
+              identifier,
             ],
             {encoding: 'utf8'},
           );
-          process.stderr.write(`[rn-smoke] ${failure.testName} details:\n${details}\n`);
+          log(`[rn-smoke] ${identifier} details:\n${details}`);
+        } catch (error) {
+          log(`[rn-smoke] Could not read ${identifier} details: ${error.message}`);
         }
       }
     } catch (error) {
-      process.stderr.write(`[rn-smoke] Could not read the native UI result bundle: ${error.message}\n`);
+      log(`[rn-smoke] Could not read the native UI result bundle: ${error.message}`);
     }
   }
 
   if (!testReport) {
     throw new Error('xcodebuild did not produce a readable UI test report.');
   }
-  const telemetry = retryTelemetry(testReport, `${test.stdout}\n${test.stderr}`);
-  process.stdout.write(`[rn-smoke] retry-telemetry ${JSON.stringify(telemetry)}\n`);
+  const telemetry = retryTelemetry(testReport, buildOutput);
+  if (test.error) throw test.error;
   if (test.status !== 0) {
     throw new Error(`xcodebuild failed with status ${test.status ?? 1}`);
   }
@@ -185,9 +156,16 @@ try {
   if (summary.result !== 'Passed' || summary.failedTests !== 0 || summary.passedTests < 6) {
     throw new Error(`Unexpected UI test summary: ${JSON.stringify(summary)}`);
   }
-  process.stdout.write(
-    `[rn-smoke] ${summary.passedTests}/${summary.totalTestCount} native UI tests passed with zero failures.\n`,
-  );
+  log(`[rn-smoke] ${summary.passedTests}/${summary.totalTestCount} native UI tests passed with zero failures.`);
+  completed = true;
 } finally {
+  if (!completed && (buildOutput || existsSync(resultBundle))) {
+    const artifactParent = join(projectRoot, 'build');
+    mkdirSync(artifactParent, {recursive: true});
+    const artifactRoot = mkdtempSync(join(artifactParent, 'ios-smoke-'));
+    writeFileSync(join(artifactRoot, 'xcodebuild.log'), buildOutput);
+    if (existsSync(resultBundle)) cpSync(resultBundle, join(artifactRoot, 'AurelglyphSmoke.xcresult'), {recursive: true});
+    log(`[rn-smoke] Failed native diagnostics retained at ${artifactRoot}`);
+  }
   rmSync(temporaryRoot, {force: true, recursive: true});
 }

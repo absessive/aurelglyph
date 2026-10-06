@@ -82,6 +82,11 @@ resulting controlled filter state so a cold keyboard or bridge cannot hide or
 manufacture a focus failure. The gate rejects retry-recovered tests as flaky.
 Xcode and an installed iOS Simulator runtime are required.
 
+The runner reports the original failed attempt even when Xcode's final summary
+shows a recovered pass. Failures retain the Xcode log and result bundle in a
+fresh `build/ios-smoke-*` directory. CI and release workflows upload those
+diagnostics for seven days. Successful runs remove their temporary build data.
+
 The full renderer integration smoke retains its interaction and styling
 assertions with an explicit 15-second ceiling for loaded macOS CI runners.
 

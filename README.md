@@ -660,6 +660,10 @@ compact controls preserve real 44-point touch bounds.
 The private host's full renderer integration smoke has a bounded 15-second
 budget for loaded macOS CI runners; its interaction and styling assertions are
 unchanged.
+Failed native iOS attempts retain their original assertion details even when a
+retry passes. CI and release runs keep the Xcode log and result bundle as a
+seven-day diagnostic artifact; local failures retain them in the host's ignored
+`build/ios-smoke-*` directory.
 The overlay host reserves an elevated, non-blocking root
 layer so regular application panels do not cover active tooltips. Set
 `overlayHost={false}` when the application supplies its own hosts, and place an
