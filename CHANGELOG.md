@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Update the private tooling lock to shell-quote 1.12.0, preserve every esbuild
+  platform dependency required by clean installs, and add quoting/lockfile
+  regression checks. Retain the already-patched Nokogiri 1.19.4 Ruby graphs.
 - Add Link, Chip, PasswordField, InputGroup, ValidationSummary, Accordion,
   workflow Stepper, and integer Rating across CSS/Web, React, React Native,
   SwiftUI, and Rails, with token-based light/dark appearances, localizable copy,

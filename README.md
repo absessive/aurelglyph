@@ -30,6 +30,11 @@ The Rails adapter supports maintained Ruby 3.3+; the workspace uses Ruby 3.4.
 That floor keeps its Rails dependency graph on patched interpreter and Nokogiri
 lines.
 
+The private tooling lock uses shell-quote 1.12.0 and retains all esbuild platform
+packages for reproducible clean installs. Dependency regression tests cover
+shell quoting and platform lock completeness; reviewed audit exceptions remain
+limited to the existing private React Native tooling policy.
+
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
 Supported toolchains, browsers, semantic-versioning guarantees, release gates,
