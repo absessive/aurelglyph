@@ -103,8 +103,8 @@ const versionedArtifacts = [
   })),
   {
     path: "docs/index.html",
-    pattern: /Current release<strong>Version ([^<]+)<\/strong>/u,
-    replacement: (version: string) => `Current release<strong>Version ${version}</strong>`
+    pattern: /Workspace version<strong>Version ([^<]+)<\/strong>/u,
+    replacement: (version: string) => `Workspace version<strong>Version ${version}</strong>`
   },
   {
     path: "docs/components.html",

@@ -39,6 +39,13 @@
 
 ## 0.8.1
 
+- Candidate only: not tagged or published. Hosted verification passed Web,
+  Rails, SwiftUI, and Android, but the React Native iOS gate rejected retry-recovered
+  Combobox and Command Palette autofocus tests. Keep the release blocked until
+  those existing native regressions pass without recovery.
+- Label generated Pages as the workspace version, not a published release;
+  require an existing validated tag for Git-tag install examples and direct
+  untagged candidates to local workspace paths.
 - Merge the Dependabot dependency updates: use shell-quote 1.12.0 in private
   tooling and retain the already-patched Nokogiri 1.19.4 Ruby graphs.
 - Repair the shell-quote PR's lockfile without removing unrelated platform

@@ -1466,7 +1466,7 @@ function renderIndex(version: string, description: string): string {
         <a class="button" href="usage.html">Use in apps</a>
       </div>
       <div class="meta" aria-label="Project metadata">
-        <div class="metric">Current release<strong>Version ${escapeHtml(version)}</strong></div>
+        <div class="metric">Workspace version<strong>Version ${escapeHtml(version)}</strong></div>
         <div class="metric">Package model<strong>Shared source files</strong></div>
         <div class="metric">Surface<strong>Raw GitHub Pages</strong></div>
       </div>
@@ -1480,7 +1480,7 @@ function renderUsage(version: string): string {
     `    <article class="panel markdown">
       <h1>Usage</h1>
       <p>Use Aurelglyph by installing the package for your platform, importing the generated styles or token values, then setting the theme attributes on the root surface. Pin exact versions for applications and loosen ranges only when you are ready to adopt compatible updates.</p>
-      <p><strong>Pre-1.0 distribution:</strong> Version ${escapeHtml(version)} is a GitHub/source release. The npm commands below document the package contract planned for public registry publication at 1.0.0.</p>
+      <p><strong>Pre-1.0 distribution:</strong> Version ${escapeHtml(version)} describes this workspace snapshot, not publication status. Git-tag examples require an existing validated tag; use local workspace paths for untagged candidates. The npm commands below document the package contract planned for public registry publication at 1.0.0.</p>
       <h2>React and CSS exact version</h2>
       <pre><code>npm install @aurelglyph/css@${escapeHtml(version)} @aurelglyph/react@${escapeHtml(version)}</code></pre>
       <h2>React and CSS compatible range</h2>

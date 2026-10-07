@@ -67,7 +67,7 @@ async function createWorkspace(): Promise<string> {
     "Gemfile.lock": "PATH\n  remote: packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
     "gemfiles/rails-7.gemfile.lock": "PATH\n  remote: ../packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
     "gemfiles/rails-8.gemfile.lock": "PATH\n  remote: ../packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
-    "docs/index.html": "Current release<strong>Version 0.0.1</strong>",
+    "docs/index.html": "Workspace version<strong>Version 0.0.1</strong>",
     "docs/components.html": "Version 0.0.1 declares",
     "docs/component-manifest.json": '{"release": "0.0.1"}'
   };
@@ -134,7 +134,7 @@ describe("workspace versioning", () => {
       expect(lock).toContain("aurelglyph-rails (1.2.3)");
       expect(lock).toContain("nokogiri (1.19.4-arm64-darwin)");
     }
-    await expect(readFile(join(root, "docs/index.html"), "utf8")).resolves.toContain("Version 1.2.3");
+    await expect(readFile(join(root, "docs/index.html"), "utf8")).resolves.toContain("Workspace version<strong>Version 1.2.3</strong>");
     await expect(readFile(join(root, "component-manifest.json"), "utf8")).resolves.toContain('"release": "1.2.3"');
   });
 

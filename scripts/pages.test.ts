@@ -115,12 +115,16 @@ describe("GitHub Pages generator", () => {
     expect(index).toContain('href="usage.html"');
     expect(index).toContain('href="components.html"');
     expect(index).toContain('href="changelog.html"');
-    expect(index).toContain("Version 1.2.3");
+    expect(index).toContain("Workspace version<strong>Version 1.2.3</strong>");
+    expect(index).not.toContain("Current release<strong>");
     expect(index).toContain("Shared design tokens and components for apps across web, React Native, Rails, and SwiftUI.");
     expect(index).toContain("Shared source files");
     expect(index).toContain("button:focus-visible");
 
     expect(usage).toContain("<title>Aurelglyph Usage</title>");
+    expect(usage).toContain("Version 1.2.3 describes this workspace snapshot, not publication status.");
+    expect(usage).toContain("Git-tag examples require an existing validated tag; use local workspace paths for untagged candidates.");
+    expect(usage).not.toContain("is a GitHub/source release");
     expect(usage).toContain("npm install @aurelglyph/css@1.2.3 @aurelglyph/react@1.2.3");
     expect(usage).toContain('tag: "v1.2.3"');
     expect(usage).toContain('exact: "1.2.3"');

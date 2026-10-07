@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.8.1` (GitHub/source distribution; npm and RubyGems
+Current version: `0.8.1` (untagged maintenance candidate; npm and RubyGems
 publication begins with `1.0.0`)
 
 ## Status
@@ -35,9 +35,12 @@ packages for reproducible clean installs. Dependency regression tests cover
 shell quoting and platform lock completeness; reviewed audit exceptions remain
 limited to the existing private React Native tooling policy.
 
-The 0.8.1 source tag is a dependency-maintenance patch on the immutable 0.8.0
-component baseline. The newer catalog essentials below remain Unreleased on
-main and are excluded from that maintenance tag. Full release gates still apply;
+The 0.8.1 maintenance candidate is based on the immutable 0.8.0 component
+baseline. The newer catalog essentials below remain Unreleased on main and are
+excluded from that candidate. Hosted validation passed Web, both Rails jobs,
+SwiftUI, and Android compilation, but React Native iOS Combobox and Command
+Palette autofocus required retry recovery. The strict native gate failed, so
+0.8.1 is not tagged or published. See the [candidate CI run](https://github.com/absessive/aurelglyph/actions/runs/37551194827).
 npm and RubyGems publication remains deferred until 1.0.0.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
@@ -70,7 +73,7 @@ The current workspace adds eight [catalog essentials](docs/roadmap.md#current-co
 Link, Password Field, Input Group, Validation Summary, grouped Accordion,
 interactive Chip, workflow Stepper, and integer Rating across all five surfaces.
 React Native also gains standalone ExpandableSection. These are **Unreleased**
-additions, not part of the 0.8.0 baseline or 0.8.1 maintenance tag. The core-control matrix now
+additions, not part of the 0.8.0 baseline or 0.8.1 maintenance candidate. The core-control matrix now
 includes nine previously omitted five-adapter families and explicitly separates
 released evidence from workspace additions. It is not an exhaustive catalog;
 older React Native shell, feedback, and data-display parity remains follow-on work.
