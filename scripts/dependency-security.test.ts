@@ -8,6 +8,37 @@ import { describe, expect, it } from "vitest";
 const require = createRequire(import.meta.url);
 
 describe("patched development dependencies", () => {
+  it("locks shell-quote 1.12.0 and rejects line terminators after a comment", async () => {
+    const lock = JSON.parse(await readFile(new URL("../package-lock.json", import.meta.url), "utf8")) as {
+      packages: Record<string, { version?: string }>;
+    };
+    expect(lock.packages["node_modules/shell-quote"]?.version).toBe("1.12.0");
+    const { quote, parse } = require("shell-quote") as {
+      quote: (tokens: Array<string | { comment: string }>) => string;
+      parse: (command: string) => unknown[];
+    };
+    const tokens = ["echo", "a path with spaces", "it's literal", "$(not-a-command)"];
+    expect(parse(quote(tokens))).toEqual(tokens);
+    for (const terminator of ["\n", "\r", "\u2028", "\u2029"]) {
+      expect(() => quote(["echo", { comment: "local note" }, `value${terminator}command`])).toThrow(TypeError);
+    }
+  });
+
+  it("retains every esbuild platform dependency required by clean installs", async () => {
+    const lock = JSON.parse(await readFile(new URL("../package-lock.json", import.meta.url), "utf8")) as {
+      packages: Record<string, { version?: string; optionalDependencies?: Record<string, string> }>;
+    };
+    const esbuildEntries = Object.entries(lock.packages).filter(([path]) => path.endsWith("/esbuild"));
+    expect(esbuildEntries.length).toBeGreaterThan(0);
+    for (const [path, entry] of esbuildEntries) {
+      expect(Object.keys(entry.optionalDependencies ?? {}).length).toBeGreaterThan(0);
+      for (const [name, version] of Object.entries(entry.optionalDependencies ?? {})) {
+        const platformPath = `${path.slice(0, -"esbuild".length)}${name}`;
+        expect(lock.packages[platformPath]?.version, platformPath).toBe(version);
+      }
+    }
+  });
+
   it("keeps the scoped Istanbul YAML upgrade compatible with coverage configuration", async () => {
     const { loadNycConfig } = require("@istanbuljs/load-nyc-config") as {
       loadNycConfig: (options: { cwd: string; nycrcPath: string }) => Promise<Record<string, unknown>>;

@@ -1,7 +1,7 @@
 PATH
   remote: packages/rails
   specs:
-    aurelglyph-rails (0.8.0)
+    aurelglyph-rails (0.8.1)
       actionview (>= 7.0, < 9.0)
       railties (>= 7.0, < 9.0)
 

@@ -1,5 +1,7 @@
 # Aurelglyph Roadmap
 
+Current version: `0.8.1`
+
 Aurelglyph is aiming for practical component completeness without cloning the
 visual language or implementation model of another system. The comparison
 baseline is the current official [Bootstrap 5.3 component

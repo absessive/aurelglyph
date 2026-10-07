@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.8.0` (GitHub/source distribution; npm and RubyGems
+Current version: `0.8.1` (GitHub/source distribution; npm and RubyGems
 publication begins with `1.0.0`)
 
 ## Status
@@ -29,6 +29,12 @@ and dark modes across every adapter.
 The Rails adapter supports maintained Ruby 3.3+; the workspace uses Ruby 3.4.
 That floor keeps its Rails dependency graph on patched interpreter and Nokogiri
 lines.
+
+Version 0.8.1 is a dependency-maintenance patch on the immutable 0.8.0 baseline.
+It updates private tooling to shell-quote 1.12.0, retains Nokogiri 1.19.4, and
+preserves all esbuild platform packages for reproducible clean installs. The
+new catalog essentials on main remain Unreleased and are not included in this
+tag. npm and RubyGems publication remains deferred until 1.0.0.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -60,7 +66,7 @@ and current pre-1.0 scope limits are documented in
 
 Install only the packages your app needs.
 
-The npm commands below document the `1.0.0` package contract. For `0.8.0`, use
+The npm commands below document the `1.0.0` package contract. For `0.8.1`, use
 this Git repository or a local workspace; npm and RubyGems publication is
 intentionally deferred until `1.0.0`.
 
@@ -722,7 +728,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.1")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 

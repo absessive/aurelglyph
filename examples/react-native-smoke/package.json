@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/example-react-native-smoke",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -14,7 +14,7 @@
     "test:ios": "npm run build:package && node scripts/ios-smoke.mjs"
   },
   "dependencies": {
-    "@aurelglyph/react-native": "0.8.0",
+    "@aurelglyph/react-native": "0.8.1",
     "react": "19.2.6",
     "react-native": "0.87.1",
     "react-native-safe-area-context": "^5.5.2"

@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/css",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Tokenized Aurelglyph foundations, fonts, and component styles for web applications.",
   "license": "MIT",
   "type": "module",
@@ -44,6 +44,6 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.8.0"
+    "@aurelglyph/tokens": "0.8.1"
   }
 }
