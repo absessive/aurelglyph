@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/component-manifest.schema.json",
   "schemaVersion": 1,
-  "release": "0.8.0",
+  "release": "0.8.1",
   "scope": "Cross-platform core controls",
   "platforms": [
     {

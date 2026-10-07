@@ -1,6 +1,6 @@
 {
   "name": "@aurelglyph/react-native",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Accessible React Native components for the Aurelglyph cross-platform design system.",
   "license": "MIT",
   "type": "module",
@@ -50,7 +50,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@aurelglyph/tokens": "0.8.0"
+    "@aurelglyph/tokens": "0.8.1"
   },
   "peerDependencies": {
     "react": ">=19.2.3 <20",

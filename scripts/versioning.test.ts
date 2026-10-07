@@ -63,7 +63,10 @@ async function createWorkspace(): Promise<string> {
     "packages/rails/lib/aurelglyph/rails/version.rb": 'VERSION = "0.0.1"',
     "packages/swift/README.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
     "docs/consuming.md": '.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.0.1")',
-    "docs/roadmap.md": "## 0.0.1 — Production foundation and internationalization",
+    "docs/roadmap.md": "Current version: `0.0.1`\n\n## 0.8.0 — Production foundation and internationalization",
+    "Gemfile.lock": "PATH\n  remote: packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
+    "gemfiles/rails-7.gemfile.lock": "PATH\n  remote: ../packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
+    "gemfiles/rails-8.gemfile.lock": "PATH\n  remote: ../packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
     "docs/index.html": "Current release<strong>Version 0.0.1</strong>",
     "docs/components.html": "Version 0.0.1 declares",
     "docs/component-manifest.json": '{"release": "0.0.1"}'
@@ -124,10 +127,32 @@ describe("workspace versioning", () => {
     await expect(readFile(join(root, "examples/react-vite/src/App.tsx"), "utf8")).resolves.toContain('"1.2.3"');
     await expect(readFile(join(root, "README.md"), "utf8")).resolves.toContain("`1.2.3`");
     await expect(readFile(join(root, "docs/consuming.md"), "utf8")).resolves.toContain('from: "1.2.3"');
-    await expect(readFile(join(root, "docs/roadmap.md"), "utf8")).resolves.toContain("## 1.2.3");
+    await expect(readFile(join(root, "docs/roadmap.md"), "utf8")).resolves.toContain("Current version: `1.2.3`");
+    await expect(readFile(join(root, "docs/roadmap.md"), "utf8")).resolves.toContain("## 0.8.0 — Production foundation and internationalization");
+    for (const path of ["Gemfile.lock", "gemfiles/rails-7.gemfile.lock", "gemfiles/rails-8.gemfile.lock"]) {
+      const lock = await readFile(join(root, path), "utf8");
+      expect(lock).toContain("aurelglyph-rails (1.2.3)");
+      expect(lock).toContain("nokogiri (1.19.4-arm64-darwin)");
+    }
     await expect(readFile(join(root, "docs/index.html"), "utf8")).resolves.toContain("Version 1.2.3");
     await expect(readFile(join(root, "component-manifest.json"), "utf8")).resolves.toContain('"release": "1.2.3"');
   });
+
+  it.each(["Gemfile.lock", "gemfiles/rails-7.gemfile.lock", "gemfiles/rails-8.gemfile.lock"])(
+    "rejects missing or malformed local PATH versions in %s",
+    async (path) => {
+      const root = await createWorkspace();
+      await syncWorkspaceVersions(root);
+      await writeFile(join(root, path), "GEM\n  specs:\n    aurelglyph-rails (1.2.3)\n");
+      const missing = await checkWorkspaceVersions(root);
+      expect(missing.ok).toBe(false);
+      expect(missing.mismatches).toContainEqual({ actual: undefined, expected: "1.2.3", packagePath: path });
+      await expect(syncWorkspaceVersions(root)).rejects.toThrow(`Unable to locate version marker in ${path}.`);
+      await writeFile(join(root, path), "PATH\n  remote: packages/rails\n  specs:\n    aurelglyph-rails ()\n");
+      const malformed = await checkWorkspaceVersions(root);
+      expect(malformed.mismatches).toContainEqual({ actual: undefined, expected: "1.2.3", packagePath: path });
+    }
+  );
 
   it("requires a changelog section for the shared version", async () => {
     const root = await createWorkspace();

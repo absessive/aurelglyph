@@ -74,7 +74,7 @@ const platformTargets = ["CSS/Web", "React", "React Native", "SwiftUI", "Rails"]
 const modeOptions = ["dark", "light"] as const;
 const appearanceOptions = ["quiet", "atelier"] as const;
 const themeOptions = ["royal-purple", "amber", "forest", "deep-blue", "cyan", "steel"] as const;
-const packageVersion = "0.8.0";
+const packageVersion = "0.8.1";
 const iconCatalog = [
   "home",
   "dashboard",

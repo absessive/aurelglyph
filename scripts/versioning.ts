@@ -93,9 +93,14 @@ const versionedArtifacts = [
   },
   {
     path: "docs/roadmap.md",
-    pattern: /^## ([0-9]+\.[0-9]+\.[0-9]+) — Production foundation and internationalization$/mu,
-    replacement: (version: string) => `## ${version} — Production foundation and internationalization`
+    pattern: /Current version: `([^`]+)`/u,
+    replacement: (version: string) => `Current version: \`${version}\``
   },
+  ...["Gemfile.lock", "gemfiles/rails-7.gemfile.lock", "gemfiles/rails-8.gemfile.lock"].map((path) => ({
+    path,
+    pattern: /^PATH\r?\n  remote: [^\r\n]+\r?\n  specs:\r?\n    aurelglyph-rails \(([^)\r\n]+)\)/mu,
+    replacement: (version: string, match: string) => match.replace(/aurelglyph-rails \([^)]+\)$/u, `aurelglyph-rails (${version})`)
+  })),
   {
     path: "docs/index.html",
     pattern: /Current release<strong>Version ([^<]+)<\/strong>/u,
@@ -278,7 +283,7 @@ async function syncVersionedArtifacts(root: string, version: string): Promise<vo
     if (!artifact.pattern.test(content)) {
       throw new Error(`Unable to locate version marker in ${artifact.path}.`);
     }
-    await writeFile(path, content.replace(artifact.pattern, artifact.replacement(version)));
+    await writeFile(path, content.replace(artifact.pattern, (match) => artifact.replacement(version, match)));
   }
 }
 

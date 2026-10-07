@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-- Update the private tooling lock to shell-quote 1.12.0, preserve every esbuild
-  platform dependency required by clean installs, and add quoting/lockfile
-  regression checks. Retain the already-patched Nokogiri 1.19.4 Ruby graphs.
 - Add Link, Chip, PasswordField, InputGroup, ValidationSummary, Accordion,
   workflow Stepper, and integer Rating across CSS/Web, React, React Native,
   SwiftUI, and Rails, with token-based light/dark appearances, localizable copy,
@@ -39,6 +36,18 @@
   with canonical token/component CSS; keep executable examples separate from
   non-interactive documentation states. Pages generation now rebuilds tokens
   and uses the existing TypeScript/JSX runner for reproducible component markup.
+
+## 0.8.1
+
+- Merge the Dependabot dependency updates: use shell-quote 1.12.0 in private
+  tooling and retain the already-patched Nokogiri 1.19.4 Ruby graphs.
+- Repair the shell-quote PR's lockfile without removing unrelated platform
+  metadata or esbuild binaries; add quoting and complete-platform-lock regressions.
+- Synchronize all adapter, host, npm, and Ruby workspace-lock versions to 0.8.1,
+  preserving historical roadmap milestones during future version updates.
+- Keep this source-only maintenance patch on the immutable 0.8.0 component
+  baseline. The new catalog essentials on main remain Unreleased. npm and
+  RubyGems publication remains deferred until 1.0.0; all release gates apply.
 
 ## 0.8.0
 

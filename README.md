@@ -7,7 +7,7 @@ It provides one shared visual language across platforms: generated design
 tokens, CSS variables, React primitives, React Native theme values, Swift token
 constants, and Rails-friendly assets.
 
-Current version: `0.8.0` (GitHub/source distribution; npm and RubyGems
+Current version: `0.8.1` (GitHub/source distribution; npm and RubyGems
 publication begins with `1.0.0`)
 
 ## Status
@@ -34,6 +34,11 @@ The private tooling lock uses shell-quote 1.12.0 and retains all esbuild platfor
 packages for reproducible clean installs. Dependency regression tests cover
 shell quoting and platform lock completeness; reviewed audit exceptions remain
 limited to the existing private React Native tooling policy.
+
+The 0.8.1 source tag is a dependency-maintenance patch on the immutable 0.8.0
+component baseline. The newer catalog essentials below remain Unreleased on
+main and are excluded from that maintenance tag. Full release gates still apply;
+npm and RubyGems publication remains deferred until 1.0.0.
 
 For concrete minimum-configuration setup across GitHub Pages, React/CSS, Rails,
 and Swift, see [docs/consuming.md](docs/consuming.md).
@@ -65,7 +70,7 @@ The current workspace adds eight [catalog essentials](docs/roadmap.md#current-co
 Link, Password Field, Input Group, Validation Summary, grouped Accordion,
 interactive Chip, workflow Stepper, and integer Rating across all five surfaces.
 React Native also gains standalone ExpandableSection. These are **Unreleased**
-additions, not part of the immutable 0.8.0 release. The core-control matrix now
+additions, not part of the 0.8.0 baseline or 0.8.1 maintenance tag. The core-control matrix now
 includes nine previously omitted five-adapter families and explicitly separates
 released evidence from workspace additions. It is not an exhaustive catalog;
 older React Native shell, feedback, and data-display parity remains follow-on work.
@@ -87,20 +92,19 @@ selects whole-number values. Disclosure icons use mode-aware semantic accent
 paint for visibility on light and dark surfaces. Package-owned labels and native announcements are
 localizable; see each adapter guide for its copy contract.
 
-Local verification for this Unreleased batch (2026-10-06): unit, lint/type,
-three-browser, full Web UX/accessibility, and clean-consumer package checks pass.
-Native Release builds compile, but native verification is incomplete: SwiftUI
-passed 8/9 iOS cases, and React Native's corrected new-control subset passed 2/3;
-software-keyboard readiness prevented the remaining assertions. SwiftUI password
-retention/masking passed before the keyboard prerequisite failure. Android APK
-compilation requires a JDK unavailable on this host. These results do not qualify
-the batch for release; the strict native gates remain required.
+Verification for this Unreleased batch (2026-10-06): local unit, lint/type,
+three-browser, full Web UX/accessibility, and clean-consumer checks pass.
+Hosted CI passed the SwiftUI host and Android APK build, but exposed React Native
+password text loss on editing and a Chromium Rating reset assertion failure.
+Local native keyboard readiness remains incomplete. These findings block release
+of the new catalog; the strict native gates remain required. The 0.8.1
+maintenance branch excludes this Unreleased batch.
 
 ## Install
 
 Install only the packages your app needs.
 
-The npm commands below document the `1.0.0` package contract. For `0.8.0`, use
+The npm commands below document the `1.0.0` package contract. For `0.8.1`, use
 this Git repository or a local workspace; npm and RubyGems publication is
 intentionally deferred until `1.0.0`.
 
@@ -762,7 +766,7 @@ Add the repository as a Swift Package dependency, or use a local package path
 to the workspace root during development:
 
 ```swift
-.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.0")
+.package(url: "https://github.com/absessive/aurelglyph.git", from: "0.8.1")
 .product(name: "AurelglyphUI", package: "aurelglyph")
 ```
 
