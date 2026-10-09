@@ -85,7 +85,9 @@ static labels remain Badge. InputGroup owns one labeled input; string addons are
 decorative, so provide `addonDescription` for meaningful units and independently
 label action addons. Read-only Web input-group values and units retain readable
 foreground paint. PasswordField starts masked and preserves the native input
-when revealing. ValidationSummary accepts application-owned issues and explicit
+when revealing. React/Rails deferred selection repair yields to new typing,
+pointer interaction, and select-all rather than restoring a stale edit range.
+ValidationSummary accepts application-owned issues and explicit
 once-per-submission focus/announcement requests; reused keys do not repeat while
 mounted. It does not validate forms. Web Chip and Rating restore uncontrolled
 defaults on a native form reset without firing change callbacks; controlled
@@ -95,13 +97,15 @@ selects whole-number values. Disclosure icons use mode-aware semantic accent
 paint for visibility on light and dark surfaces. Package-owned labels and native announcements are
 localizable; see each adapter guide for its copy contract.
 
-Verification for this Unreleased batch (2026-10-06): local unit, lint/type,
-three-browser, full Web UX/accessibility, and clean-consumer checks pass.
-Hosted CI passed the SwiftUI host and Android APK build, but exposed React Native
-password text loss on editing and a Chromium Rating reset assertion failure.
-Local native keyboard readiness remains incomplete. These findings block release
-of the new catalog; the strict native gates remain required. The 0.8.1
-maintenance branch excludes this Unreleased batch.
+CI repair verification (2026-10-09): local unit, lint/type, three-browser, and full
+Web UX/accessibility checks pass. A WebKit password-fill race is repaired in
+React and Rails; Rating reset verification waits for the native form value and
+React paint together. React Native secure-password editing remains under native
+verification and blocks release of the new catalog until the unchanged strict
+gate passes. The source-only 0.8.1 maintenance branch excludes this Unreleased
+batch; its latest [hosted baseline CI](https://github.com/absessive/aurelglyph/actions/runs/37553849798)
+passes all five jobs without native retry recovery. Neither candidate is tagged
+or published.
 
 ## Install
 

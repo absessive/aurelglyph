@@ -109,6 +109,7 @@ try {
       if (revealed.type !== "text" || revealed.value !== "example-password" || revealed.start !== 2 || revealed.end !== 5 || !revealed.focused || !revealed.sameInput) throw new Error(`${name}: password reveal lost native state: ${JSON.stringify(revealed)}`);
       await gallery.getByRole("button", { name: "Hide password" }).click();
       await password.fill("short");
+      if ((await password.inputValue()) !== "short") throw new Error(`${name}: editing immediately after masking did not replace the selected password.`);
       await gallery.getByRole("button", { name: "Validate fields" }).click();
       if (!(await gallery.locator("#catalog-errors").evaluate((element) => element === document.activeElement))) throw new Error(`${name}: summary submission focus failed.`);
       await gallery.locator(".ag-validation-summary").getByRole("link", { name: "Use at least 12 characters." }).click();
@@ -130,7 +131,11 @@ try {
       await rating.getByRole("button", { name: "Clear rating" }).click();
       if (await rating.locator("input:checked").count()) throw new Error(`${name}: rating did not clear.`);
       await rating.evaluate((element) => element.closest("form").reset());
-      await page.waitForFunction(() => document.querySelector("[data-catalog-essentials] .ag-rating input[value='3']")?.checked === true);
+      // Native radio reset precedes the queued React reset commit. Wait for the
+      // complete contract, not just the browser-owned checked bit.
+      await page.waitForFunction((element) => element.querySelector("input[value='3']")?.checked === true
+        && element.querySelectorAll(".ag-rating__option[data-filled]").length === 3
+        && new FormData(element.closest("form")).get("catalog-rating") === "3", await rating.elementHandle());
       if ((await rating.locator(".ag-rating__option[data-filled]").count()) !== 3 || (await rating.evaluate((element) => new FormData(element.closest("form")).get("catalog-rating"))) !== "3") throw new Error(`${name}: rating reset lost form value or selection paint.`);
       await gallery.evaluate((element) => { element.dir = "ltr"; });
       await page.addScriptTag({ content: axeSource });

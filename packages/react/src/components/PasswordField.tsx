@@ -31,21 +31,28 @@ export function PasswordField({ autoComplete = "current-password", containerClas
     if (!input || !range) return;
     selection.current = null;
     let cancelled = false;
-    const restore = (): void => {
+    const view = input.ownerDocument.defaultView;
+    const pending = { frame: undefined as number | undefined };
+    const cancel = (): void => {
+      cancelled = true;
+      if (pending.frame !== undefined) view?.cancelAnimationFrame(pending.frame);
+      for (const event of ["beforeinput", "keydown", "pointerdown"]) input.removeEventListener(event, cancel);
+    };
+    const restore = (deferred = false): void => {
       if (cancelled || !input.isConnected || inputRef.current !== input || input.disabled || input.value !== range.value) return;
+      // A browser may normalize a type-change caret, but a new non-collapsed
+      // selection belongs to the next edit (including select-all before fill).
+      if (deferred && input.selectionStart !== input.selectionEnd
+        && (input.selectionStart !== range.start || input.selectionEnd !== range.end)) return;
+      if (deferred && range.focused && input.ownerDocument.activeElement !== input) return;
       if (range.focused) input.focus({ preventScroll: true });
       if (range.start !== null && range.end !== null) input.setSelectionRange(range.start, range.end, range.direction ?? undefined);
     };
+    for (const event of ["beforeinput", "keydown", "pointerdown"]) input.addEventListener(event, cancel);
     restore();
-    // Controlled-value restoration and native password-type changes finish after
-    // the click commit. Preserve the range through the browser's next paint too.
-    queueMicrotask(restore);
-    const view = input.ownerDocument.defaultView;
-    const frame = view?.requestAnimationFrame(() => {
-      if (range.focused && input.ownerDocument.activeElement !== input) return;
-      restore();
-    });
-    return () => { cancelled = true; if (frame !== undefined) view?.cancelAnimationFrame(frame); };
+    queueMicrotask(() => restore(true));
+    pending.frame = view?.requestAnimationFrame(() => { restore(true); cancel(); });
+    return cancel;
   }, [visible]);
   const toggle = (): void => {
     if (disabled || loading) return;

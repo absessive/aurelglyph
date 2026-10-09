@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactElement, typ
 import {
   AccessibilityInfo,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -188,7 +189,14 @@ export function PasswordField({ accessibilityHint, accessibilityLabel, autoCompl
         editable={!unavailable && !readOnly}
         onBlur={(event) => { setFocused(false); onBlur?.(event); }}
         onChangeText={(next) => { if (!unavailable && !readOnly) setPassword(next); }}
-        onFocus={(event) => { setFocused(true); onFocus?.(event); }}
+        onFocus={(event) => {
+          if (Platform.OS === "ios" && !revealed) {
+            const range = selection ?? selectedRange.current ?? { start: password.length, end: password.length };
+            const start = clamp(range.start, 0, password.length);
+            nativeInput.current?.setSelection(start, clamp(range.end ?? range.start, start, password.length));
+          }
+          setFocused(true); onFocus?.(event);
+        }}
         onSelectionChange={(event) => { selectedRange.current = event.nativeEvent.selection; onSelectionChange?.(event); }}
         placeholderTextColor={theme.colors.subtle}
         ref={attachInput}

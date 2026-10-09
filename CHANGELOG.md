@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Fix the React/Rails password selection-restoration race: retain settled
+  visibility-toggle selection while yielding to new selection and input,
+  keyboard, or pointer interaction. Check the resulting password value directly
+  in the browser regression; wait for Rating reset's value and visual state
+  together without relaxing either assertion. Allow an explicit available iPhone
+  destination for isolated local native verification; preserve default simulator
+  selection and the no-retry-recovery gate.
+- Commit a bounded iOS secure-input caret on focus, honoring an explicit caller
+  selection and leaving Android/revealed fields unchanged. Native secure-buffer
+  behavior still requires the hosted iOS gate; DOM/renderer tests alone do not
+  establish that editing preserves a prefilled password.
 - Add Link, Chip, PasswordField, InputGroup, ValidationSummary, Accordion,
   workflow Stepper, and integer Rating across CSS/Web, React, React Native,
   SwiftUI, and Rails, with token-based light/dark appearances, localizable copy,
@@ -39,10 +50,12 @@
 
 ## 0.8.1
 
-- Candidate only: not tagged or published. Hosted verification passed Web,
-  Rails, SwiftUI, and Android, but the React Native iOS gate rejected retry-recovered
-  Combobox and Command Palette autofocus tests. Keep the release blocked until
-  those existing native regressions pass without recovery.
+- Candidate only: not tagged or published. The latest maintenance-baseline
+  hosted verification passes Web, both Rails jobs, SwiftUI, and React Native
+  (including Android and iOS without retry recovery). Earlier Combobox and
+  Command Palette recovery failures remain recorded; one green run does not
+  establish that an intermittent regression was fixed. Main's expanded catalog
+  is separate and remains subject to its own complete native gates.
 - Label generated Pages as the workspace version, not a published release;
   require an existing validated tag for Git-tag install examples and direct
   untagged candidates to local workspace paths.

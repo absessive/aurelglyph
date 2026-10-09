@@ -1981,10 +1981,32 @@ describe("Aurelglyph Rails interaction controllers", () => {
     expect(document.activeElement).toBe(toggle);
     expect([input.selectionStart, input.selectionEnd, input.selectionDirection]).toEqual([2, 5, "backward"]);
 
+    // A new select-all belongs to the next edit, not the old reveal snapshot.
+    input.select();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect([input.selectionStart, input.selectionEnd]).toEqual([0, input.value.length]);
+
     form.reset();
     await flushMutations();
     expect(input.type).toBe("password");
     expect(toggle.getAttribute("aria-label")).toBe("Show password");
+  });
+
+  it.each(["beforeinput", "keydown", "pointerdown"])("cancels password restoration on %s before a new collapsed caret", async (event) => {
+    document.body.innerHTML = `<div data-aurelglyph-password-field="" data-hide-label="Hide" data-show-label="Show">
+      <input data-aurelglyph-password-input="" type="password" value="example-password" />
+      <button data-aurelglyph-password-toggle="" aria-pressed="false" type="button">Show</button>
+    </div>`;
+    aurelglyph().init?.(document);
+    const input = document.querySelector<HTMLInputElement>("input")!;
+    input.focus(); input.setSelectionRange(2, 5);
+    document.querySelector<HTMLButtonElement>("button")!.click();
+    await Promise.resolve();
+    input.dispatchEvent(new Event(event, { bubbles: true }));
+    input.setSelectionRange(7, 7);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect([input.selectionStart, input.selectionEnd]).toEqual([7, 7]);
+    expect(input.value).toBe("example-password"); expect(document.activeElement).toBe(input);
   });
 
   it("scopes one-time validation requests by summary and routes issue links to their fields", () => {

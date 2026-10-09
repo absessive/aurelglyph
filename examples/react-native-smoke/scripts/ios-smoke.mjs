@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 
 import {retryTelemetry} from './ios-results.mjs';
+import {selectIphoneSimulator} from './ios-device.mjs';
 
 const projectRoot = resolve(import.meta.dirname, '..');
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'aurelglyph-rn-smoke-'));
@@ -20,16 +21,7 @@ function availableIphone() {
   const output = execFileSync('xcrun', ['simctl', 'list', 'devices', 'available', '--json'], {
     encoding: 'utf8',
   });
-  const runtimes = Object.entries(JSON.parse(output).devices);
-  const devices = runtimes.flatMap(([runtime, entries]) =>
-    runtime.includes('iOS') ? entries : [],
-  );
-  const phones = devices.filter(device => device.isAvailable && device.name.includes('iPhone'));
-  return (
-    phones.find(device => device.state === 'Booted') ??
-    phones.find(device => device.name === 'iPhone 16 Pro') ??
-    phones[0]
-  );
+  return selectIphoneSimulator(JSON.parse(output), process.env.AURELGLYPH_IOS_DEVICE_ID);
 }
 
 try {

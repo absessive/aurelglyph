@@ -165,7 +165,12 @@ chips cannot select or remove. Static status copy still belongs in a Badge
 where that adapter provides one.
 
 `PasswordField` owns one native TextInput and preserves its value, focused
-selection, and password-manager metadata while revealing/masking. It follows
+selection, and password-manager metadata while revealing/masking. It uses
+the current controlled value when bounding retained iOS focus selection; an
+explicit `selection` takes precedence. The iOS focus-caret change is under native
+CI verification: passing renderer tests alone does not establish the secure
+editing-buffer contract. Android and revealed fields do not use that command.
+It follows
 native `value`/`onChangeText` or `defaultValue`, supports controlled
 `visible`/`onVisibleChange` or `defaultVisible`, and accepts `inputRef`.
 `purpose="current"` is the default; `purpose="new"` selects new-password

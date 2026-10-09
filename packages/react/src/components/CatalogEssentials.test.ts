@@ -89,6 +89,32 @@ describe("catalog essentials", () => {
     expect(renderToStaticMarkup(h(PasswordField, { label: "Password" }))).toContain('type="password"');
     render(h(PasswordField, { defaultValue: "sample", label: "Password", loading: true })); click(container.querySelector("button")!); expect(container.querySelector("input")?.type).toBe("password"); expect(container.querySelector("button")?.disabled).toBe(true);
   });
+  it("does not overwrite a new selection after a password visibility commit", async () => {
+    const change = vi.fn();
+    render(h(PasswordField, { defaultValue: "example-password", label: "Password", onChange: change }));
+    const input = container.querySelector("input")!;
+    input.focus(); input.setSelectionRange(2, 5);
+    click(container.querySelector("button")!);
+    expect(input.selectionStart).toBe(2); expect(input.selectionEnd).toBe(5);
+    click(container.querySelector("button")!);
+    await act(async () => { await Promise.resolve(); });
+    input.select();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 30)); });
+    expect(input.selectionStart).toBe(0); expect(input.selectionEnd).toBe(input.value.length);
+    expect(input.type).toBe("password"); expect(change).not.toHaveBeenCalled();
+  });
+  it.each(["beforeinput", "keydown", "pointerdown"])("cancels password restoration on %s before a new collapsed caret", async (event) => {
+    render(h(PasswordField, { defaultValue: "example-password", label: "Password" }));
+    const input = container.querySelector("input")!;
+    input.focus(); input.setSelectionRange(2, 5);
+    click(container.querySelector("button")!);
+    await act(async () => { await Promise.resolve(); });
+    fire(input, new Event(event, { bubbles: true }));
+    input.setSelectionRange(7, 7);
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 30)); });
+    expect([input.selectionStart, input.selectionEnd]).toEqual([7, 7]);
+    expect(input.value).toBe("example-password"); expect(document.activeElement).toBe(input);
+  });
   it("preserves controlled password state and keyboard toggle focus", () => {
     render(h(PasswordField, { label: "Password", onChange: () => {}, value: "sample-password" }));
     const input = container.querySelector("input")!; const button = container.querySelector("button")!;

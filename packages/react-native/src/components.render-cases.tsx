@@ -12,6 +12,8 @@ const nativeMock = vi.hoisted(() => ({
   tooltip: { height: 40, width: 160, x: 0, y: 0 },
   announce: vi.fn(),
   accessibilityFocus: vi.fn(),
+  passwordSelection: vi.fn(),
+  platform: "ios",
   openURL: vi.fn(() => Promise.resolve()),
   window: { fontScale: 1, height: 844, scale: 3, width: 390 }
 }));
@@ -175,6 +177,7 @@ vi.mock("react-native", async () => {
     React.useImperativeHandle(ref, () => ({
       focus: () => { inputRef.current?.focus(); },
       isFocused: () => document.activeElement === inputRef.current,
+      setSelection: (start: number, end: number) => { nativeMock.passwordSelection(start, end); inputRef.current?.setSelectionRange(start, end); },
       setNativeProps: ({ selection }: { selection?: { start: number; end?: number } }) => {
         if (selection) inputRef.current?.setSelectionRange(selection.start, selection.end ?? selection.start);
       }
@@ -276,6 +279,7 @@ vi.mock("react-native", async () => {
     I18nManager: { isRTL: false },
     Linking: { openURL: nativeMock.openURL },
     findNodeHandle: () => 17,
+    Platform: { get OS() { return nativeMock.platform; } },
     KeyboardAvoidingView,
     Modal,
     Pressable,
@@ -407,6 +411,41 @@ describe("React Native component expansion", () => {
     act(() => input.blur());
     expect(styleOf(input.parentElement).borderColor).toBe(resolveAurelglyphTheme().colors.borderStrong);
     expect(onBlur).toHaveBeenCalledOnce();
+  });
+
+  it("commits the iOS secure caret on focus without editing the value", () => {
+    const onChangeText = vi.fn();
+    const rendered = render(<PasswordField defaultValue="calibration" label="Password" onChangeText={onChangeText} />);
+    act(() => rendered.container.querySelector<HTMLInputElement>("input")!.focus());
+    expect(nativeMock.passwordSelection).toHaveBeenLastCalledWith(11, 11);
+    expect(onChangeText).not.toHaveBeenCalled();
+  });
+
+  it("honors explicit iOS selection and bounds a retained caret after a controlled value shrinks", () => {
+    const onSelectionChange = vi.fn();
+    const rendered = render(<PasswordField label="Password" onSelectionChange={onSelectionChange} selection={{ start: 1, end: 4 }} value="calibration" />);
+    const input = rendered.container.querySelector<HTMLInputElement>("input")!;
+    act(() => input.focus());
+    expect(nativeMock.passwordSelection).toHaveBeenLastCalledWith(1, 4);
+    rendered.rerender(<PasswordField label="Password" onSelectionChange={onSelectionChange} value="calibration" />);
+    act(() => { input.setSelectionRange(9, 11); input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true })); });
+    expect(onSelectionChange).toHaveBeenLastCalledWith({ nativeEvent: { selection: { start: 9, end: 11 } } });
+    act(() => input.blur());
+    rendered.rerender(<PasswordField label="Password" value="ab" />);
+    act(() => input.focus());
+    expect(nativeMock.passwordSelection).toHaveBeenLastCalledWith(2, 2);
+    expect(input.value).toBe("ab");
+  });
+
+  it("does not dispatch the iOS focus caret command on Android or a revealed field", () => {
+    nativeMock.platform = "android";
+    const rendered = render(<PasswordField defaultValue="calibration" label="Password" />);
+    const input = rendered.container.querySelector<HTMLInputElement>("input")!;
+    act(() => { input.focus(); input.blur(); });
+    nativeMock.platform = "ios";
+    click(rendered.container.querySelector('button[aria-label="Show Password"]')!);
+    act(() => input.focus());
+    expect(nativeMock.passwordSelection).not.toHaveBeenCalled();
   });
 
   it("permits read-only password reveal while disabling edits, and blocks disabled/loading reveal", () => {
@@ -748,6 +787,8 @@ afterEach(() => {
   nativeMock.window = { fontScale: 1, height: 844, scale: 3, width: 390 };
   nativeMock.announce.mockClear();
   nativeMock.accessibilityFocus.mockClear();
+  nativeMock.passwordSelection.mockClear();
+  nativeMock.platform = "ios";
   nativeMock.openURL.mockClear();
   vi.restoreAllMocks();
 });

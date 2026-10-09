@@ -2216,16 +2216,19 @@
   function cancelPasswordRestore(input) {
     const state = passwordRestoreStates.get(input);
     if (!state) return;
-    state.cancelled = true;
-    if (state.frame !== null && typeof global.cancelAnimationFrame === "function") {
-      global.cancelAnimationFrame(state.frame);
-    }
+    state.cancel();
     passwordRestoreStates.delete(input);
   }
 
   function restorePasswordSelection(field, input, selection) {
     if (!selection || selection.start === null || selection.end === null) return;
-    const state = { cancelled: false, frame: null };
+    const state = { cancelled: false, frame: null, cancel: null };
+    state.cancel = () => {
+      state.cancelled = true;
+      if (state.frame !== null && typeof global.cancelAnimationFrame === "function") global.cancelAnimationFrame(state.frame);
+      ["beforeinput", "keydown", "pointerdown"].forEach((event) => input.removeEventListener(event, state.cancel));
+      if (passwordRestoreStates.get(input) === state) passwordRestoreStates.delete(input);
+    };
     passwordRestoreStates.set(input, state);
     const restore = (deferred) => {
       if (
@@ -2235,6 +2238,8 @@
         input.value !== selection.value ||
         field.querySelector(passwordInputSelector) !== input
       ) return;
+      if (deferred && input.selectionStart !== input.selectionEnd &&
+        (input.selectionStart !== selection.start || input.selectionEnd !== selection.end)) return;
       if (selection.focused) {
         if (deferred && input.ownerDocument.activeElement !== input) return;
         input.focus({ preventScroll: true });
@@ -2245,11 +2250,20 @@
         // Some native input implementations do not expose a restorable selection.
       }
     };
+    ["beforeinput", "keydown", "pointerdown"].forEach((event) => input.addEventListener(event, state.cancel));
     restore(false);
-    global.queueMicrotask(() => restore(true));
+    global.queueMicrotask(() => {
+      restore(true);
+    });
     if (typeof global.requestAnimationFrame === "function") {
       state.frame = global.requestAnimationFrame(() => {
         restore(true);
+        state.cancel();
+        if (passwordRestoreStates.get(input) === state) passwordRestoreStates.delete(input);
+      });
+    } else {
+      global.queueMicrotask(() => {
+        state.cancel();
         if (passwordRestoreStates.get(input) === state) passwordRestoreStates.delete(input);
       });
     }

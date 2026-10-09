@@ -77,6 +77,18 @@ Then run the release-mode simulator contract from the workspace root:
 npm run test:ios -w @aurelglyph/example-react-native-smoke
 ```
 
+To isolate the check from unrelated booted applications, select an installed,
+available iPhone explicitly (find its UDID with `xcrun simctl list devices available`):
+
+```bash
+AURELGLYPH_IOS_DEVICE_ID=<simulator-udid> npm run test:ios -w @aurelglyph/example-react-native-smoke
+```
+
+Invalid, unavailable, non-iPhone, or non-iOS destinations fail before building.
+Without this override, selection remains booted iPhone, then iPhone 16 Pro,
+then the first available iPhone. The override does not change test cases,
+assertions, repetitions, retry rejection, or keyboard preferences.
+
 The runner selects an available iPhone simulator, builds a self-contained
 Hermes bundle, and uses XCTest to verify that the tooltip stays inside the
 native modal window, moves after anchor and viewport changes, and leaves the
