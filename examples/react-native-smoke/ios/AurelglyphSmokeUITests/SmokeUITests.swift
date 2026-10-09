@@ -7,6 +7,9 @@ final class SmokeUITests: XCTestCase {
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .portrait
     app = XCUIApplication()
+    if name.contains("testEssentialPasswordPreservesFocusValueAndMasksAgain") {
+      app.launchArguments.append("--aurelglyph-native-undo")
+    }
     app.launch()
     XCTAssertTrue(
       app.staticTexts["Native overlay test host"].waitForExistence(timeout: 20),
@@ -291,33 +294,38 @@ final class SmokeUITests: XCTestCase {
     retained.tap()
     // The keyboard is already ready: type immediately, without a JS-focus wait.
     app.typeText("x")
+    XCTAssertTrue(app.staticTexts["Retained edits: 1"].waitForExistence(timeout: 3))
+    // Exercise command-only rollback without a reveal/mask mount in between.
+    app.typeText("y")
     let showRetained = app.buttons["Show Retained password"].firstMatch
     XCTAssertTrue(scrollUntilHittable(showRetained), "The retained-password reveal was covered")
     showRetained.tap()
     let retainedVisible = app.textFields["Retained password"].firstMatch
-    XCTAssertTrue(waitUntilValue(retainedVisible, equals: "retained-passphrase", timeout: 3), "The controlled owner could not reject an edit")
-    XCTAssertTrue(app.staticTexts["Retained edits: 1"].waitForExistence(timeout: 3), "Native repair emitted an extra rejected-edit callback")
+    XCTAssertTrue(waitUntilValue(retainedVisible, equals: "retained-passphrasey", timeout: 3), "Controlled rejection corrupted a consecutive masked edit; observed \(String(describing: retainedVisible.value))")
+    XCTAssertTrue(app.staticTexts["Retained edits: 2"].waitForExistence(timeout: 3), "Native repair emitted an extra rejected-edit callback")
     app.buttons["Hide Retained password"].firstMatch.tap()
-    app.typeText("y")
+    app.typeText("w")
     app.buttons["Show Retained password"].firstMatch.tap()
-    XCTAssertTrue(waitUntilValue(retainedVisible, equals: "retained-passphrasey", timeout: 3), "A rejected edit corrupted the next native insertion or emitted duplicate changes")
-    XCTAssertTrue(app.staticTexts["Retained edits: 2"].waitForExistence(timeout: 3), "Native repair emitted an extra accepted-edit callback")
+    XCTAssertTrue(waitUntilValue(retainedVisible, equals: "retained-passphraseyw", timeout: 3), "Remasking corrupted the next native insertion; observed \(String(describing: retainedVisible.value))")
+    XCTAssertTrue(app.staticTexts["Retained edits: 3"].waitForExistence(timeout: 3), "Native repair emitted an extra accepted-edit callback")
 
     let formatted = app.secureTextFields["Formatted password"].firstMatch
     XCTAssertTrue(scrollUntilHittable(formatted), "The controlled-formatter password was unreachable")
     formatted.tap()
     app.typeText("Q")
+    XCTAssertTrue(app.staticTexts["Formatted edits: 1"].waitForExistence(timeout: 3))
+    app.typeText("R")
     let showFormatted = app.buttons["Show Formatted password"].firstMatch
     XCTAssertTrue(scrollUntilHittable(showFormatted), "The formatter reveal was covered")
     showFormatted.tap()
     let formattedVisible = app.textFields["Formatted password"].firstMatch
-    XCTAssertTrue(waitUntilValue(formattedVisible, equals: "calibrationq", timeout: 3), "The owner-formatted password was not retained")
-    XCTAssertTrue(app.staticTexts["Formatted edits: 1"].waitForExistence(timeout: 3), "Native repair emitted an extra formatted-edit callback")
+    XCTAssertTrue(waitUntilValue(formattedVisible, equals: "calibrationqr", timeout: 3), "Consecutive owner-formatted edits were not retained; observed \(String(describing: formattedVisible.value))")
+    XCTAssertTrue(app.staticTexts["Formatted edits: 2"].waitForExistence(timeout: 3), "Native repair emitted an extra formatted-edit callback")
     app.buttons["Hide Formatted password"].firstMatch.tap()
-    app.typeText("R")
+    app.typeText("S")
     app.buttons["Show Formatted password"].firstMatch.tap()
-    XCTAssertTrue(waitUntilValue(formattedVisible, equals: "calibrationqr", timeout: 3), "Formatting corrupted the next masked insertion")
-    XCTAssertTrue(app.staticTexts["Formatted edits: 2"].waitForExistence(timeout: 3), "Remasking emitted an extra formatted-edit callback")
+    XCTAssertTrue(waitUntilValue(formattedVisible, equals: "calibrationqrs", timeout: 3), "Formatting corrupted the next masked insertion")
+    XCTAssertTrue(app.staticTexts["Formatted edits: 3"].waitForExistence(timeout: 3), "Remasking emitted an extra formatted-edit callback")
 
     let mountAutofocus = app.buttons["Mount autofocus password"].firstMatch
     XCTAssertTrue(scrollUntilHittable(mountAutofocus))
@@ -325,6 +333,8 @@ final class SmokeUITests: XCTestCase {
     // Mount-triggered autoFocus must prepare secure entry without another tap
     // or the keyboard-settling delay used for the original cold launch.
     app.typeText("z")
+    XCTAssertTrue(app.staticTexts["Autofocus length: 21"].waitForExistence(timeout: 3), "The first autofocus edit did not retain the masked prefix")
+    XCTAssertTrue(app.staticTexts["Autofocus edits: 1"].waitForExistence(timeout: 3))
     let showAutofocus = app.buttons["Show Autofocus password"].firstMatch
     XCTAssertTrue(scrollUntilHittable(showAutofocus), "The autofocus reveal was covered")
     showAutofocus.tap()
@@ -334,15 +344,25 @@ final class SmokeUITests: XCTestCase {
     // RN's secure trait setter clears history at a reveal/mask boundary.
     // Verify native undo/redo within a secure editing session, before toggling.
     app.typeText("q")
-    app.typeKey("z", modifierFlags: .command)
+    XCTAssertTrue(app.staticTexts["Autofocus length: 22"].waitForExistence(timeout: 3), "Remasking lost the prefix before native undo")
+    XCTAssertTrue(app.staticTexts["Autofocus edits: 2"].waitForExistence(timeout: 3))
+    performNativeEditingAction("Undo")
+    XCTAssertTrue(app.staticTexts["Autofocus length: 21"].waitForExistence(timeout: 3), "Native undo did not restore the masked edit")
+    XCTAssertTrue(app.staticTexts["Autofocus edits: 3"].waitForExistence(timeout: 3))
     app.buttons["Show Autofocus password"].firstMatch.tap()
-    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasez", timeout: 3), "Secure-entry repair changed native undo within an editing session")
+    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasez", timeout: 3), "Secure-entry repair changed native undo within an editing session; observed \(String(describing: autofocusedVisible.value))")
     app.buttons["Hide Autofocus password"].firstMatch.tap()
     app.typeText("q")
-    app.typeKey("z", modifierFlags: .command)
-    app.typeKey("z", modifierFlags: [.command, .shift])
+    XCTAssertTrue(app.staticTexts["Autofocus length: 22"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["Autofocus edits: 4"].waitForExistence(timeout: 3))
+    performNativeEditingAction("Undo")
+    XCTAssertTrue(app.staticTexts["Autofocus length: 21"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["Autofocus edits: 5"].waitForExistence(timeout: 3))
+    performNativeEditingAction("Redo")
+    XCTAssertTrue(app.staticTexts["Autofocus length: 22"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["Autofocus edits: 6"].waitForExistence(timeout: 3))
     app.buttons["Show Autofocus password"].firstMatch.tap()
-    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasezq", timeout: 3), "Secure-entry repair changed native redo within an editing session")
+    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasezq", timeout: 3), "Secure-entry repair changed native redo within an editing session; observed \(String(describing: autofocusedVisible.value))")
 
     let mountSelected = app.buttons["Mount selected password"].firstMatch
     XCTAssertTrue(scrollUntilHittable(mountSelected))
@@ -430,7 +450,21 @@ final class SmokeUITests: XCTestCase {
       return candidate.exists && candidate.value as? String == value
     }
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
-    return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    if XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed { return true }
+    let hierarchy = XCTAttachment(string: app.debugDescription)
+    hierarchy.name = "Native value assertion failure"
+    hierarchy.lifetime = .keepAlways
+    add(hierarchy)
+    return false
+  }
+
+  private func performNativeEditingAction(_ action: String, file: StaticString = #filePath, line: UInt = #line) {
+    // Exercise UIKit's existing Undo manager with the software keyboard still focused,
+    // without revealing or retargeting the field to inspect its masked value.
+    let control = app.buttons["Native \(action)"].firstMatch
+    XCTAssertTrue(waitUntilHittable(control, timeout: 5), "The native \(action) control was not interactive", file: file, line: line)
+    XCTAssertTrue(control.isEnabled, "The native \(action) control was disabled", file: file, line: line)
+    control.tap()
   }
 
   private func waitUntilAutofocusedSearchReady(_ search: XCUIElement, timeout: TimeInterval) -> Bool {
@@ -573,11 +607,22 @@ final class SmokeUITests: XCTestCase {
     // which need not have XCTest's ScrollView element type.
     let scrollView = app.descendants(matching: .any)["aurelglyph-workbench-scroll"].firstMatch
     guard scrollView.exists else { return false }
+    var frameTrace: [String] = []
     func exposedViewport() -> CGRect {
       var viewport = scrollView.frame
+      let toolbar = app.descendants(matching: .any)["aurelglyph-native-editing-toolbar"].firstMatch
+      if toolbar.exists && viewport.intersects(toolbar.frame) {
+        let bottom = viewport.maxY
+        viewport.origin.y = max(viewport.minY, toolbar.frame.maxY)
+        viewport.size.height = max(0, bottom - viewport.minY)
+      }
       let keyboard = app.keyboards.firstMatch
       if keyboard.exists && !keyboard.frame.isEmpty && viewport.intersects(keyboard.frame) {
         viewport.size.height = max(0, keyboard.frame.minY - viewport.minY)
+      }
+      let assistant = app.descendants(matching: .any)["SystemInputAssistantView"].firstMatch
+      if assistant.exists && !assistant.frame.isEmpty && viewport.intersects(assistant.frame) {
+        viewport.size.height = max(0, assistant.frame.minY - viewport.minY)
       }
       return viewport
     }
@@ -588,21 +633,37 @@ final class SmokeUITests: XCTestCase {
     for _ in 0..<maximumSwipes {
       let viewport = exposedViewport()
       if reachable(in: viewport) { return true }
+      let targetFrame = element.exists ? String(describing: element.frame) : "absent"
+      frameTrace.append("viewport=\(viewport), target=\(targetFrame), hittable=\(element.exists && element.isHittable)")
       guard !viewport.isEmpty else { return false }
       if app.keyboards.firstMatch.exists {
         // A full ScrollView swipe can start on the software keyboard. Its
         // accessibility tree may also report a covered field as hittable.
         // Drag only inside exposed content and require the whole target there.
         let origin = app.coordinate(withNormalizedOffset: .zero)
-        let startY = viewport.minY + viewport.height * (direction == .up ? 0.8 : 0.2)
-        let endY = viewport.minY + viewport.height * (direction == .up ? 0.2 : 0.8)
-        origin.withOffset(CGVector(dx: viewport.midX, dy: startY))
-          .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: viewport.midX, dy: endY)))
+        let scrollUp = element.exists ? element.frame.midY > viewport.midY : direction == .up
+        let targetDistance = element.exists ? abs(element.frame.midY - viewport.midY) : viewport.height * 0.35
+        let distance = min(viewport.height * 0.35, max(viewport.height * 0.15, targetDistance))
+        let startY = viewport.minY + viewport.height * (scrollUp ? 0.7 : 0.3)
+        let endY = startY + (scrollUp ? -distance : distance)
+        // The host has a 24-point content gutter. A center drag can select
+        // text in the focused input instead of scrolling its ancestor.
+        let gutterX = viewport.maxX - 8
+        origin.withOffset(CGVector(dx: gutterX, dy: startY))
+          .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: gutterX, dy: endY)))
         continue
       }
       if direction == .up { scrollView.swipeUp() } else { scrollView.swipeDown() }
     }
-    return reachable(in: exposedViewport())
+    let viewport = exposedViewport()
+    if reachable(in: viewport) { return true }
+    let targetFrame = element.exists ? String(describing: element.frame) : "absent"
+    frameTrace.append("final viewport=\(viewport), target=\(targetFrame), hittable=\(element.exists && element.isHittable)")
+    let trace = XCTAttachment(string: frameTrace.joined(separator: "\n") + "\n" + app.debugDescription)
+    trace.name = "Workbench reachability failure"
+    trace.lifetime = .keepAlways
+    add(trace)
+    return false
   }
 
   private func openNativeModal() {

@@ -19,14 +19,28 @@ Chip, PasswordField, one-input InputGroup, explicit-request ValidationSummary,
 Accordion, ordered Stepper, and whole-number Rating. The second Jest case drives
 their consumer state without opening a modal. Native cases verify chip/disclosure/
 step contracts, actual password typing across reveal/mask without field retargeting,
-controlled rejection followed by a real insertion, owner-formatted edits with
+controlled rejection followed by a real insertion without a visibility toggle,
+consecutive owner-formatted edits with
 exact user callback counts, and mount-triggered autofocus first-edit preservation,
 explicit first-focus replacement selection and native undo/redo within secure
 editing sessions (not across RN's history-clearing secure-state toggle),
+using child-only callback counts and accepted UTF-16 lengths to prove masked
+insertion/undo/redo without a reveal or an owner rerender,
 input ownership, rating values and touch choices, and summary-requested field focus.
 Keyboard-era reachability targets the owned workbench scroll view rather than
-the system Passwords accessory, excludes keyboard-covered frames, and confines scroll
-drags to exposed content; it still requires actual hittability within eight gestures.
+the system Passwords accessory, excludes keyboard/accessory-covered frames, and confines
+target-directed drags to the exposed content gutter instead of focused input text;
+it still requires actual hittability within eight gestures.
+Failures attach the viewport/target frames and native accessibility hierarchy;
+value assertions attach the host hierarchy without extending their deadlines.
+Only the password test enables `--aurelglyph-native-undo`: its native host toolbar
+resolves the current first-responder UITextField in the host window, requires
+the existing manager's Undo/Redo availability, and invokes that manager without
+changing focus, traits, or delegates, directly setting text/selection, or
+manufacturing history. Exact masked
+callback-count/length and final-value assertions remain required. This verifies
+native history integration, not simulator hardware-shortcut or three-finger
+editing-menu delivery. No native test action is exported by the library.
 The iOS gate requires all nine cases and retains its first-attempt/no-recovery rule.
 
 ## Workspace checks

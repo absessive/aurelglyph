@@ -14,7 +14,8 @@
   readiness, all existing timing budgets, and strict retry rejection.
   Target the owned workbench scroll view, not the system Passwords accessory.
   Keep native keyboard-era reachability inside exposed scroll content instead
-  of swiping or tapping keyboard-covered controls; retain the eight-gesture
+  of swiping or tapping keyboard/accessory-covered controls. Drag in the content
+  gutter rather than selecting focused input text; retain the eight-gesture
   budget and actual-hittability requirement.
   Use bounded viewport-local drags for SwiftUI's accessibility-size catalog
   reachability probe so full-page swipes cannot oscillate past small controls;
@@ -31,12 +32,26 @@
   so Fabric view recycling cannot authorize repairs to unrelated inputs.
   Reconcile controlled rejected/formatted edits as well as visibility and
   external-value changes; Android and Web remain on their native TextInput path.
+  Catch early preparation requests after real Fabric commits, with bounded
+  two-frame catch-up for command-only controlled reconciliation. Keep only one
+  current request per owned input; cancel on a newer request, reveal, user edit,
+  blur, identity change, or unmount. Preserve the then-current native selection
+  on catch-up and never rewrite mismatched values or repeat a successful repair.
+  Invalidate the bridge module idempotently: stop queued work immediately, then
+  detach native observers, clear ownership, and stop the pending clock on main.
   Include the pod/source in clean-consumer autolinking and package checks.
   Track the local pod version during version synchronization without changing
   external pod pins; regenerate its checksum with the host's pinned CocoaPods.
-  Add real native rejection/formatting callback-count, autofocus-first-edit,
+  Add real native consecutive rejection/formatting callback-count, autofocus-first-edit,
   explicit first-focus selection, and secure-session undo/redo regressions
-  while retaining all original native assertions. Raw React Native isolation
+  while retaining all original native assertions. Isolate masked undo with
+  child-only callback counts and accepted UTF-16 lengths, not a reveal or owner
+  rerender. Capture strict native reachability/value failures for diagnosis.
+  Exercise UIKit's existing undo manager through password-test-only native host
+  controls, without exposing a package API, changing focus, directly setting
+  text/selection, or manufacturing history; this
+  checks history integration, not simulator shortcut/gesture delivery.
+  Raw React Native isolation
   on iOS 26.5 confirms that secure-state toggles clear prior native undo history;
   the adapter does not reconstruct opaque history or store secret edit history.
   Native verification remains required before merging or releasing this batch.

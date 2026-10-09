@@ -1,7 +1,7 @@
 import { NativeModules, Platform, findNodeHandle, type TextInputInstance, type TextInputProps } from "react-native";
 
 type SecureEntryModule = {
-  prepareSecureInput: (tag: number, expectedValue: string, selection: TextInputProps["selection"] | null) => void;
+  prepareSecureInput: (tag: number, expectedValue: string | null, selection: TextInputProps["selection"] | null) => void;
   registerSecureInput: (tag: number) => void;
   unregisterSecureInput: (tag: number) => void;
 };
@@ -24,9 +24,10 @@ export function registerIosSecureEntry(input: TextInputInstance | null): (() => 
 }
 
 /** Keep UIKit's secure editing storage synchronized without a JS value edit. */
-export function prepareIosSecureEntry(input: TextInputInstance | null, value: string, selection?: TextInputProps["selection"]): void {
+export function prepareIosSecureEntry(input: TextInputInstance | null, value: string | null, selection?: TextInputProps["selection"]): void {
   const entry = iosEntry(input);
   if (!entry) return;
+  if (value === null) { entry.native.prepareSecureInput(entry.tag, null, null); return; }
   const start = selection ? Math.max(0, Math.min(value.length, selection.start)) : 0;
   const range = selection ? { start, end: Math.max(start, Math.min(value.length, selection.end ?? selection.start)) } : null;
   entry.native.prepareSecureInput(entry.tag, value, range);

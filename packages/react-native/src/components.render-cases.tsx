@@ -499,7 +499,7 @@ describe("React Native component expansion", () => {
     nativeMock.platform = "ios";
     click(rendered.container.querySelector('button[aria-label="Show Password"]')!);
     act(() => input.focus());
-    expect(nativeMock.prepareSecureInput).not.toHaveBeenCalled();
+    expect(nativeMock.prepareSecureInput.mock.calls.every(call => call[1] === null)).toBe(true);
   });
 
   it("repairs controlled rejection and formatting without manufacturing change callbacks", () => {

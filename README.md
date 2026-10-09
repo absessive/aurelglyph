@@ -105,6 +105,13 @@ verification and blocks release of the new catalog until the unchanged strict
 gate passes. Its package-owned iOS secure-entry pod is autolinked; applications
 must run `pod install` and rebuild after this Unreleased update. Native
 registration survives edit-time ref churn without repeating buffer repairs.
+Preparation follows actual Fabric commits, with bounded command-only catch-up
+and cancellation on newer interaction or bridge invalidation; consecutive rejected/formatted edits
+are checked without intervening visibility toggles.
+The private native host exposes only callback counts and accepted UTF-16 lengths
+to verify masked insertion and undo without toggling visibility for inspection.
+Undo/redo checks use launch-gated host controls and UIKit's existing history;
+they do not certify simulator hardware shortcuts or editing-menu gestures.
 Raw React Native tests confirm that reveal/mask boundaries clear prior native
 undo history on iOS 26.5; secure-session undo/redo remains covered separately.
 Native keyboard
@@ -112,7 +119,8 @@ readiness targets a nonempty software key rather
 than zero-size accessibility padding; its hittability and timing contract is
 unchanged.
 Native reachability targets the named workbench, excluding the system Passwords
-accessory and keyboard-covered frames while retaining its gesture budget.
+accessory and keyboard-covered frames. Keyboard-era drags use the content gutter,
+not focused input text, while retaining the gesture budget.
 SwiftUI's accessibility-size catalog probe uses bounded target-directed drags
 while retaining actual-control hittability and its existing gesture limits.
 The source-only 0.8.1 maintenance branch excludes this Unreleased

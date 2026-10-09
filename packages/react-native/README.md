@@ -191,10 +191,19 @@ are bounded to the current UTF-16 value. Controlled rejection/formatting and
 focused external-value changes reconcile storage without concatenating edits
 or overriding legitimate replacements, deletion, or autofill. Unmounted,
 blurred, changed-value, disabled, and composing inputs reject stale repairs.
+If a native secure/value commit has not landed, preparation remains pending
+through actual Fabric mount completion, with at most two display-frame checks
+for command-only reconciliation. The current request is cancelled by reveal,
+user edits, blur, replacement, or unmount; successful repair runs only once.
+Catch-up preserves the current native caret rather than a queued old range.
+Bridge invalidation cancels queued work and releases observers, ownership, and
+the pending clock on the main queue; a reloaded bridge cannot repair old inputs.
 Registration follows input identity through React Native's edit-time ref churn,
 and is removed on actual replacement or unmount. JS focus callbacks do not
 repeat the synchronous native storage repair. The native regression checks
-undo/redo within a secure editing session; React Native's secure-state setter clears
+undo/redo within a secure editing session through private host controls invoking
+UIKit's existing history (not simulator shortcut/menu-gesture delivery).
+React Native's secure-state setter clears
 prior undo history at reveal/mask boundaries (also reproduced with a raw
 TextInput on iOS 26.5). Aurelglyph does not reconstruct that history or retain
 password-edit history in JavaScript.

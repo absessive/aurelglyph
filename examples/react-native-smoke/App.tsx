@@ -279,15 +279,19 @@ function SmokeWorkbench() {
   );
 }
 
-type EditCounterHandle = {record: () => void};
+type EditCounterHandle = {record: (length?: number) => void};
 
 function PasswordEditCounter({label, counterRef}: {label: string; counterRef: Ref<EditCounterHandle>}) {
   const theme = useAurelglyphTheme();
   const [count, setCount] = useState(0);
+  const [length, setLength] = useState<number>();
   // Keep the counter's render local: rejecting an edit must not rerender its
   // owner and accidentally mask the field's unchanged-value reconciliation.
-  useImperativeHandle(counterRef, () => ({record: () => setCount(current => current + 1)}), []);
-  return <Text accessibilityLabel={`${label} edits: ${count}`} style={[styles.body, {color: theme.colors.muted}]}>{label} edits: {count}</Text>;
+  useImperativeHandle(counterRef, () => ({record: nextLength => {setCount(current => current + 1); setLength(nextLength);}}), []);
+  return <View accessible={false}>
+    <Text accessibilityLabel={`${label} edits: ${count}`} style={[styles.body, {color: theme.colors.muted}]}>{label} edits: {count}</Text>
+    {length !== undefined ? <Text accessibilityLabel={`${label} length: ${length}`} style={[styles.body, {color: theme.colors.muted}]}>{label} length: {length}</Text> : null}
+  </View>;
 }
 
 function ExpansionWorkbench() {
@@ -306,6 +310,7 @@ function ExpansionWorkbench() {
   const [formattedPassword, setFormattedPassword] = useState('calibration');
   const formattedEditCounter = useRef<EditCounterHandle>(null);
   const [autofocusPasswordMounted, setAutofocusPasswordMounted] = useState(false);
+  const autofocusEditCounter = useRef<EditCounterHandle>(null);
   const [selectedPasswordMounted, setSelectedPasswordMounted] = useState(false);
   return (
     <View style={styles.controlStack} testID="component-expansion">
@@ -327,7 +332,10 @@ function ExpansionWorkbench() {
       }} value={formattedPassword} />
       <PasswordEditCounter counterRef={formattedEditCounter} label="Formatted" />
       <Button onPress={() => setAutofocusPasswordMounted(true)} variant="secondary">Mount autofocus password</Button>
-      {autofocusPasswordMounted ? <PasswordField autoFocus defaultValue="autofocus-passphrase" label="Autofocus password" /> : null}
+      {autofocusPasswordMounted ? <>
+        <PasswordField autoFocus defaultValue="autofocus-passphrase" label="Autofocus password" onChangeText={next => autofocusEditCounter.current?.record(next.length)} />
+        <PasswordEditCounter counterRef={autofocusEditCounter} label="Autofocus" />
+      </> : null}
       <Button onPress={() => setSelectedPasswordMounted(true)} variant="secondary">Mount selected password</Button>
       {selectedPasswordMounted ? <PasswordField autoFocus defaultValue="calibration" label="Selected password" selection={{start: 2, end: 5}} /> : null}
       <InputGroup addonDescription="US dollars" inputRef={amountInput} keyboardType="decimal-pad" label="Amount" onChangeText={setAmount} prefix="$" suffix="USD" value={amount} />

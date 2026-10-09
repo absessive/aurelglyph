@@ -28,6 +28,12 @@ describe("iOS secure-entry bridge contract", () => {
     prepareIosSecureEntry(input, "ab", { start: 8, end: 1 });
     expect(native.prepare).toHaveBeenLastCalledWith(17, "ab", { start: 2, end: 2 });
   });
+  it("uses null only to cancel pending repair, keeping empty passwords valid", () => {
+    prepareIosSecureEntry(input, null, { start: 1, end: 2 });
+    expect(native.prepare).toHaveBeenLastCalledWith(17, null, null);
+    prepareIosSecureEntry(input, "");
+    expect(native.prepare).toHaveBeenLastCalledWith(17, "", null);
+  });
   it("leaves Android, other platforms, and unmounted or unresolved inputs alone", () => {
     for (const platform of ["android", "web"]) { native.platform = platform; prepareIosSecureEntry(input, "sample"); }
     native.platform = "ios";

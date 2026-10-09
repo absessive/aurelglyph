@@ -194,6 +194,7 @@ export function PasswordField({ accessibilityHint, accessibilityLabel, autoCompl
       }
     }
     if (!revealed && (visibilityChanged || externalValueChanged)) prepareIosSecureEntry(input, password, selection);
+    else if (revealed && (visibilityChanged || externalValueChanged)) prepareIosSecureEntry(input, null);
   }, [nativeEditRevision, password, revealed, selection]);
   const reveal = (): void => {
     if (unavailable) return;
