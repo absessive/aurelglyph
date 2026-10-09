@@ -9,10 +9,37 @@
   together without relaxing either assertion. Allow an explicit available iPhone
   destination for isolated local native verification; preserve default simulator
   selection and the no-retry-recovery gate.
-- Commit a bounded iOS secure-input caret on focus, honoring an explicit caller
-  selection and leaving Android/revealed fields unchanged. Native secure-buffer
-  behavior still requires the hosted iOS gate; DOM/renderer tests alone do not
-  establish that editing preserves a prefilled password.
+  Native keyboard readiness ignores zero-size accessibility padding when
+  choosing a software key, retaining actual-key hittability, continuous
+  readiness, all existing timing budgets, and strict retry rejection.
+  Target the owned workbench scroll view, not the system Passwords accessory.
+  Keep native keyboard-era reachability inside exposed scroll content instead
+  of swiping or tapping keyboard-covered controls; retain the eight-gesture
+  budget and actual-hittability requirement.
+  Use bounded viewport-local drags for SwiftUI's accessibility-size catalog
+  reachability probe so full-page swipes cannot oscillate past small controls;
+  retain the gesture limits and final actual-hittability assertions.
+- Replace the rejected JavaScript caret probe with a package-owned, autolinked
+  iOS secure-entry pod. Register only owned TextInputs for synchronous native
+  begin-edit preparation, repair secure storage through native text insertion,
+  retain current/explicit UTF-16 selection, suppress repair-generated callbacks,
+  balance undo registration, and guard stale values, unavailable ranges, focus,
+  attachment, editability, and composition. Keep native registration stable
+  through same-input ref churn; unregister only on replacement or unmount.
+  Leave JS focus callbacks free of delayed, duplicate storage repairs.
+  Retain pending mount registrations and resolve current tag ownership at focus
+  so Fabric view recycling cannot authorize repairs to unrelated inputs.
+  Reconcile controlled rejected/formatted edits as well as visibility and
+  external-value changes; Android and Web remain on their native TextInput path.
+  Include the pod/source in clean-consumer autolinking and package checks.
+  Track the local pod version during version synchronization without changing
+  external pod pins; regenerate its checksum with the host's pinned CocoaPods.
+  Add real native rejection/formatting callback-count, autofocus-first-edit,
+  explicit first-focus selection, and secure-session undo/redo regressions
+  while retaining all original native assertions. Raw React Native isolation
+  on iOS 26.5 confirms that secure-state toggles clear prior native undo history;
+  the adapter does not reconstruct opaque history or store secret edit history.
+  Native verification remains required before merging or releasing this batch.
 - Add Link, Chip, PasswordField, InputGroup, ValidationSummary, Accordion,
   workflow Stepper, and integer Rating across CSS/Web, React, React Native,
   SwiftUI, and Rails, with token-based light/dark appearances, localizable copy,

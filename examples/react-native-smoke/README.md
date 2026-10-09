@@ -19,7 +19,14 @@ Chip, PasswordField, one-input InputGroup, explicit-request ValidationSummary,
 Accordion, ordered Stepper, and whole-number Rating. The second Jest case drives
 their consumer state without opening a modal. Native cases verify chip/disclosure/
 step contracts, actual password typing across reveal/mask without field retargeting,
+controlled rejection followed by a real insertion, owner-formatted edits with
+exact user callback counts, and mount-triggered autofocus first-edit preservation,
+explicit first-focus replacement selection and native undo/redo within secure
+editing sessions (not across RN's history-clearing secure-state toggle),
 input ownership, rating values and touch choices, and summary-requested field focus.
+Keyboard-era reachability targets the owned workbench scroll view rather than
+the system Passwords accessory, excludes keyboard-covered frames, and confines scroll
+drags to exposed content; it still requires actual hittability within eight gestures.
 The iOS gate requires all nine cases and retains its first-attempt/no-recovery rule.
 
 ## Workspace checks
@@ -55,6 +62,10 @@ the correct executable on macOS, Linux, and Windows.
 ## iOS native regression
 
 Install pods after cloning or changing native dependencies:
+
+The host autolinks the package-owned `AurelglyphReactNative` secure-entry pod.
+It is required for iOS PasswordField's native buffer/focus contract; renderer
+tests and a JavaScript-only bundle cannot substitute for the native check.
 
 The checked-in `Gemfile.lock` uses Ruby 3.1 or newer, Bundler 2.6.2, and
 CocoaPods 1.16.2 so a fresh clone uses the same native dependency toolchain as
@@ -110,6 +121,9 @@ accessibility hierarchies. After confirmed tutorial dismissal, readiness polls
 only the product field and keyboard, requiring a tappable key as well as the
 interactive search without repeating remote system-UI queries. The gate rejects
 retry-recovered tests as flaky.
+Keyboard readiness selects the first nonempty software key, ignoring zero-size
+padding elements exposed as Keys by newer iOS accessibility trees; the selected
+key must still be hittable throughout the same continuous-readiness proof.
 Xcode and an installed iOS Simulator runtime are required. Native keyboard
 checks also require an on-screen software keyboard with hittable keys; an
 off-screen keyboard is a prerequisite failure, not a successful focus proof.

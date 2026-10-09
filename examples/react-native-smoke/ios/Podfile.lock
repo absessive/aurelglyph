@@ -1,4 +1,7 @@
 PODS:
+  - AurelglyphReactNative (0.8.1):
+    - React-Core
+    - React-RCTText
   - boost (1.84.0):
     - ReactNativeDependencies
   - DoubleConversion (1.1.6):
@@ -1839,6 +1842,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
+  - "AurelglyphReactNative (from `../../../node_modules/@aurelglyph/react-native`)"
   - boost (from `build/rndeps-facades/boost`)
   - DoubleConversion (from `build/rndeps-facades/DoubleConversion`)
   - fast_float (from `build/rndeps-facades/fast_float`)
@@ -1927,6 +1931,8 @@ DEPENDENCIES:
   - Yoga (from `../../../node_modules/react-native/ReactCommon/yoga`)
 
 EXTERNAL SOURCES:
+  AurelglyphReactNative:
+    :path: "../../../node_modules/@aurelglyph/react-native"
   boost:
     :path: build/rndeps-facades/boost
   DoubleConversion:
@@ -2100,6 +2106,7 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AurelglyphReactNative: f254d123500994a18bcb0b8cfcf23cf9531d4670
   boost: 8502bfdc46e2804408af2e163049ece181009af4
   DoubleConversion: 501a575c40c0b50c89685762dd3e415e6bb26fb0
   fast_float: 7c925d1cebf8328d4018d061f49377e9f887e3b4

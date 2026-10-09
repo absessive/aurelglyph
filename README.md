@@ -102,7 +102,20 @@ Web UX/accessibility checks pass. A WebKit password-fill race is repaired in
 React and Rails; Rating reset verification waits for the native form value and
 React paint together. React Native secure-password editing remains under native
 verification and blocks release of the new catalog until the unchanged strict
-gate passes. The source-only 0.8.1 maintenance branch excludes this Unreleased
+gate passes. Its package-owned iOS secure-entry pod is autolinked; applications
+must run `pod install` and rebuild after this Unreleased update. Native
+registration survives edit-time ref churn without repeating buffer repairs.
+Raw React Native tests confirm that reveal/mask boundaries clear prior native
+undo history on iOS 26.5; secure-session undo/redo remains covered separately.
+Native keyboard
+readiness targets a nonempty software key rather
+than zero-size accessibility padding; its hittability and timing contract is
+unchanged.
+Native reachability targets the named workbench, excluding the system Passwords
+accessory and keyboard-covered frames while retaining its gesture budget.
+SwiftUI's accessibility-size catalog probe uses bounded target-directed drags
+while retaining actual-control hittability and its existing gesture limits.
+The source-only 0.8.1 maintenance branch excludes this Unreleased
 batch; its latest [hosted baseline CI](https://github.com/absessive/aurelglyph/actions/runs/37553849798)
 passes all five jobs without native retry recovery. Neither candidate is tagged
 or published.
@@ -1180,6 +1193,10 @@ Aurelglyph uses one shared version across every platform package. The root
 summary"` after changing the root version to update all package versions,
 workspace package dependency pins, `package-lock.json`, `CHANGELOG.md`, and
 version markers in the React example, Rails adapter, and static preview.
+The local `AurelglyphReactNative` entry in the native host's `Podfile.lock` is
+also synchronized and checked, without changing external pod versions. After a
+version bump, run the host's pinned `bundle exec pod install --project-directory=ios`
+to regenerate the local podspec checksum before committing the lockfile.
 
 Run `npm run version:check` before publishing or consuming packages from apps.
 After promoting the release notes, `npm run version:release-check` additionally

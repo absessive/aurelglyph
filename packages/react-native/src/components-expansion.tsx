@@ -2,7 +2,6 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactElement, typ
 import {
   AccessibilityInfo,
   Linking,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -24,6 +23,7 @@ import { clamp, useControllableState, type ControlStateProps } from "./foundatio
 import type { TextFieldProps } from "./forms.js";
 import { Icon } from "./icons.js";
 import { Button, IconButton } from "./primitives.js";
+import { prepareIosSecureEntry, registerIosSecureEntry } from "./secure-entry.js";
 import { useAurelglyphTheme } from "./theme.js";
 
 function FocusControl({ onBlur, onFocus, style, ...props }: PressableProps): ReactElement {
@@ -147,32 +147,57 @@ export function PasswordField({ accessibilityHint, accessibilityLabel, autoCompl
   const copy = useAurelglyphControlCopy();
   const labelId = `ag-password-${useId()}`;
   const nativeInput = useRef<TextInputInstance>(null);
+  const secureEntryOwner = useRef<{ input: TextInputInstance; detach?: () => void }>(null);
   const attachInput = useCallback((input: TextInputInstance | null) => {
-    nativeInput.current = input;
+    if (input) {
+      // RN reattaches the same input ref when its native event count changes.
+      // Ownership follows input identity, not those callback-ref lifecycles.
+      if (secureEntryOwner.current?.input !== input) {
+        secureEntryOwner.current?.detach?.();
+        secureEntryOwner.current = { input, detach: registerIosSecureEntry(input) };
+      }
+      nativeInput.current = input;
+    }
     const cleanup = assignInputRef(inputRef, input);
     if (input) return () => {
-      nativeInput.current = null;
       if (typeof cleanup === "function") cleanup();
       else assignInputRef(inputRef, null);
     };
   }, [inputRef]);
+  useEffect(() => () => {
+    secureEntryOwner.current?.detach?.();
+    secureEntryOwner.current = null;
+    nativeInput.current = null;
+  }, []);
   const selectedRange = useRef<TextInputProps["selection"]>(selection);
-  const restoreFocus = useRef(false);
   const [focused, setFocused] = useState(false);
   const [revealed, setRevealed] = useControllableState({ defaultValue: defaultVisible, onChange: onVisibleChange, value: visible });
   const [password, setPassword] = useControllableState({ defaultValue, onChange: onChangeText, value });
+  const lastNativeValue = useRef(password);
+  const previousEntry = useRef({ password, revealed });
+  const [nativeEditRevision, recordNativeEdit] = useState(0);
   const unavailable = disabled || loading;
   const isInvalid = invalid || Boolean(error);
   useEffect(() => {
-    if (!restoreFocus.current) return;
-    restoreFocus.current = false;
-    nativeInput.current?.focus();
-    if (selectedRange.current) nativeInput.current?.setNativeProps({ selection: selectedRange.current });
-  }, [revealed]);
+    const visibilityChanged = previousEntry.current.revealed !== revealed;
+    const externalValueChanged = lastNativeValue.current !== password;
+    previousEntry.current = { password, revealed };
+    lastNativeValue.current = password;
+    const input = nativeInput.current;
+    if (!input?.isFocused()) return;
+    const range = selection ?? selectedRange.current;
+    if (visibilityChanged) {
+      input.focus();
+      if (range) {
+        const start = clamp(range.start, 0, password.length);
+        input.setSelection(start, clamp(range.end ?? range.start, start, password.length));
+      }
+    }
+    if (!revealed && (visibilityChanged || externalValueChanged)) prepareIosSecureEntry(input, password, selection);
+  }, [nativeEditRevision, password, revealed, selection]);
   const reveal = (): void => {
     if (unavailable) return;
     selectedRange.current = selection ?? selectedRange.current;
-    restoreFocus.current = nativeInput.current?.isFocused() ?? false;
     setRevealed(!revealed);
   };
   return <FieldFrame error={error} helperText={helperText} invalid={isInvalid} label={label} labelId={labelId} required={required} style={containerStyle}>
@@ -188,13 +213,8 @@ export function PasswordField({ accessibilityHint, accessibilityLabel, autoCompl
         autoCorrect={false}
         editable={!unavailable && !readOnly}
         onBlur={(event) => { setFocused(false); onBlur?.(event); }}
-        onChangeText={(next) => { if (!unavailable && !readOnly) setPassword(next); }}
+        onChangeText={(next) => { if (!unavailable && !readOnly) { lastNativeValue.current = next; if (value !== undefined) recordNativeEdit((revision) => revision + 1); setPassword(next); } }}
         onFocus={(event) => {
-          if (Platform.OS === "ios" && !revealed) {
-            const range = selection ?? selectedRange.current ?? { start: password.length, end: password.length };
-            const start = clamp(range.start, 0, password.length);
-            nativeInput.current?.setSelection(start, clamp(range.end ?? range.start, start, password.length));
-          }
           setFocused(true); onFocus?.(event);
         }}
         onSelectionChange={(event) => { selectedRange.current = event.nativeEvent.selection; onSelectionChange?.(event); }}

@@ -1,4 +1,4 @@
-import { act, useState, type ReactElement, type ReactNode } from "react";
+import { act, StrictMode, useState, type ReactElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -13,6 +13,9 @@ const nativeMock = vi.hoisted(() => ({
   announce: vi.fn(),
   accessibilityFocus: vi.fn(),
   passwordSelection: vi.fn(),
+  prepareSecureInput: vi.fn(),
+  registerSecureInput: vi.fn(),
+  unregisterSecureInput: vi.fn(),
   platform: "ios",
   openURL: vi.fn(() => Promise.resolve()),
   window: { fontScale: 1, height: 844, scale: 3, width: 390 }
@@ -174,20 +177,29 @@ vi.mock("react-native", async () => {
     ...props
   }, ref) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
-    React.useImperativeHandle(ref, () => ({
+    const [nativeEditCount, recordNativeEdit] = React.useState(0);
+    // RN's setLocalRef depends on its event count but returns the same native
+    // input. A testID change models an actual underlying-input replacement.
+    // These dependencies intentionally simulate RN ref churn/view replacement,
+    // not a change in the imperative methods themselves.
+    const instance = React.useMemo(() => ({
+      testID: props.testID,
       focus: () => { inputRef.current?.focus(); },
       isFocused: () => document.activeElement === inputRef.current,
       setSelection: (start: number, end: number) => { nativeMock.passwordSelection(start, end); inputRef.current?.setSelectionRange(start, end); },
       setNativeProps: ({ selection }: { selection?: { start: number; end?: number } }) => {
         if (selection) inputRef.current?.setSelectionRange(selection.start, selection.end ?? selection.start);
       }
-    }), []);
+    }), [props.testID]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    React.useImperativeHandle(ref, () => instance, [instance, nativeEditCount]);
     return React.createElement("input", {
       ...accessibilityProps(props),
       autoFocus: Boolean(autoFocus),
       "data-auto-focus": String(Boolean(autoFocus)),
       "data-auto-complete": props.autoComplete as string | undefined,
       "data-content-type": props.textContentType as string | undefined,
+      "data-selection": props.selection ? JSON.stringify(props.selection) : undefined,
       "data-secure": String(Boolean(props.secureTextEntry)),
       "data-rn": "TextInput",
       "data-style": JSON.stringify(flattenStyle(style)),
@@ -195,7 +207,10 @@ vi.mock("react-native", async () => {
       disabled: editable === false,
       onBlur: onBlur as ((event: unknown) => void) | undefined,
       onFocus: props.onFocus as ((event: unknown) => void) | undefined,
-      onChange: (event: { currentTarget: { value: string } }) => (onChangeText as ((value: string) => void) | undefined)?.(event.currentTarget.value),
+      onChange: (event: { currentTarget: { value: string } }) => {
+        recordNativeEdit(count => count + 1);
+        (onChangeText as ((value: string) => void) | undefined)?.(event.currentTarget.value);
+      },
       onSelect: (event: { currentTarget: HTMLInputElement }) => (onSelectionChange as ((event: unknown) => void) | undefined)?.({ nativeEvent: { selection: { start: event.currentTarget.selectionStart ?? 0, end: event.currentTarget.selectionEnd ?? 0 } } }),
       placeholder: placeholder as string | undefined,
       ref: inputRef,
@@ -280,6 +295,11 @@ vi.mock("react-native", async () => {
     Linking: { openURL: nativeMock.openURL },
     findNodeHandle: () => 17,
     Platform: { get OS() { return nativeMock.platform; } },
+    NativeModules: { AurelglyphSecureEntry: {
+      prepareSecureInput: nativeMock.prepareSecureInput,
+      registerSecureInput: nativeMock.registerSecureInput,
+      unregisterSecureInput: nativeMock.unregisterSecureInput
+    } },
     KeyboardAvoidingView,
     Modal,
     Pressable,
@@ -413,28 +433,62 @@ describe("React Native component expansion", () => {
     expect(onBlur).toHaveBeenCalledOnce();
   });
 
-  it("commits the iOS secure caret on focus without editing the value", () => {
+  it("registers synchronous native focus preparation without an async JS focus repair", () => {
     const onChangeText = vi.fn();
     const rendered = render(<PasswordField defaultValue="calibration" label="Password" onChangeText={onChangeText} />);
     act(() => rendered.container.querySelector<HTMLInputElement>("input")!.focus());
-    expect(nativeMock.passwordSelection).toHaveBeenLastCalledWith(11, 11);
+    expect(nativeMock.registerSecureInput).toHaveBeenCalledExactlyOnceWith(17);
+    expect(nativeMock.prepareSecureInput).not.toHaveBeenCalled();
     expect(onChangeText).not.toHaveBeenCalled();
   });
 
-  it("honors explicit iOS selection and bounds a retained caret after a controlled value shrinks", () => {
+  it("forwards explicit selection and leaves blurred updates for native focus preparation", () => {
     const onSelectionChange = vi.fn();
     const rendered = render(<PasswordField label="Password" onSelectionChange={onSelectionChange} selection={{ start: 1, end: 4 }} value="calibration" />);
     const input = rendered.container.querySelector<HTMLInputElement>("input")!;
     act(() => input.focus());
-    expect(nativeMock.passwordSelection).toHaveBeenLastCalledWith(1, 4);
+    expect(input.getAttribute("data-selection")).toBe(JSON.stringify({ start: 1, end: 4 }));
     rendered.rerender(<PasswordField label="Password" onSelectionChange={onSelectionChange} value="calibration" />);
     act(() => { input.setSelectionRange(9, 11); input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true })); });
     expect(onSelectionChange).toHaveBeenLastCalledWith({ nativeEvent: { selection: { start: 9, end: 11 } } });
     act(() => input.blur());
     rendered.rerender(<PasswordField label="Password" value="ab" />);
     act(() => input.focus());
-    expect(nativeMock.passwordSelection).toHaveBeenLastCalledWith(2, 2);
+    expect(nativeMock.prepareSecureInput).not.toHaveBeenCalled();
     expect(input.value).toBe("ab");
+  });
+
+  it("retains native ownership through accepted-edit ref churn and detaches only on replacement or unmount", () => {
+    const cleanup = vi.fn();
+    const inputRef = vi.fn(() => cleanup);
+    const rendered = render(<PasswordField defaultValue="saved" inputRef={inputRef} label="Password" testID="original" />);
+    const input = rendered.container.querySelector<HTMLInputElement>("input")!;
+    act(() => input.focus());
+    type(input, "savedx");
+    expect(input.value).toBe("savedx");
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(inputRef).toHaveBeenCalledTimes(2);
+    expect(nativeMock.registerSecureInput).toHaveBeenCalledOnce();
+    expect(nativeMock.unregisterSecureInput).not.toHaveBeenCalled();
+    expect(nativeMock.prepareSecureInput).not.toHaveBeenCalled();
+    rendered.rerender(<PasswordField defaultValue="saved" inputRef={inputRef} label="Password" testID="replacement" />);
+    expect(nativeMock.unregisterSecureInput).toHaveBeenCalledExactlyOnceWith(17);
+    expect(nativeMock.registerSecureInput).toHaveBeenCalledTimes(2);
+    rendered.rerender(<></>);
+    expect(nativeMock.unregisterSecureInput).toHaveBeenCalledTimes(2);
+    expect(cleanup).toHaveBeenCalledTimes(3);
+  });
+
+  it("retains exactly one native owner through StrictMode lifecycles", () => {
+    const rendered = render(<StrictMode><PasswordField defaultValue="saved" label="Password" /></StrictMode>);
+    expect(nativeMock.registerSecureInput.mock.calls.length - nativeMock.unregisterSecureInput.mock.calls.length).toBe(1);
+    const input = rendered.container.querySelector<HTMLInputElement>("input")!;
+    act(() => input.focus());
+    type(input, "savedx");
+    expect(nativeMock.registerSecureInput.mock.calls.length - nativeMock.unregisterSecureInput.mock.calls.length).toBe(1);
+    expect(nativeMock.prepareSecureInput).not.toHaveBeenCalled();
+    rendered.rerender(<></>);
+    expect(nativeMock.registerSecureInput.mock.calls.length).toBe(nativeMock.unregisterSecureInput.mock.calls.length);
   });
 
   it("does not dispatch the iOS focus caret command on Android or a revealed field", () => {
@@ -445,7 +499,31 @@ describe("React Native component expansion", () => {
     nativeMock.platform = "ios";
     click(rendered.container.querySelector('button[aria-label="Show Password"]')!);
     act(() => input.focus());
-    expect(nativeMock.passwordSelection).not.toHaveBeenCalled();
+    expect(nativeMock.prepareSecureInput).not.toHaveBeenCalled();
+  });
+
+  it("repairs controlled rejection and formatting without manufacturing change callbacks", () => {
+    const onChangeText = vi.fn();
+    const rendered = render(<PasswordField label="Password" onChangeText={onChangeText} value="saved" />);
+    const input = rendered.container.querySelector<HTMLInputElement>("input")!;
+    act(() => input.focus());
+    nativeMock.prepareSecureInput.mockClear();
+    type(input, "savedx");
+    expect(onChangeText).toHaveBeenCalledOnce();
+    expect(nativeMock.prepareSecureInput).toHaveBeenLastCalledWith(17, "saved", null);
+    expect(input.value).toBe("saved");
+    function Formatted(): ReactElement {
+      const [value, setValue] = useState("calibration");
+      return <PasswordField label="Formatted" onChangeText={next => { onChangeText(next); setValue(next.toLowerCase()); }} value={value} />;
+    }
+    rendered.rerender(<Formatted />);
+    const formatted = rendered.container.querySelector<HTMLInputElement>("input")!;
+    act(() => formatted.focus());
+    nativeMock.prepareSecureInput.mockClear(); onChangeText.mockClear();
+    type(formatted, "calibrationQ");
+    expect(onChangeText).toHaveBeenCalledOnce();
+    expect(nativeMock.prepareSecureInput).toHaveBeenLastCalledWith(17, "calibrationq", null);
+    expect(formatted.value).toBe("calibrationq");
   });
 
   it("permits read-only password reveal while disabling edits, and blocks disabled/loading reveal", () => {
@@ -788,6 +866,9 @@ afterEach(() => {
   nativeMock.announce.mockClear();
   nativeMock.accessibilityFocus.mockClear();
   nativeMock.passwordSelection.mockClear();
+  nativeMock.prepareSecureInput.mockClear();
+  nativeMock.registerSecureInput.mockClear();
+  nativeMock.unregisterSecureInput.mockClear();
   nativeMock.platform = "ios";
   nativeMock.openURL.mockClear();
   vi.restoreAllMocks();

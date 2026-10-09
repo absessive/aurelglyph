@@ -285,6 +285,73 @@ final class SmokeUITests: XCTestCase {
     app.typeText("#")
     app.buttons["Show Access password"].firstMatch.tap()
     XCTAssertTrue(waitUntilValue(visible, equals: "sample-passphrase!?#", timeout: 3), "Masking changed focus, value, or the native insertion point")
+
+    let retained = app.secureTextFields["Retained password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(retained), "The controlled-rejection password was unreachable")
+    retained.tap()
+    // The keyboard is already ready: type immediately, without a JS-focus wait.
+    app.typeText("x")
+    let showRetained = app.buttons["Show Retained password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(showRetained), "The retained-password reveal was covered")
+    showRetained.tap()
+    let retainedVisible = app.textFields["Retained password"].firstMatch
+    XCTAssertTrue(waitUntilValue(retainedVisible, equals: "retained-passphrase", timeout: 3), "The controlled owner could not reject an edit")
+    XCTAssertTrue(app.staticTexts["Retained edits: 1"].waitForExistence(timeout: 3), "Native repair emitted an extra rejected-edit callback")
+    app.buttons["Hide Retained password"].firstMatch.tap()
+    app.typeText("y")
+    app.buttons["Show Retained password"].firstMatch.tap()
+    XCTAssertTrue(waitUntilValue(retainedVisible, equals: "retained-passphrasey", timeout: 3), "A rejected edit corrupted the next native insertion or emitted duplicate changes")
+    XCTAssertTrue(app.staticTexts["Retained edits: 2"].waitForExistence(timeout: 3), "Native repair emitted an extra accepted-edit callback")
+
+    let formatted = app.secureTextFields["Formatted password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(formatted), "The controlled-formatter password was unreachable")
+    formatted.tap()
+    app.typeText("Q")
+    let showFormatted = app.buttons["Show Formatted password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(showFormatted), "The formatter reveal was covered")
+    showFormatted.tap()
+    let formattedVisible = app.textFields["Formatted password"].firstMatch
+    XCTAssertTrue(waitUntilValue(formattedVisible, equals: "calibrationq", timeout: 3), "The owner-formatted password was not retained")
+    XCTAssertTrue(app.staticTexts["Formatted edits: 1"].waitForExistence(timeout: 3), "Native repair emitted an extra formatted-edit callback")
+    app.buttons["Hide Formatted password"].firstMatch.tap()
+    app.typeText("R")
+    app.buttons["Show Formatted password"].firstMatch.tap()
+    XCTAssertTrue(waitUntilValue(formattedVisible, equals: "calibrationqr", timeout: 3), "Formatting corrupted the next masked insertion")
+    XCTAssertTrue(app.staticTexts["Formatted edits: 2"].waitForExistence(timeout: 3), "Remasking emitted an extra formatted-edit callback")
+
+    let mountAutofocus = app.buttons["Mount autofocus password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(mountAutofocus))
+    mountAutofocus.tap()
+    // Mount-triggered autoFocus must prepare secure entry without another tap
+    // or the keyboard-settling delay used for the original cold launch.
+    app.typeText("z")
+    let showAutofocus = app.buttons["Show Autofocus password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(showAutofocus), "The autofocus reveal was covered")
+    showAutofocus.tap()
+    let autofocusedVisible = app.textFields["Autofocus password"].firstMatch
+    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasez", timeout: 3), "The first autoFocus edit replaced the prefilled value")
+    app.buttons["Hide Autofocus password"].firstMatch.tap()
+    // RN's secure trait setter clears history at a reveal/mask boundary.
+    // Verify native undo/redo within a secure editing session, before toggling.
+    app.typeText("q")
+    app.typeKey("z", modifierFlags: .command)
+    app.buttons["Show Autofocus password"].firstMatch.tap()
+    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasez", timeout: 3), "Secure-entry repair changed native undo within an editing session")
+    app.buttons["Hide Autofocus password"].firstMatch.tap()
+    app.typeText("q")
+    app.typeKey("z", modifierFlags: .command)
+    app.typeKey("z", modifierFlags: [.command, .shift])
+    app.buttons["Show Autofocus password"].firstMatch.tap()
+    XCTAssertTrue(waitUntilValue(autofocusedVisible, equals: "autofocus-passphrasezq", timeout: 3), "Secure-entry repair changed native redo within an editing session")
+
+    let mountSelected = app.buttons["Mount selected password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(mountSelected))
+    mountSelected.tap()
+    app.typeText("K")
+    let showSelected = app.buttons["Show Selected password"].firstMatch
+    XCTAssertTrue(scrollUntilHittable(showSelected))
+    showSelected.tap()
+    XCTAssertTrue(waitUntilValue(app.textFields["Selected password"].firstMatch, equals: "caKration", timeout: 3), "First focus did not retain the explicit native replacement range")
   }
 
   func testEssentialRatingInputAndSummaryContracts() {
@@ -368,7 +435,6 @@ final class SmokeUITests: XCTestCase {
 
   private func waitUntilAutofocusedSearchReady(_ search: XCUIElement, timeout: TimeInterval) -> Bool {
     let keyboard = app.keyboards.firstMatch
-    let firstKey = keyboard.keys.firstMatch
     let tutorialLabel = "Speed up your typing by sliding your finger across the letters to compose a word."
     let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
     var deadline = Date().addingTimeInterval(timeout)
@@ -386,7 +452,12 @@ final class SmokeUITests: XCTestCase {
           readySince = nil
           return true
         }
-        guard search.exists && search.isHittable && keyboard.exists && firstKey.exists && firstKey.isHittable else {
+        // Recent iOS accessibility trees expose zero-size Padding-Left/Right
+        // elements as Keys. Prove a real software key is tappable, not padding.
+        guard search.exists && search.isHittable && keyboard.exists,
+          let firstKey = keyboard.keys.allElementsBoundByIndex.first(where: { !$0.frame.isEmpty }),
+          firstKey.exists && firstKey.isHittable
+        else {
           readySince = nil
           return false
         }
@@ -496,16 +567,42 @@ final class SmokeUITests: XCTestCase {
     direction: ScrollDirection = .up,
     maximumSwipes: Int = 8
   ) -> Bool {
-    let scrollView = app.scrollViews.firstMatch
-    for _ in 0..<maximumSwipes {
-      if element.exists && element.isHittable { return true }
-      if scrollView.exists {
-        if direction == .up { scrollView.swipeUp() } else { scrollView.swipeDown() }
-      } else {
-        if direction == .up { app.swipeUp() } else { app.swipeDown() }
+    // Password AutoFill exposes its own ScrollView above the keyboard; never
+    // let its position in the accessibility tree choose the scrolling owner.
+    // Fabric exposes the ScrollView's testID on its accessibility container,
+    // which need not have XCTest's ScrollView element type.
+    let scrollView = app.descendants(matching: .any)["aurelglyph-workbench-scroll"].firstMatch
+    guard scrollView.exists else { return false }
+    func exposedViewport() -> CGRect {
+      var viewport = scrollView.frame
+      let keyboard = app.keyboards.firstMatch
+      if keyboard.exists && !keyboard.frame.isEmpty && viewport.intersects(keyboard.frame) {
+        viewport.size.height = max(0, keyboard.frame.minY - viewport.minY)
       }
+      return viewport
     }
-    return element.exists && element.isHittable
+    func reachable(in viewport: CGRect) -> Bool {
+      guard element.exists && element.isHittable else { return false }
+      return viewport.contains(element.frame)
+    }
+    for _ in 0..<maximumSwipes {
+      let viewport = exposedViewport()
+      if reachable(in: viewport) { return true }
+      guard !viewport.isEmpty else { return false }
+      if app.keyboards.firstMatch.exists {
+        // A full ScrollView swipe can start on the software keyboard. Its
+        // accessibility tree may also report a covered field as hittable.
+        // Drag only inside exposed content and require the whole target there.
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        let startY = viewport.minY + viewport.height * (direction == .up ? 0.8 : 0.2)
+        let endY = viewport.minY + viewport.height * (direction == .up ? 0.2 : 0.8)
+        origin.withOffset(CGVector(dx: viewport.midX, dy: startY))
+          .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: viewport.midX, dy: endY)))
+        continue
+      }
+      if direction == .up { scrollView.swipeUp() } else { scrollView.swipeDown() }
+    }
+    return reachable(in: exposedViewport())
   }
 
   private func openNativeModal() {

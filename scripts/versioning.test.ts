@@ -67,6 +67,7 @@ async function createWorkspace(): Promise<string> {
     "Gemfile.lock": "PATH\n  remote: packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
     "gemfiles/rails-7.gemfile.lock": "PATH\n  remote: ../packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
     "gemfiles/rails-8.gemfile.lock": "PATH\n  remote: ../packages/rails\n  specs:\n    aurelglyph-rails (0.0.1)\n\nGEM\n  specs:\n    nokogiri (1.19.4-arm64-darwin)\n",
+    "examples/react-native-smoke/ios/Podfile.lock": "PODS:\n  - AurelglyphReactNative (0.0.1):\n    - React-Core\n    - React-RCTText\n  - React-Core (0.87.1)\n\nDEPENDENCIES:\n  - React-Core\n\nSPEC CHECKSUMS:\n  AurelglyphReactNative: fixture-checksum\n",
     "docs/index.html": "Workspace version<strong>Version 0.0.1</strong>",
     "docs/components.html": "Version 0.0.1 declares",
     "docs/component-manifest.json": '{"release": "0.0.1"}'
@@ -136,6 +137,10 @@ describe("workspace versioning", () => {
     }
     await expect(readFile(join(root, "docs/index.html"), "utf8")).resolves.toContain("Workspace version<strong>Version 1.2.3</strong>");
     await expect(readFile(join(root, "component-manifest.json"), "utf8")).resolves.toContain('"release": "1.2.3"');
+    const podLock = await readFile(join(root, "examples/react-native-smoke/ios/Podfile.lock"), "utf8");
+    expect(podLock).toContain("AurelglyphReactNative (1.2.3):");
+    expect(podLock).toContain("React-Core (0.87.1)");
+    expect(podLock).toContain("AurelglyphReactNative: fixture-checksum");
   });
 
   it.each(["Gemfile.lock", "gemfiles/rails-7.gemfile.lock", "gemfiles/rails-8.gemfile.lock"])(
@@ -153,6 +158,19 @@ describe("workspace versioning", () => {
       expect(malformed.mismatches).toContainEqual({ actual: undefined, expected: "1.2.3", packagePath: path });
     }
   );
+
+  it("rejects a missing, malformed, or stale local iOS pod version", async () => {
+    const root = await createWorkspace();
+    await syncWorkspaceVersions(root);
+    const path = "examples/react-native-smoke/ios/Podfile.lock";
+    for (const entry of ["", "  - AurelglyphReactNative ():\n", "  - AurelglyphReactNative (0.8.0):\n"]) {
+      await writeFile(join(root, path), `PODS:\n${entry}  - React-Core (0.87.1)\n\nDEPENDENCIES:\n  - AurelglyphReactNative (1.2.3)\n`);
+      const result = await checkWorkspaceVersions(root);
+      expect(result.ok).toBe(false);
+      expect(result.mismatches).toContainEqual({ actual: entry.includes("0.8.0") ? "0.8.0" : undefined, expected: "1.2.3", packagePath: path });
+      if (!entry.includes("0.8.0")) await expect(syncWorkspaceVersions(root)).rejects.toThrow(`Unable to locate version marker in ${path}.`);
+    }
+  });
 
   it("requires a changelog section for the shared version", async () => {
     const root = await createWorkspace();

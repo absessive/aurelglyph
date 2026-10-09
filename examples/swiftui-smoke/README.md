@@ -33,6 +33,11 @@ specimen without changing the existing workbench contract. All nine declared
 tests must pass exactly once. Xcode and an installed iOS Simulator runtime are
 required.
 
+The accessibility-size catalog probe scrolls only its own viewport with bounded,
+target-directed drags. It retains its eight-gesture limit (twelve for Rating)
+and requires each actual control to become hittable; existence alone is not
+accepted. The original workbench's interaction checks are unchanged.
+
 Keyboard assertions also require an on-screen software keyboard with hittable
 keys, including Done. The runner does not change Simulator keyboard preferences;
 a missing key is a prerequisite failure, not a passed native interaction check.

@@ -102,6 +102,11 @@ const versionedArtifacts = [
     replacement: (version: string, match: string) => match.replace(/aurelglyph-rails \([^)]+\)$/u, `aurelglyph-rails (${version})`)
   })),
   {
+    path: "examples/react-native-smoke/ios/Podfile.lock",
+    pattern: /^PODS:\r?\n(?:(?:  [^\r\n]*|)\r?\n)*?  - AurelglyphReactNative \(([^)\r\n]+)\):?$/mu,
+    replacement: (version: string, match: string) => match.replace(/AurelglyphReactNative \([^)]+\)(:?$)/u, `AurelglyphReactNative (${version})$1`)
+  },
+  {
     path: "docs/index.html",
     pattern: /Workspace version<strong>Version ([^<]+)<\/strong>/u,
     replacement: (version: string) => `Workspace version<strong>Version ${version}</strong>`

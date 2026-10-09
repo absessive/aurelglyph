@@ -165,12 +165,7 @@ chips cannot select or remove. Static status copy still belongs in a Badge
 where that adapter provides one.
 
 `PasswordField` owns one native TextInput and preserves its value, focused
-selection, and password-manager metadata while revealing/masking. It uses
-the current controlled value when bounding retained iOS focus selection; an
-explicit `selection` takes precedence. The iOS focus-caret change is under native
-CI verification: passing renderer tests alone does not establish the secure
-editing-buffer contract. Android and revealed fields do not use that command.
-It follows
+selection, and password-manager metadata while revealing/masking. It follows
 native `value`/`onChangeText` or `defaultValue`, supports controlled
 `visible`/`onVisibleChange` or `defaultVisible`, and accepts `inputRef`.
 `purpose="current"` is the default; `purpose="new"` selects new-password
@@ -179,6 +174,30 @@ and input props remain consumer-overridable. Read-only prevents value edits but
 allows inspection; disabled/loading also block reveal. `showLabel`/`hideLabel`
 override generated accessibility copy. `inputRef` preserves React 19 callback-ref
 cleanup as well as object refs and ordinary null-on-unmount callbacks.
+
+iOS PasswordField now requires the package-owned `AurelglyphReactNative` pod.
+Run your application's `pod install` and rebuild after updating the package;
+standard React Native autolinking discovers the bundled podspec and source.
+A missing/outdated native module produces an installation error instead of
+silently accepting an incomplete secure-entry contract. This Unreleased change
+is still subject to native CI validation. Android and Web need no new native
+module.
+
+The iOS adapter registers only its own inputs for synchronous native focus
+preparation. It rebuilds UIKit's secure editing storage without remounting,
+revealing plaintext, emitting value callbacks, or changing password-manager
+metadata. Native selection is retained unless explicitly caller-owned; ranges
+are bounded to the current UTF-16 value. Controlled rejection/formatting and
+focused external-value changes reconcile storage without concatenating edits
+or overriding legitimate replacements, deletion, or autofill. Unmounted,
+blurred, changed-value, disabled, and composing inputs reject stale repairs.
+Registration follows input identity through React Native's edit-time ref churn,
+and is removed on actual replacement or unmount. JS focus callbacks do not
+repeat the synchronous native storage repair. The native regression checks
+undo/redo within a secure editing session; React Native's secure-state setter clears
+prior undo history at reveal/mask boundaries (also reproduced with a raw
+TextInput on iOS 26.5). Aurelglyph does not reconstruct that history or retain
+password-edit history in JavaScript.
 
 `InputGroup` owns exactly one labeled native TextInput with the same field
 state/error contract. `prefix`/`suffix` accept text or independently accessible

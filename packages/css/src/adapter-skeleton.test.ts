@@ -144,7 +144,7 @@ describe("platform adapter skeletons", () => {
           default: "./dist/fonts.js"
         }
       },
-      files: ["dist", "assets/fonts", "README.md", "LICENSE.md"],
+      files: ["dist", "ios", "AurelglyphReactNative.podspec", "assets/fonts", "README.md", "LICENSE.md"],
       scripts: {
         build:
           "npm run build -w @aurelglyph/tokens && node --experimental-strip-types ../../scripts/font-assets.ts && tsc -p tsconfig.json",
@@ -165,6 +165,10 @@ describe("platform adapter skeletons", () => {
     expect(source).toContain("export { Menu, Dropdown, Combobox, Autocomplete, Select, CommandPalette }");
     expect(source).toContain("export { TextField, SearchField, TextArea, Switch, Checkbox, RadioGroup, Slider, NumberField, FileUpload }");
     expect(source).toContain("export { Button, IconButton, ButtonGroup, Spinner, Divider, Surface, Box, Stack, Container, Grid, Progress }");
+    const podspec = await read("packages/react-native/AurelglyphReactNative.podspec");
+    expect(podspec).toContain("spec.name = 'AurelglyphReactNative'");
+    expect(podspec).toContain("spec.dependency 'React-RCTText'");
+    await expect(read("packages/react-native/ios/AurelglyphSecureEntry.m")).resolves.toContain("RCT_EXPORT_MODULE()");
     const fontAdapter = await read("packages/react-native/src/fonts.ts");
     expect(fontAdapter).toContain("aurelglyphFontAssets");
     expect(fontAdapter).toContain("AurelglyphDisplay");

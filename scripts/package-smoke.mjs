@@ -30,7 +30,7 @@ const packages = [
     name: "@aurelglyph/react-native",
     path: "packages/react-native",
     maxBytes: 2_500_000,
-    required: ["dist/index.js", "dist/index.d.ts", "assets/fonts/OFL-1.1.txt", "README.md"]
+    required: ["dist/index.js", "dist/index.d.ts", "dist/secure-entry.js", "AurelglyphReactNative.podspec", "ios/AurelglyphSecureEntry.m", "assets/fonts/OFL-1.1.txt", "README.md"]
   }
 ];
 
@@ -252,6 +252,10 @@ try {
     run(join(root, "node_modules/.bin/tsc"), ["-p", "tsconfig.json"], { cwd: consumer });
 
     const bundleOutput = join(consumer, "runtime.ios.jsbundle");
+    const nativeConfig = JSON.parse(run("node", ["node_modules/react-native/cli.js", "config"], { cwd: consumer }));
+    if (!nativeConfig.dependencies?.["@aurelglyph/react-native"]?.platforms?.ios?.podspecPath?.endsWith("AurelglyphReactNative.podspec")) {
+      throw new Error(`React Native ${reactNativeVersion} clean-consumer iOS autolinking did not find the secure-entry pod.`);
+    }
     const assetsDestination = join(consumer, "runtime-assets");
     await mkdir(assetsDestination, { recursive: true });
     run(

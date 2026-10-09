@@ -337,11 +337,16 @@ final class AurelglyphSwiftUISmokeUITests: XCTestCase {
     let scrollView = app.scrollViews.firstMatch
     for _ in 0..<maximumSwipes {
       if element.exists && element.isHittable { return true }
-      if element.exists, element.frame.midY < scrollView.frame.midY {
-        scrollView.swipeDown()
-      } else {
-        scrollView.swipeUp()
-      }
+      let viewport = scrollView.frame
+      guard !viewport.isEmpty else { return false }
+      let targetOffset = element.exists ? (element.frame.midY - viewport.midY) / viewport.height : 1
+      let distance = min(0.35, max(0.15, abs(targetOffset)))
+      // Full swipes can alternate between either side of a 44pt control at AX
+      // text sizes. Use a bounded viewport-local drag toward the actual target.
+      let startY = targetOffset < 0 ? 0.3 : 0.7
+      let endY = startY + (targetOffset < 0 ? distance : -distance)
+      scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: startY))
+        .press(forDuration: 0.05, thenDragTo: scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY)))
     }
     return element.exists && element.isHittable
   }

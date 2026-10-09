@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useImperativeHandle, useRef, useState, type Ref} from 'react';
 import {
   Modal,
   ScrollView,
@@ -156,6 +156,7 @@ function SmokeWorkbench() {
       bounces={false}
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="always"
+      testID="aurelglyph-workbench-scroll"
       style={[styles.scroll, {backgroundColor: theme.colors.background}]}>
       <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} />
       <View style={[styles.calibrationLine, {borderTopColor: theme.colors.focus}]} />
@@ -278,6 +279,17 @@ function SmokeWorkbench() {
   );
 }
 
+type EditCounterHandle = {record: () => void};
+
+function PasswordEditCounter({label, counterRef}: {label: string; counterRef: Ref<EditCounterHandle>}) {
+  const theme = useAurelglyphTheme();
+  const [count, setCount] = useState(0);
+  // Keep the counter's render local: rejecting an edit must not rerender its
+  // owner and accidentally mask the field's unchanged-value reconciliation.
+  useImperativeHandle(counterRef, () => ({record: () => setCount(current => current + 1)}), []);
+  return <Text accessibilityLabel={`${label} edits: ${count}`} style={[styles.body, {color: theme.colors.muted}]}>{label} edits: {count}</Text>;
+}
+
 function ExpansionWorkbench() {
   const theme = useAurelglyphTheme();
   const amountInput = useRef<TextInputInstance>(null);
@@ -288,6 +300,13 @@ function ExpansionWorkbench() {
   const [rating, setRating] = useState(3);
   const [step, setStep] = useState('review');
   const [submission, setSubmission] = useState(0);
+  const [retainedPassword, setRetainedPassword] = useState('retained-passphrase');
+  const rejectedEdits = useRef(0);
+  const retainedEditCounter = useRef<EditCounterHandle>(null);
+  const [formattedPassword, setFormattedPassword] = useState('calibration');
+  const formattedEditCounter = useRef<EditCounterHandle>(null);
+  const [autofocusPasswordMounted, setAutofocusPasswordMounted] = useState(false);
+  const [selectedPasswordMounted, setSelectedPasswordMounted] = useState(false);
   return (
     <View style={styles.controlStack} testID="component-expansion">
       <Text accessibilityRole="header" style={[styles.panelLabel, {color: theme.colors.text}]}>COMPONENT ESSENTIALS</Text>
@@ -296,6 +315,21 @@ function ExpansionWorkbench() {
       {chipVisible ? <Chip label="Local" onRemove={() => setChipVisible(false)} onSelectedChange={setSelected} selected={selected} />
         : <Button onPress={() => setChipVisible(true)} variant="ghost">Restore local filter</Button>}
       <PasswordField defaultValue="sample-passphrase" inputRef={passwordInput} label="Access password" />
+      <PasswordField label="Retained password" onChangeText={next => {
+        rejectedEdits.current += 1;
+        retainedEditCounter.current?.record();
+        if (rejectedEdits.current > 1) setRetainedPassword(next);
+      }} value={retainedPassword} />
+      <PasswordEditCounter counterRef={retainedEditCounter} label="Retained" />
+      <PasswordField label="Formatted password" onChangeText={next => {
+        formattedEditCounter.current?.record();
+        setFormattedPassword(next.toLowerCase());
+      }} value={formattedPassword} />
+      <PasswordEditCounter counterRef={formattedEditCounter} label="Formatted" />
+      <Button onPress={() => setAutofocusPasswordMounted(true)} variant="secondary">Mount autofocus password</Button>
+      {autofocusPasswordMounted ? <PasswordField autoFocus defaultValue="autofocus-passphrase" label="Autofocus password" /> : null}
+      <Button onPress={() => setSelectedPasswordMounted(true)} variant="secondary">Mount selected password</Button>
+      {selectedPasswordMounted ? <PasswordField autoFocus defaultValue="calibration" label="Selected password" selection={{start: 2, end: 5}} /> : null}
       <InputGroup addonDescription="US dollars" inputRef={amountInput} keyboardType="decimal-pad" label="Amount" onChangeText={setAmount} prefix="$" suffix="USD" value={amount} />
       <Button onPress={() => setSubmission(current => current + 1)} variant="secondary">Review fields</Button>
       <ValidationSummary

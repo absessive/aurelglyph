@@ -36,6 +36,8 @@
   },
   "files": [
     "dist",
+    "ios",
+    "AurelglyphReactNative.podspec",
     "assets/fonts",
     "README.md",
     "LICENSE.md"
