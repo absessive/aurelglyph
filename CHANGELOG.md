@@ -55,6 +55,7 @@
   on iOS 26.5 confirms that secure-state toggles clear prior native undo history;
   the adapter does not reconstruct opaque history or store secret edit history.
   Native verification remains required before merging or releasing this batch.
+  Document the permanent CI regression contract separately from changing run status.
 - Add Link, Chip, PasswordField, InputGroup, ValidationSummary, Accordion,
   workflow Stepper, and integer Rating across CSS/Web, React, React Native,
   SwiftUI, and Rails, with token-based light/dark appearances, localizable copy,

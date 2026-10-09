@@ -97,12 +97,12 @@ selects whole-number values. Disclosure icons use mode-aware semantic accent
 paint for visibility on light and dark surfaces. Package-owned labels and native announcements are
 localizable; see each adapter guide for its copy contract.
 
-CI repair verification (2026-10-09): local unit, lint/type, three-browser, and full
-Web UX/accessibility checks pass. A WebKit password-fill race is repaired in
-React and Rails; Rating reset verification waits for the native form value and
-React paint together. React Native secure-password editing remains under native
-verification and blocks release of the new catalog until the unchanged strict
-gate passes. Its package-owned iOS secure-entry pod is autolinked; applications
+CI regression coverage includes unit, lint/type, three-browser, and full
+Web UX/accessibility checks. React/Rails password tests check value and selection
+through native browser paint and subsequent user interaction; Rating reset
+verification waits for the native form value and React paint together. The
+complete native catalog requires the unchanged strict nine-case gate with no
+retry recovery. React Native's package-owned iOS secure-entry pod is autolinked; applications
 must run `pod install` and rebuild after this Unreleased update. Native
 registration survives edit-time ref churn without repeating buffer repairs.
 Preparation follows actual Fabric commits, with bounded command-only catch-up
